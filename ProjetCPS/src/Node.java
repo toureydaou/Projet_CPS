@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
@@ -10,91 +11,99 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
+import fr.sorbonne_u.cps.mapreduce.endpoints.POJOContentNodeCompositeEndPoint;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 
 public class Node implements ContentAccessSyncI,MapReduceSyncI{
 	HashMap<ContentKeyI, ContentDataI> content;
 	IntInterval intervalle;
-	Node suivant;
-	String uri;
-	Boolean enTete = false;
+	HashMap<String,Integer> uriPassages = new HashMap<>();
 	HashMap<String, Stream<ContentDataI>> memory = new HashMap<>();
+	POJOContentNodeCompositeEndPoint connexionSortante;
 	
-	public Node(IntInterval intervalle) {
-		super();
+	
+	public Node(IntInterval intervalle, POJOContentNodeCompositeEndPoint connexionEntrante, POJOContentNodeCompositeEndPoint connexionSortante) {
 		this.content = new HashMap<ContentKeyI, ContentDataI>();
 		this.intervalle = intervalle;
-		this.suivant = null;
-		enTete = false;
+		this.connexionSortante = connexionSortante;
+		connexionEntrante.initialiseServerSide(this);
+		connexionSortante.initialiseClientSide(connexionSortante);
 	}
-
-	public void setSuivant(Node suivant) {
-		this.suivant = suivant;
+	
+	public Node(IntInterval intervalle, POJOContentNodeCompositeEndPoint connexionEntrante1,  POJOContentNodeCompositeEndPoint connexionEntrante2, POJOContentNodeCompositeEndPoint connexionSortante) {
+		this.content = new HashMap<ContentKeyI, ContentDataI>();
+		this.intervalle = intervalle;
+		this.connexionSortante = connexionSortante;
+		connexionEntrante1.initialiseServerSide(this);
+		connexionEntrante2.initialiseServerSide(this);
+		connexionSortante.initialiseClientSide(connexionSortante);
 	}
 
 	@Override
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
 			throws Exception {
+		if(uriPassages.get(computationURI) != null && uriPassages.get(computationURI) == 1) return;
+		uriPassages.put(computationURI, 1);
 		memory.put(computationURI, (Stream<ContentDataI>) content.values().stream()
 				.filter(selector)
 				.map(processor));
-		if (this.suivant.enTete == true) return;
-		this.suivant.mapSync(computationURI, selector, processor);
+		this.connexionSortante.getMapReduceEndpoint().getClientSideReference().mapSync(computationURI, selector, processor);
 	}
 
 	@Override
 	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
 			CombinatorI<A> combinator, A currentAcc) throws Exception {
-		
-		if (this.suivant.enTete == true) {
-			return memory.get(computationURI)
-					.reduce(currentAcc,(u,d)-> reductor.apply(u,(R) d), combinator);
-		}
+		if(uriPassages.get(computationURI) != null && uriPassages.get(computationURI) == 2) return currentAcc;
+		uriPassages.put(computationURI, 2);
 		
 		return combinator.apply(memory.get(computationURI)
 				.reduce(currentAcc,(u,d)-> reductor.apply(u,(R) d), combinator),
-				this.suivant.reduceSync(computationURI, reductor, combinator, currentAcc));
+				this.connexionSortante.getMapReduceEndpoint().getClientSideReference().reduceSync(computationURI, reductor, combinator, currentAcc));
 	}
 
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
+		if(uriPassages.get(computationURI) != null && uriPassages.get(computationURI) == 1) return;
+		uriPassages.put(computationURI, 1);
 		memory.remove(computationURI);
-		if(this.suivant.enTete == true) return;
-		suivant.clearMapReduceComputation(computationURI);
+		this.connexionSortante.getMapReduceEndpoint().getClientSideReference().clearMapReduceComputation(computationURI);
 	}
 
 	@Override
 	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
+		if(uriPassages.get(computationURI) != null && uriPassages.get(computationURI) == 1) return null;
+		uriPassages.put(computationURI, 1);
 		int n = ((EntierKey) key).getCle();		
 		if(intervalle.in(n)) {
 			return content.get(key);
 		}
-		if(this.suivant.enTete == true) return null;
-		return this.suivant.getSync(computationURI, key);
+		return this.connexionSortante.getContentAccessEndpoint().getClientSideReference().getSync(computationURI,key);
 	}
 
 	@Override
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
+		if(uriPassages.get(computationURI) != null && uriPassages.get(computationURI) == 1) return null;
+		uriPassages.put(computationURI, 1);
 		int n = ((EntierKey) key).getCle();	
 		if(intervalle.in(n)) {
 			ContentDataI valuePrec = content.get(key);
 			this.content.put(key, value);
 			return valuePrec;
 		}
-		if(this.suivant.enTete == true) return null;
-		return this.suivant.putSync(computationURI, key, value);
+		return this.connexionSortante.getContentAccessEndpoint().getClientSideReference().putSync(computationURI, key, value);
 	}
 
 	@Override
 	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
+		if(uriPassages.get(computationURI) != null && uriPassages.get(computationURI) == 1) return null;
+		uriPassages.put(computationURI, 1);
 		int n = ((EntierKey) key).getCle();	
 		if(intervalle.in(n)) {
 			ContentDataI valuePrec = content.get(key);
 			this.content.remove(key);
 			return valuePrec;
 		}
-		if(this.suivant.enTete == true) return null;
-		return this.suivant.removeSync(computationURI, key);
+		return this.connexionSortante.getContentAccessEndpoint().getClientSideReference().removeSync(computationURI, key);
 	}
 
 	@Override
