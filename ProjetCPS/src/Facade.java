@@ -21,20 +21,25 @@ public class Facade implements DHTServicesI {
 	@Override
 	public ContentDataI get(ContentKeyI key) throws Exception {
 		String uriTete = URIGenerator.generateURI("get");
-		return this.connexion.getContentAccessEndpoint().getClientSideReference().getSync(uriTete, key);
+		ContentDataI data = this.connexion.getContentAccessEndpoint().getClientSideReference().getSync(uriTete, key);
+		this.connexion.getContentAccessEndpoint().getClientSideReference().clearComputation(uriTete);
+		return data;
 	}
 
 	@Override
 	public ContentDataI put(ContentKeyI key, ContentDataI value) throws Exception {
 		String uriTete = URIGenerator.generateURI("put");
-
-		return this.connexion.getContentAccessEndpoint().getClientSideReference().putSync(uriTete, key,value);
+		ContentDataI data = this.connexion.getContentAccessEndpoint().getClientSideReference().putSync(uriTete, key,value);
+		this.connexion.getContentAccessEndpoint().getClientSideReference().clearComputation(uriTete);
+		return data;
 	}
 
 	@Override
 	public ContentDataI remove(ContentKeyI key) throws Exception {
 		String uriTete = URIGenerator.generateURI("remove");
-		return this.connexion.getContentAccessEndpoint().getClientSideReference().getSync(uriTete, key);
+		ContentDataI data = this.connexion.getContentAccessEndpoint().getClientSideReference().getSync(uriTete, key);
+		this.connexion.getContentAccessEndpoint().getClientSideReference().clearComputation(uriTete);
+		return data;
 	}
 
 	@Override
@@ -44,6 +49,7 @@ public class Facade implements DHTServicesI {
 		this.connexion.getMapReduceEndpoint().getClientSideReference().mapSync(uriTete, selector, processor);
 		A result = this.connexion.getMapReduceEndpoint().getClientSideReference().reduceSync(uriTete, reductor, combinator, initialAcc);
 		this.connexion.getMapReduceEndpoint().getClientSideReference().clearMapReduceComputation(uriTete);
+		this.connexion.getContentAccessEndpoint().getClientSideReference().clearComputation(uriTete);
 		return result;
 	}
 
