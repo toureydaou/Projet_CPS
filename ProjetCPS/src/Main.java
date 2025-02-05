@@ -31,6 +31,11 @@ public class Main {
 			f.put(new EntierKey(53), new Livre("pitié", 20));
 			f.put(new EntierKey(102), new Livre("peur", 50));
 			System.out.println(f.get(k).getValue("nbPages"));
+			
+			
+			
+		
+	
 			int a = f.mapReduce(i->((int)i.getValue("nbPages"))>0,
 					i-> new Livre((String)i.getValue("titre"),(int) i.getValue("nbPages")/2),
 					(acc, i) ->  (acc + (int)i.getValue("nbPages")),

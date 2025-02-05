@@ -17,11 +17,17 @@ import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 public class Node implements ContentAccessSyncI,MapReduceSyncI{
 	HashMap<ContentKeyI, ContentDataI> content;
 	IntInterval intervalle;
-	HashMap<String,Integer> uriPassages = new HashMap<>();
+	ArrayList<String> uriPassages = new ArrayList<>();
 	HashMap<String, Stream<ContentDataI>> memory = new HashMap<>();
 	POJOContentNodeCompositeEndPoint connexionSortante;
 	
 	
+	public HashMap<ContentKeyI, ContentDataI> getContent() {
+		return content;
+	}
+
+
+
 	public Node(IntInterval intervalle, POJOContentNodeCompositeEndPoint connexionEntrante, POJOContentNodeCompositeEndPoint connexionSortante) {
 		this.content = new HashMap<ContentKeyI, ContentDataI>();
 		this.intervalle = intervalle;
@@ -42,8 +48,8 @@ public class Node implements ContentAccessSyncI,MapReduceSyncI{
 	@Override
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
 			throws Exception {
-		if(uriPassages.get(computationURI) != null && uriPassages.get(computationURI) == 1) return;
-		uriPassages.put(computationURI, 1);
+		if(uriPassages.contains(computationURI)) return;
+		uriPassages.add(computationURI);
 		memory.put(computationURI, (Stream<ContentDataI>) content.values().stream()
 				.filter(selector)
 				.map(processor));
@@ -53,8 +59,8 @@ public class Node implements ContentAccessSyncI,MapReduceSyncI{
 	@Override
 	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
 			CombinatorI<A> combinator, A currentAcc) throws Exception {
-		if(uriPassages.get(computationURI) != null && uriPassages.get(computationURI) == 2) return currentAcc;
-		uriPassages.put(computationURI, 2);
+		if(!uriPassages.contains(computationURI)) return currentAcc;
+		uriPassages.remove(computationURI);
 		
 		return combinator.apply(memory.get(computationURI)
 				.reduce(currentAcc,(u,d)-> reductor.apply(u,(R) d), combinator),
@@ -63,16 +69,16 @@ public class Node implements ContentAccessSyncI,MapReduceSyncI{
 
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
-		if(uriPassages.get(computationURI) != null && uriPassages.get(computationURI) == 1) return;
-		uriPassages.put(computationURI, 1);
+		if(uriPassages.contains(computationURI)) return;
+		uriPassages.add(computationURI);
 		memory.remove(computationURI);
 		this.connexionSortante.getMapReduceEndpoint().getClientSideReference().clearMapReduceComputation(computationURI);
 	}
 
 	@Override
 	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
-		if(uriPassages.get(computationURI) != null && uriPassages.get(computationURI) == 1) return null;
-		uriPassages.put(computationURI, 1);
+		if(uriPassages.contains(computationURI)) return null;
+		uriPassages.add(computationURI);
 		int n = ((EntierKey) key).getCle();		
 		if(intervalle.in(n)) {
 			return content.get(key);
@@ -82,8 +88,8 @@ public class Node implements ContentAccessSyncI,MapReduceSyncI{
 
 	@Override
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
-		if(uriPassages.get(computationURI) != null && uriPassages.get(computationURI) == 1) return null;
-		uriPassages.put(computationURI, 1);
+		if(uriPassages.contains(computationURI)) return null;
+		uriPassages.add(computationURI);
 		int n = ((EntierKey) key).getCle();	
 		if(intervalle.in(n)) {
 			ContentDataI valuePrec = content.get(key);
@@ -95,8 +101,8 @@ public class Node implements ContentAccessSyncI,MapReduceSyncI{
 
 	@Override
 	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
-		if(uriPassages.get(computationURI) != null && uriPassages.get(computationURI) == 1) return null;
-		uriPassages.put(computationURI, 1);
+		if(uriPassages.contains(computationURI)) return null;
+		uriPassages.add(computationURI);
 		int n = ((EntierKey) key).getCle();	
 		if(intervalle.in(n)) {
 			ContentDataI valuePrec = content.get(key);
@@ -108,7 +114,11 @@ public class Node implements ContentAccessSyncI,MapReduceSyncI{
 
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
-		// TODO Auto-generated method stub
+		if(!uriPassages.contains(computationURI)) return;
+		uriPassages.remove(computationURI);
+		this.connexionSortante.getContentAccessEndpoint().getClientSideReference().clearComputation(computationURI);
+
+		
 		
 	}
 

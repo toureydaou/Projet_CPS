@@ -9,9 +9,7 @@ public class EntierKey implements ContentKeyI {
 		super();
 		this.cle = cle;
 	}
-	public void setCle(int cle) {
-		this.cle = cle;
-	}
+
 	public int getCle() {
 		return cle;
 	}
