@@ -4,7 +4,9 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="common-apis-e1"/>
 	<classpathentry kind="src" path="provided"/>
-	<classpathentry exported="true" kind="lib" path="BCM4Java-10012025.jar"/>
+	<classpathentry kind="lib" path="BCM4Java-10012025.jar"/>
 	<classpathentry exported="true" kind="lib" path="CPS-2025-DHT-etape1.jar"/>
+	<classpathentry exported="true" kind="lib" path="BCM4Java-06022025.jar"/>
+	<classpathentry exported="true" kind="lib" path="CPS-2025-DHT-etape2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

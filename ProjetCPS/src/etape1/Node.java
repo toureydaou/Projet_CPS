@@ -27,10 +27,6 @@ public class Node implements ContentAccessSyncI,MapReduceSyncI{
 		this.intervalle = intervalle;
 		this.connexionSortante = connexionSortante;
 		connexionEntrante.initialiseServerSide(this);
-		
-		if(!connexionSortante.clientSideInitialised()) 
-		{System.out.println("Serveur non initialisé " + intervalle.first());}
-		connexionSortante.initialiseClientSide(connexionSortante);
 	}
 	
 	void initialize(POJOContentNodeCompositeEndPoint connexionEntrante) {
@@ -43,12 +39,16 @@ public class Node implements ContentAccessSyncI,MapReduceSyncI{
 		this.connexionSortante = connexionSortante;
 		connexionEntrante1.initialiseServerSide(this);
 		connexionEntrante2.initialiseServerSide(this);
-		connexionSortante.initialiseClientSide(connexionSortante);
 	}
 
 	@Override
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
 			throws Exception {
+		if(!connexionSortante.clientSideInitialised()) 
+		{
+			System.out.println("Serveur non initialisé " + intervalle.first());
+			connexionSortante.initialiseClientSide(connexionSortante);
+		}
 		if(uriPassages.contains(computationURI)) return;
 		uriPassages.add(computationURI);
 		memory.put(computationURI, (Stream<ContentDataI>) content.values().stream()
@@ -60,6 +60,11 @@ public class Node implements ContentAccessSyncI,MapReduceSyncI{
 	@Override
 	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
 			CombinatorI<A> combinator, A currentAcc) throws Exception {
+		if(!connexionSortante.clientSideInitialised()) 
+		{
+			System.out.println("Serveur non initialisé " + intervalle.first());
+			connexionSortante.initialiseClientSide(connexionSortante);
+		}
 		if(!uriPassages.contains(computationURI)) return currentAcc;
 		uriPassages.remove(computationURI);
 		
@@ -70,6 +75,11 @@ public class Node implements ContentAccessSyncI,MapReduceSyncI{
 
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
+		if(!connexionSortante.clientSideInitialised()) 
+		{
+			System.out.println("Serveur non initialisé " + intervalle.first());
+			connexionSortante.initialiseClientSide(connexionSortante);
+		}
 		if(uriPassages.contains(computationURI)) return;
 		uriPassages.add(computationURI);
 		memory.remove(computationURI);
@@ -78,6 +88,11 @@ public class Node implements ContentAccessSyncI,MapReduceSyncI{
 
 	@Override
 	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
+		if(!connexionSortante.clientSideInitialised()) 
+		{
+			System.out.println("Serveur non initialisé " + intervalle.first());
+			connexionSortante.initialiseClientSide(connexionSortante);
+		}
 		if(uriPassages.contains(computationURI)) return null;
 		uriPassages.add(computationURI);
 		int n = ((EntierKey) key).getCle();		
@@ -91,7 +106,10 @@ public class Node implements ContentAccessSyncI,MapReduceSyncI{
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
 		
 		if(!connexionSortante.clientSideInitialised()) 
-		{connexionSortante.getContentAccessEndpoint().getClientSideReference().}
+		{
+			System.out.println("Serveur non initialisé " + intervalle.first());
+			connexionSortante.initialiseClientSide(connexionSortante);
+		}
 		if(uriPassages.contains(computationURI)) return null;
 		uriPassages.add(computationURI);
 		int n = ((EntierKey) key).getCle();	
@@ -105,6 +123,11 @@ public class Node implements ContentAccessSyncI,MapReduceSyncI{
 
 	@Override
 	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
+		if(!connexionSortante.clientSideInitialised()) 
+		{
+			System.out.println("Serveur non initialisé " + intervalle.first());
+			connexionSortante.initialiseClientSide(connexionSortante);
+		}
 		if(uriPassages.contains(computationURI)) return null;
 		uriPassages.add(computationURI);
 		int n = ((EntierKey) key).getCle();	
@@ -118,6 +141,11 @@ public class Node implements ContentAccessSyncI,MapReduceSyncI{
 
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
+		if(!connexionSortante.clientSideInitialised()) 
+		{
+			System.out.println("Serveur non initialisé " + intervalle.first());
+			connexionSortante.initialiseClientSide(connexionSortante);
+		}
 		if(!uriPassages.contains(computationURI)) return;
 		uriPassages.remove(computationURI);
 		this.connexionSortante.getContentAccessEndpoint().getClientSideReference().clearComputation(computationURI);

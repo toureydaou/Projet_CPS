@@ -1,4 +1,4 @@
-package etape2.connecteurs;
+package etape2.ports;
 
 import etape2.composants.NodeBCM;
 import fr.sorbonne_u.components.ComponentI;
@@ -16,14 +16,14 @@ public class ContentAccessSyncInboundPort extends AbstractInboundPort implements
 		super(ContentAccessSyncCI.class, owner);
 		
 		// le propriétaire de ce port est un noeud jouant le role de serveur
-		assert	owner instanceof NodeBCM ;
+		assert	(owner instanceof NodeBCM);
 	}
 
 	public ContentAccessSyncInboundPort(String uri, ComponentI owner)
 			throws Exception {
 		super(uri, ContentAccessSyncCI.class, owner);
 		
-		assert uri != null  &&	owner instanceof NodeBCM ;
+		assert uri != null  &&	(owner instanceof NodeBCM);
 	}
 
 	@Override
@@ -44,7 +44,11 @@ public class ContentAccessSyncInboundPort extends AbstractInboundPort implements
 
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
-//		this.getOwner().handleRequest(owner -> ((NodeBCM) owner).clearComputation(computationURI));
+		this.getOwner().handleRequest(
+				owner -> {
+						((NodeBCM) owner).clearComputation(computationURI);
+						return null;
+					});
 	}
 
 
