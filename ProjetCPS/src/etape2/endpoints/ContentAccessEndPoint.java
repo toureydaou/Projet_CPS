@@ -36,11 +36,10 @@ public class ContentAccessEndPoint extends BCMEndPoint<ContentAccessSyncCI> {
 	}
 	
 	public				ContentAccessEndPoint(
-			String inboundPortURI,
-			String outboundPortURI)
+			String inboundPortURI)
 	{
 		super(ContentAccessSyncCI.class, ContentAccessSyncCI.class,
-				inboundPortURI, outboundPortURI);
+				inboundPortURI);
 	}
 	
 	public				ContentAccessEndPoint()
@@ -88,7 +87,6 @@ public class ContentAccessEndPoint extends BCMEndPoint<ContentAccessSyncCI> {
 	@Override
 	protected ContentAccessSyncCI		makeOutboundPort(
 		AbstractComponent c,
-		String outboundPortURI,
 		String inboundPortURI
 		) throws Exception
 	{
@@ -96,7 +94,7 @@ public class ContentAccessEndPoint extends BCMEndPoint<ContentAccessSyncCI> {
 		assert	c != null : new PreconditionException("c != null");
 
 		ContentAccessSyncOutboundPort p =
-				new ContentAccessSyncOutboundPort(outboundPortURI, c);
+				new ContentAccessSyncOutboundPort(c);
 		p.publishPort();
 		c.doPortConnection(
 				p.getPortURI(),
@@ -125,4 +123,6 @@ public class ContentAccessEndPoint extends BCMEndPoint<ContentAccessSyncCI> {
 		
 		return p;
 	}
+
+
 }

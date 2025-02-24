@@ -7,6 +7,7 @@ import etape1.EntierKey;
 import etape1.Facade;
 import etape1.Livre;
 import etape1.Node;
+import fr.sorbonne_u.components.exceptions.ConnectionException;
 import fr.sorbonne_u.cps.mapreduce.endpoints.POJOContentNodeCompositeEndPoint;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 
@@ -14,7 +15,7 @@ import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 public class MultiNodeTest {
 
 	@Test
-	public void putHashMaptest() {
+	public void putHashMaptest() throws ConnectionException {
 		Node[] noeuds = new Node[4];
 		POJOContentNodeCompositeEndPoint[] pojos = new POJOContentNodeCompositeEndPoint[5];
 		for(int i = 0; i < pojos.length;i++) {

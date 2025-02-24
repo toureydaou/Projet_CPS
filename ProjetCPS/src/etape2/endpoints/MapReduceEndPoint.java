@@ -38,11 +38,10 @@ public class MapReduceEndPoint extends BCMEndPoint<MapReduceSyncCI> {
 
 	
 	public				MapReduceEndPoint(
-			String inboundPortURI,
-			String outboundPortURI)
+			String inboundPortURI)
 	{
 		super(MapReduceSyncCI.class, MapReduceSyncCI.class,
-				inboundPortURI, outboundPortURI);
+				inboundPortURI);
 	}
 	
 	public				MapReduceEndPoint()
@@ -91,7 +90,6 @@ public class MapReduceEndPoint extends BCMEndPoint<MapReduceSyncCI> {
 	@Override
 	protected MapReduceSyncCI		makeOutboundPort(
 		AbstractComponent c,
-		String outboundPortURI,
 		String inboundPortURI
 		) throws Exception
 	{
@@ -99,7 +97,7 @@ public class MapReduceEndPoint extends BCMEndPoint<MapReduceSyncCI> {
 		assert	c != null : new PreconditionException("c != null");
 
 		MapReduceSyncOutboundPort p =
-				new MapReduceSyncOutboundPort(outboundPortURI, c);
+				new MapReduceSyncOutboundPort(c);
 		p.publishPort();
 		c.doPortConnection(
 				p.getPortURI(),

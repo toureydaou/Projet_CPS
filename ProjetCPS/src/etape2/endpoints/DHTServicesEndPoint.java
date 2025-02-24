@@ -35,11 +35,10 @@ public class DHTServicesEndPoint extends BCMEndPoint<DHTServicesCI>  {
 	}
 	
 	public				DHTServicesEndPoint(
-			String inboundPortURI,
-			String outboundPortURI)
+			String inboundPortURI)
 	{
 		super(DHTServicesCI.class, DHTServicesCI.class,
-				inboundPortURI, outboundPortURI);
+				inboundPortURI);
 	}
 	
 	public				DHTServicesEndPoint()
@@ -87,7 +86,6 @@ public class DHTServicesEndPoint extends BCMEndPoint<DHTServicesCI>  {
 	@Override
 	protected DHTServicesCI		makeOutboundPort(
 		AbstractComponent c,
-		String outboundPortURI,
 		String inboundPortURI
 		) throws Exception
 	{
@@ -95,7 +93,7 @@ public class DHTServicesEndPoint extends BCMEndPoint<DHTServicesCI>  {
 		assert	c != null : new PreconditionException("c != null");
 
 		DHTServicesOutboundPort p =
-				new DHTServicesOutboundPort(outboundPortURI, c);
+				new DHTServicesOutboundPort(c);
 		p.publishPort();
 		c.doPortConnection(
 				p.getPortURI(),

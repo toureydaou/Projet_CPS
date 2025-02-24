@@ -1,10 +1,11 @@
 package etape1;
 
+import fr.sorbonne_u.components.exceptions.ConnectionException;
 import fr.sorbonne_u.cps.mapreduce.endpoints.POJOContentNodeCompositeEndPoint;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 
 public class Main {
-	public static void main(String[] args){
+	public static void main(String[] args) throws ConnectionException{
 		
 		Node[] noeuds = new Node[4];
 		POJOContentNodeCompositeEndPoint[] pojos = new POJOContentNodeCompositeEndPoint[5];

@@ -1,6 +1,7 @@
 package etape1;
 import java.io.Serializable;
 
+import fr.sorbonne_u.components.exceptions.ConnectionException;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI;
@@ -20,13 +21,18 @@ public class Facade implements DHTServicesI {
 	
 	POJOContentNodeCompositeEndPoint connexion = new POJOContentNodeCompositeEndPoint();
 	
-	public Facade(POJOContentNodeCompositeEndPoint connexion) {
+	public Facade(POJOContentNodeCompositeEndPoint connexion) throws ConnectionException {
 		this.connexion = connexion;
-		connexion.initialiseClientSide(connexion);
+		
 	}
 
 	@Override
 	public ContentDataI get(ContentKeyI key) throws Exception {
+		if(!connexion.clientSideInitialised()) 
+		{
+			System.out.println("Serveur non initialisé ");
+			connexion.initialiseClientSide(connexion);
+		}
 		String uriTete = URIGenerator.generateURI(GET_URL);
 		ContentDataI data = this.connexion.getContentAccessEndpoint().getClientSideReference().getSync(uriTete, key);
 		this.connexion.getContentAccessEndpoint().getClientSideReference().clearComputation(uriTete);
@@ -35,6 +41,11 @@ public class Facade implements DHTServicesI {
 
 	@Override
 	public ContentDataI put(ContentKeyI key, ContentDataI value) throws Exception {
+		if(!connexion.clientSideInitialised()) 
+		{
+			System.out.println("Serveur non initialisé ");
+			connexion.initialiseClientSide(connexion);
+		}
 		String uriTete = URIGenerator.generateURI(PUT_URL);
 		ContentDataI data = this.connexion.getContentAccessEndpoint().getClientSideReference().putSync(uriTete, key,value);
 		this.connexion.getContentAccessEndpoint().getClientSideReference().clearComputation(uriTete);
@@ -43,6 +54,11 @@ public class Facade implements DHTServicesI {
 
 	@Override
 	public ContentDataI remove(ContentKeyI key) throws Exception {
+		if(!connexion.clientSideInitialised()) 
+		{
+			System.out.println("Serveur non initialisé ");
+			connexion.initialiseClientSide(connexion);
+		}
 		String uriTete = URIGenerator.generateURI(REMOVE_URL);
 		ContentDataI data = this.connexion.getContentAccessEndpoint().getClientSideReference().getSync(uriTete, key);
 		this.connexion.getContentAccessEndpoint().getClientSideReference().clearComputation(uriTete);
@@ -52,6 +68,11 @@ public class Facade implements DHTServicesI {
 	@Override
 	public <R extends Serializable, A extends Serializable> A mapReduce(SelectorI selector, ProcessorI<R> processor,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A initialAcc) throws Exception {
+		if(!connexion.clientSideInitialised()) 
+		{
+			System.out.println("Serveur non initialisé ");
+			connexion.initialiseClientSide(connexion);
+		}
 		String uriTete = URIGenerator.generateURI(MAPREDUCE_URL);
 		this.connexion.getMapReduceEndpoint().getClientSideReference().mapSync(uriTete, selector, processor);
 		A result = this.connexion.getMapReduceEndpoint().getClientSideReference().reduceSync(uriTete, reductor, combinator, initialAcc);

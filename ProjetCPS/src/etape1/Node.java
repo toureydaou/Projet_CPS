@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
+import fr.sorbonne_u.components.exceptions.ConnectionException;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
@@ -22,18 +23,18 @@ public class Node implements ContentAccessSyncI,MapReduceSyncI{
 	private HashMap<String, Stream<ContentDataI>> memory = new HashMap<>();
 	private POJOContentNodeCompositeEndPoint connexionSortante;
 
-	public Node(IntInterval intervalle, POJOContentNodeCompositeEndPoint connexionEntrante, POJOContentNodeCompositeEndPoint connexionSortante) {
+	public Node(IntInterval intervalle, POJOContentNodeCompositeEndPoint connexionEntrante, POJOContentNodeCompositeEndPoint connexionSortante) throws ConnectionException {
 		this.content = new HashMap<ContentKeyI, ContentDataI>();
 		this.intervalle = intervalle;
 		this.connexionSortante = connexionSortante;
 		connexionEntrante.initialiseServerSide(this);
 	}
 	
-	void initialize(POJOContentNodeCompositeEndPoint connexionEntrante) {
+	void initialize(POJOContentNodeCompositeEndPoint connexionEntrante) throws ConnectionException {
 		connexionEntrante.initialiseServerSide(this);
 	}
 	
-	public Node(IntInterval intervalle, POJOContentNodeCompositeEndPoint connexionEntrante1,  POJOContentNodeCompositeEndPoint connexionEntrante2, POJOContentNodeCompositeEndPoint connexionSortante) {
+	public Node(IntInterval intervalle, POJOContentNodeCompositeEndPoint connexionEntrante1,  POJOContentNodeCompositeEndPoint connexionEntrante2, POJOContentNodeCompositeEndPoint connexionSortante) throws ConnectionException {
 		this.content = new HashMap<ContentKeyI, ContentDataI>();
 		this.intervalle = intervalle;
 		this.connexionSortante = connexionSortante;
