@@ -3,6 +3,7 @@ package etape2.composants;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import etape1.EntierKey;
@@ -41,7 +42,7 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 
 	protected NodeBCM(String uri, CompositeMapContentEndpoint cmceInbound, CompositeMapContentEndpoint cmceOutbound,
 			IntInterval intervalle) throws ConnectionException {
-		super(uri, 0, 1);
+		super(uri, 0, 2);
 		this.content = new HashMap<>();
 		this.intervalle = intervalle;
 		this.cmceInbound = cmceInbound;
@@ -53,15 +54,12 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
 			throws Exception {
 		if (!uriPassMap.contains(computationURI)) {
-			System.out.println("map node : " + this.intervalle.first());
 			uriPassMap.add(computationURI);
 			memory.put(computationURI,
 					(Stream<ContentDataI>) content.values().stream().filter(selector).map(processor));
 			this.cmceOutbound.getMapReduceEndPoint().getClientSideReference().mapSync(computationURI, selector,
 					processor);
-			System.out.println("Node " + this.intervalle + " sent mapSync to " + this.cmceOutbound);
 		} else {
-			System.out.println("map node");
 			return;
 		}
 		
@@ -97,15 +95,17 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 		if (uriPassCont.contains(computationURI)) {
 			return null;
 		} else {
+			System.out.println("Recherche locale node : " + this.intervalle.first());
 			uriPassCont.add(computationURI);
 			int n = ((EntierKey) key).getCle();
 			if (intervalle.in(n)) {
 				return content.get(key);
 			}
+			
 			return this.cmceOutbound.getContentAccessEndPoint().getClientSideReference().getSync(computationURI, key);
 		}
-
 	}
+	
 
 	@Override
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {

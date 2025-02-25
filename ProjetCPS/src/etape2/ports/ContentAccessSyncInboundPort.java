@@ -28,6 +28,7 @@ public class ContentAccessSyncInboundPort extends AbstractInboundPort implements
 
 	@Override
 	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
+		
 		return this.getOwner().handleRequest(
 				owner -> ((NodeBCM) owner).getSync(computationURI, key));
 	}

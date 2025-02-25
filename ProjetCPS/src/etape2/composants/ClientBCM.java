@@ -61,11 +61,10 @@ public class ClientBCM extends AbstractComponent implements DHTServicesI {
 	
 	
 	public void printMapReduceResult() throws Exception {
-		System.out.println("test");
 		EntierKey k_22 = new EntierKey(22); 
-		EntierKey k_50 = new EntierKey(50); 
+		EntierKey k_120 = new EntierKey(120); 
 		this.put(k_22, new Livre("soif", 100));
-		this.put(k_50, new Livre("douleur", 50));
+		this.put(k_120, new Livre("douleur", 50));
 		
 		int a = this.mapReduce(i->((int)i.getValue(Livre.NB_PAGES))>0,
 				i-> new Livre((String)i.getValue(Livre.TITRE),(int) i.getValue(Livre.NB_PAGES)/2),
@@ -99,8 +98,8 @@ public class ClientBCM extends AbstractComponent implements DHTServicesI {
 				@Override
 				public void run() {
 					try {
-						//((ClientBCM)this.getTaskOwner()).getAndPrintContentData();
-						System.out.println("map reduce");
+						((ClientBCM)this.getTaskOwner()).getAndPrintContentData();
+						((ClientBCM)this.getTaskOwner()).getAndPrintContentData();
 						((ClientBCM)this.getTaskOwner()).printMapReduceResult();
 					} catch (Exception e) {
 						e.printStackTrace();
