@@ -29,7 +29,7 @@ public class DHTServicesInboundPort extends AbstractInboundPort implements DHTSe
 			throws Exception {
 		super(DHTServicesCI.class, owner);
 		
-		// le propriétaire de ce port est un noeud jouant le role de serveur
+		// le propriétaire de ce port est la facade jouant le role de serveur
 		assert	(owner instanceof FacadeBCM);
 	}
 

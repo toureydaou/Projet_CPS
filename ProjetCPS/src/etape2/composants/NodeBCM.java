@@ -3,7 +3,6 @@ package etape2.composants;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import etape1.EntierKey;
@@ -24,7 +23,6 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
-import fr.sorbonne_u.cps.mapreduce.endpoints.POJOContentNodeCompositeEndPoint;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 
 @OfferedInterfaces(offered = { ContentAccessSyncCI.class, MapReduceSyncCI.class })
@@ -62,23 +60,21 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 		} else {
 			return;
 		}
-		
 
 	}
 
 	@Override
 	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
 			CombinatorI<A> combinator, A currentAcc) throws Exception {
-		
+
 		if (uriPassMap.contains(computationURI)) {
-			
 			uriPassMap.remove(computationURI);
 			return combinator.apply(
 					memory.get(computationURI).reduce(currentAcc, (u, d) -> reductor.apply(u, (R) d), combinator),
 					this.cmceOutbound.getMapReduceEndPoint().getClientSideReference().reduceSync(computationURI,
 							reductor, combinator, currentAcc));
 		} else {
-			
+
 			return currentAcc;
 		}
 
@@ -86,7 +82,10 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
-		// TODO Auto-generated method stub
+		if (memory.containsKey(computationURI)) {
+			memory.remove(computationURI);
+			this.cmceOutbound.getMapReduceEndPoint().getClientSideReference().clearMapReduceComputation(computationURI);
+		}
 
 	}
 
@@ -95,17 +94,27 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 		if (uriPassCont.contains(computationURI)) {
 			return null;
 		} else {
-			System.out.println("Recherche locale node : " + this.intervalle.first());
 			uriPassCont.add(computationURI);
 			int n = ((EntierKey) key).getCle();
 			if (intervalle.in(n)) {
-				return content.get(key);
+
+				return this.get(key);
 			}
-			
+
 			return this.cmceOutbound.getContentAccessEndPoint().getClientSideReference().getSync(computationURI, key);
 		}
 	}
-	
+
+	private ContentDataI get(ContentKeyI key) {
+		for (ContentKeyI k : content.keySet()) {
+
+			if (((EntierKey) k).getCle() == ((EntierKey) key).getCle()) {
+
+				return content.get(k);
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
@@ -115,14 +124,25 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 			uriPassCont.add(computationURI);
 			int n = ((EntierKey) key).getCle();
 			if (intervalle.in(n)) {
-				ContentDataI valuePrec = content.get(key);
-				this.content.put(key, value);
+
+				ContentDataI valuePrec = this.get(key);
+				this.put(key, value);
 				return valuePrec;
 			}
 			return this.cmceOutbound.getContentAccessEndPoint().getClientSideReference().putSync(computationURI, key,
 					value);
 
 		}
+	}
+
+	private void put(ContentKeyI key, ContentDataI data) {
+		for (ContentKeyI k : content.keySet()) {
+			if (((EntierKey) k).getCle() == ((EntierKey) key).getCle()) {
+				content.put(k, data);
+				return;
+			}
+		}
+		content.put(key, data);
 	}
 
 	@Override
@@ -133,12 +153,22 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 			uriPassCont.add(computationURI);
 			int n = ((EntierKey) key).getCle();
 			if (intervalle.in(n)) {
-				ContentDataI valuePrec = content.get(key);
-				this.content.remove(key);
+				ContentDataI valuePrec = this.get(key);
+				this.remove(key);
 				return valuePrec;
 			}
 			return this.cmceOutbound.getContentAccessEndPoint().getClientSideReference().removeSync(computationURI,
 					key);
+		}
+
+	}
+
+	private void remove(ContentKeyI key) {
+
+		for (ContentKeyI k : content.keySet()) {
+			if (((EntierKey) k).getCle() == ((EntierKey) key).getCle()) {
+				content.remove(k);
+			}
 		}
 
 	}
@@ -148,14 +178,11 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 		if (uriPassCont.contains(computationURI)) {
 			uriPassCont.remove(computationURI);
 			this.cmceOutbound.getContentAccessEndPoint().getClientSideReference().clearComputation(computationURI);
-
-		} else {
-			return;
 		}
 	}
 
 	@Override
-	public void start() throws ComponentStartException {
+	public synchronized void start() throws ComponentStartException {
 		this.logMessage("starting node component.");
 		super.start();
 		try {
@@ -168,7 +195,7 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 	}
 
 	@Override
-	public void finalise() throws Exception {
+	public synchronized void finalise() throws Exception {
 		this.logMessage("stopping node component.");
 		this.printExecutionLogOnFile("node");
 		this.cmceOutbound.cleanUpClientSide();
@@ -176,7 +203,7 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 	}
 
 	@Override
-	public void shutdown() throws ComponentShutdownException {
+	public synchronized void shutdown() throws ComponentShutdownException {
 		try {
 			this.cmceInbound.cleanUpServerSide();
 		} catch (Exception e) {
@@ -189,7 +216,7 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 	 * @see fr.sorbonne_u.components.AbstractComponent#shutdownNow()
 	 */
 	@Override
-	public void shutdownNow() throws ComponentShutdownException {
+	public synchronized void shutdownNow() throws ComponentShutdownException {
 		try {
 			this.cmceInbound.cleanUpServerSide();
 		} catch (Exception e) {

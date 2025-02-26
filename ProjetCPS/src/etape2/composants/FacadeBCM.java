@@ -29,20 +29,20 @@ import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 /**
  * 
  */
-@OfferedInterfaces(offered = {DHTServicesCI.class})
-@RequiredInterfaces(required = {ContentAccessSyncCI.class, MapReduceSyncCI.class})
+@OfferedInterfaces(offered = { DHTServicesCI.class })
+@RequiredInterfaces(required = { ContentAccessSyncCI.class, MapReduceSyncCI.class })
 public class FacadeBCM extends AbstractComponent implements DHTServicesI {
 
-	private static final String GET_URL = "GET";
-	private static final String PUT_URL = "PUT";
-	private static final String REMOVE_URL = "REMOVE";
-	private static final String MAPREDUCE_URL = "MAPREDUCE";
-	
+	private static final String GET_URI = "GET";
+	private static final String PUT_URI = "PUT";
+	private static final String REMOVE_URI = "REMOVE";
+	private static final String MAPREDUCE_URI = "MAPREDUCE";
+
 	protected CompositeMapContentEndpoint cmce;
 	protected DHTServicesEndPoint dsep;
-	 
-	
-	protected FacadeBCM(String uri, CompositeMapContentEndpoint cmce, DHTServicesEndPoint dsep) throws ConnectionException {
+
+	protected FacadeBCM(String uri, CompositeMapContentEndpoint cmce, DHTServicesEndPoint dsep)
+			throws ConnectionException {
 		super(uri, 0, 1);
 		this.cmce = cmce;
 		this.dsep = dsep;
@@ -51,55 +51,66 @@ public class FacadeBCM extends AbstractComponent implements DHTServicesI {
 
 	@Override
 	public ContentDataI get(ContentKeyI key) throws Exception {
-		return this.cmce.getContentAccessEndPoint().getClientSideReference().getSync(URIGenerator.generateURI(GET_URL), key);
+		String request_uri = URIGenerator.generateURI(GET_URI);
+		ContentDataI result = this.cmce.getContentAccessEndPoint().getClientSideReference().getSync(request_uri, key);
+		this.cmce.getContentAccessEndPoint().getClientSideReference().clearComputation(request_uri);
+		return result;
 	}
 
 	@Override
 	public ContentDataI put(ContentKeyI key, ContentDataI value) throws Exception {
-		return this.cmce.getContentAccessEndPoint().getClientSideReference().putSync(URIGenerator.generateURI(PUT_URL), key, value);
+		String request_uri = URIGenerator.generateURI(PUT_URI);
+		ContentDataI result = this.cmce.getContentAccessEndPoint().getClientSideReference().putSync(request_uri, key,
+				value);
+		this.cmce.getContentAccessEndPoint().getClientSideReference().clearComputation(request_uri);
+		return result;
 	}
 
 	@Override
 	public ContentDataI remove(ContentKeyI key) throws Exception {
-		return this.cmce.getContentAccessEndPoint().getClientSideReference().removeSync(URIGenerator.generateURI(PUT_URL), key);
+		String request_uri = URIGenerator.generateURI(REMOVE_URI);
+		ContentDataI result = this.cmce.getContentAccessEndPoint().getClientSideReference().removeSync(request_uri,
+				key);
+		this.cmce.getContentAccessEndPoint().getClientSideReference().clearComputation(request_uri);
+		return result;
 	}
 
 	@Override
 	public <R extends Serializable, A extends Serializable> A mapReduce(SelectorI selector, ProcessorI<R> processor,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A initialAcc) throws Exception {
-	
-		String uriTete = URIGenerator.generateURI(MAPREDUCE_URL);
+
+		String uriTete = URIGenerator.generateURI(MAPREDUCE_URI);
 		this.cmce.getMapReduceEndPoint().getClientSideReference().mapSync(uriTete, selector, processor);
-		return this.cmce.getMapReduceEndPoint().getClientSideReference().reduceSync(uriTete, reductor, combinator, initialAcc);
+		A result = this.cmce.getMapReduceEndPoint().getClientSideReference().reduceSync(uriTete, reductor, combinator,
+				initialAcc);
+		this.cmce.getMapReduceEndPoint().getClientSideReference().clearMapReduceComputation(uriTete);
+		return result;
 	}
-	
+
 	@Override
-	public void		start() throws ComponentStartException
-	{
-		this.logMessage("starting facade component.") ;
-		super.start() ;
-		
+	public synchronized void start() throws ComponentStartException {
+		this.logMessage("starting facade component.");
+		super.start();
+
 		try {
 			if (!this.cmce.clientSideInitialised()) {
 				this.cmce.initialiseClientSide(this);
 			}
 		} catch (ConnectionException e) {
-			throw new ComponentStartException(e) ;
+			throw new ComponentStartException(e);
 		}
 	}
-	
+
 	@Override
-	public void			finalise() throws Exception
-	{
+	public synchronized void finalise() throws Exception {
 		this.logMessage("stopping facade component.");
 		this.printExecutionLogOnFile("facade");
 		this.cmce.cleanUpClientSide();
 		super.finalise();
 	}
-	
+
 	@Override
-	public void			shutdown() throws ComponentShutdownException
-	{
+	public synchronized void shutdown() throws ComponentShutdownException {
 		try {
 			this.dsep.cleanUpServerSide();
 		} catch (Exception e) {
@@ -107,10 +118,9 @@ public class FacadeBCM extends AbstractComponent implements DHTServicesI {
 		}
 		super.shutdown();
 	}
-	
+
 	@Override
-	public void			shutdownNow() throws ComponentShutdownException
-	{
+	public synchronized void shutdownNow() throws ComponentShutdownException {
 		try {
 			this.dsep.cleanUpServerSide();
 		} catch (Exception e) {
@@ -118,10 +128,5 @@ public class FacadeBCM extends AbstractComponent implements DHTServicesI {
 		}
 		super.shutdownNow();
 	}
-	
-
-	
-	
-	
 
 }
