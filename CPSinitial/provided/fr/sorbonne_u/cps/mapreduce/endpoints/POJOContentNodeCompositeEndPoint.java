@@ -38,6 +38,7 @@ import fr.sorbonne_u.exceptions.PreconditionException;
 import fr.sorbonne_u.components.endpoints.CompositeEndPoint;
 import fr.sorbonne_u.components.endpoints.POJOEndPoint;
 import fr.sorbonne_u.components.exceptions.BCMException;
+import fr.sorbonne_u.components.exceptions.ConnectionException;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.endpoints.ContentNodeBaseCompositeEndPointI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI;
@@ -128,10 +129,11 @@ implements	ContentNodeBaseCompositeEndPointI<ContentAccessSyncI,MapReduceSyncI>
 	}
 
 	/**
+	 * @throws ConnectionException 
 	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.endpoints.ContentNodeBaseCompositeEndPointI#initialiseServerSide(java.lang.Object)
 	 */
 	@Override
-	public void			initialiseServerSide(Object serverSideEndPointOwner)
+	public void			initialiseServerSide(Object serverSideEndPointOwner) throws ConnectionException
 	{
 		assert	!serverSideInitialised() :
 				new PreconditionException("!serverSideInitialised()");
