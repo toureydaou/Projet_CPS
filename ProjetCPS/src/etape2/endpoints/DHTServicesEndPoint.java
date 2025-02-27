@@ -13,113 +13,134 @@ import fr.sorbonne_u.exceptions.InvariantException;
 import fr.sorbonne_u.exceptions.PostconditionException;
 import fr.sorbonne_u.exceptions.PreconditionException;
 
-public class DHTServicesEndPoint extends BCMEndPoint<DHTServicesCI>  {
+//-----------------------------------------------------------------------------
+/**
+ * La classe <code>DHTServicesEndPoint</code> implémente un endpoint permettant
+ * de connecteur un composant client et serveur. En connectant le port sortant
+ * <code>DHTServicesOutboundPort</code> du client et le port entrant
+ * <code>DHTServicesInboundPort</code> du serveur grace au connecteur
+ * <code>DHTServicesConnector</code>.
+ * 
+ * <p>
+ * <strong>Description</strong>
+ * </p>
+ * 
+ * <p>
+ * Cette classe représente les endpoints utilisés pour connecter les clients et
+ * la facade.
+ * </p>
+ * 
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
+ */
+
+public class DHTServicesEndPoint extends BCMEndPoint<DHTServicesCI> {
+
+	// -------------------------------------------------------------------------
+	// Constants and variables
+	// -------------------------------------------------------------------------
+
 	private static final long serialVersionUID = 1L;
 
-	protected static boolean	implementationInvariants(
-			DHTServicesEndPoint instance
-			)
-	{
+	protected static boolean implementationInvariants(DHTServicesEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 
 		boolean ret = true;
 		return ret;
 	}
-	
-	protected static boolean	invariants(DHTServicesEndPoint instance)
-	{
+
+	protected static boolean invariants(DHTServicesEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 
 		boolean ret = true;
 		return ret;
 	}
-	
-	public				DHTServicesEndPoint(
-			String inboundPortURI)
-	{
-		super(DHTServicesCI.class, DHTServicesCI.class,
-				inboundPortURI);
+
+	/**
+	 * crée un endpoint BCM avec URI donnée.
+	 *
+	 * 
+	 * @param inboundPortURI URI du port entrant auquel cet endpoint se connecte.
+	 */
+	public DHTServicesEndPoint(String inboundPortURI) {
+		super(DHTServicesCI.class, DHTServicesCI.class, inboundPortURI);
 	}
-	
-	public				DHTServicesEndPoint()
-	{
+
+	/**
+	 * crée un endpoint BCM.
+	 *
+	 */
+	public DHTServicesEndPoint() {
 		super(DHTServicesCI.class, DHTServicesCI.class);
 	}
-	
-	@Override
-	protected AbstractInboundPort	makeInboundPort(
-		AbstractComponent c,
-		String inboundPortURI
-		) throws Exception
-	{
-		// Preconditions checking
-		assert	c != null : new PreconditionException("c != null");
-		assert	inboundPortURI != null && !inboundPortURI.isEmpty() :
-				new PreconditionException(
-						"inboundPortURI != null && !inboundPortURI.isEmpty()");
 
-		DHTServicesInboundPort p =
-						new DHTServicesInboundPort(this.inboundPortURI, c);
+	/**
+	 * crée, publie et retourne le port entrant sur le composant serveur {@code c}
+	 * avec l'URI du port entrant
+	 *
+	 * @param c              composant qui sera propriétaire du port entrant.
+	 * @param inboundPortURI URI du port entrant à créer.
+	 * @return le port entrant créé destiné à être publié.
+	 * @throws Exception <i>to do</i>.
+	 */
+	@Override
+	protected AbstractInboundPort makeInboundPort(AbstractComponent c, String inboundPortURI) throws Exception {
+		// Preconditions checking
+		assert c != null : new PreconditionException("c != null");
+		assert inboundPortURI != null && !inboundPortURI.isEmpty()
+				: new PreconditionException("inboundPortURI != null && !inboundPortURI.isEmpty()");
+
+		DHTServicesInboundPort p = new DHTServicesInboundPort(this.inboundPortURI, c);
 		p.publishPort();
 
 		// Postconditions checking
-		assert	p != null && p.isPublished() :
-				new PostconditionException(
-						"return != null && return.isPublished()");
-		assert	((AbstractPort)p).getPortURI().equals(inboundPortURI) :
-				new PostconditionException(
-						"((AbstractPort)return).getPortURI().equals(inboundPortURI)");
-		assert	getServerSideInterface().isAssignableFrom(p.getClass()) :
-				new PostconditionException(
-						"getOfferedComponentInterface()."
-						+ "isAssignableFrom(return.getClass())");
+		assert p != null && p.isPublished() : new PostconditionException("return != null && return.isPublished()");
+		assert ((AbstractPort) p).getPortURI().equals(inboundPortURI)
+				: new PostconditionException("((AbstractPort)return).getPortURI().equals(inboundPortURI)");
+		assert getServerSideInterface().isAssignableFrom(p.getClass())
+				: new PostconditionException("getOfferedComponentInterface()." + "isAssignableFrom(return.getClass())");
 		// Invariant checking
-		assert	DHTServicesEndPoint.implementationInvariants(this) :
-				new ImplementationInvariantException(
-						"implementationInvariants(this)");
-		assert	DHTServicesEndPoint.invariants(this) :
-				new InvariantException("invariants(this)");
-		
+		assert DHTServicesEndPoint.implementationInvariants(this)
+				: new ImplementationInvariantException("implementationInvariants(this)");
+		assert DHTServicesEndPoint.invariants(this) : new InvariantException("invariants(this)");
+
 		return p;
 	}
-	
-	@Override
-	protected DHTServicesCI		makeOutboundPort(
-		AbstractComponent c,
-		String inboundPortURI
-		) throws Exception
-	{
-		// Preconditions checking
-		assert	c != null : new PreconditionException("c != null");
 
-		DHTServicesOutboundPort p =
-				new DHTServicesOutboundPort(c);
+	/**
+	 * crée, publie, connecte et retourne le port sortant du composant client
+	 * {@code c}. on the client side component only, create, publish, connect and
+	 * return the outbound port requiring the component interface {@code CI} on the
+	 * client side component {@code c}.
+	 * 
+	 *
+	 * @param c              composant qui sera propriétaire du port entrant.
+	 * @param inboundPortURI URI du port entrant auquel le port sortant sera
+	 *                       connecté.
+	 * @return le port sortant qui sera connecté et publié.
+	 * @throws Exception <i>to do</i>.
+	 */
+	@Override
+	protected DHTServicesCI makeOutboundPort(AbstractComponent c, String inboundPortURI) throws Exception {
+		// Preconditions checking
+		assert c != null : new PreconditionException("c != null");
+
+		DHTServicesOutboundPort p = new DHTServicesOutboundPort(c);
 		p.publishPort();
-		c.doPortConnection(
-				p.getPortURI(),
-				this.inboundPortURI,
-				DHTServicesConnector.class.getCanonicalName());
+		c.doPortConnection(p.getPortURI(), this.inboundPortURI, DHTServicesConnector.class.getCanonicalName());
 
 		// Postconditions checking
-		assert	p != null && p.isPublished() && p.connected() :
-				new PostconditionException(
-						"return != null && return.isPublished() && "
-						+ "return.connected()");
-		assert	((AbstractPort)p).getServerPortURI().equals(getInboundPortURI()) :
-				new PostconditionException(
-						"((AbstractPort)return).getServerPortURI()."
-						+ "equals(getInboundPortURI())");
-		assert	getClientSideInterface().isAssignableFrom(p.getClass()) :
-				new PostconditionException(
-						"getImplementedInterface().isAssignableFrom("
-						+ "return.getClass())");
-		
+		assert p != null && p.isPublished() && p.connected()
+				: new PostconditionException("return != null && return.isPublished() && " + "return.connected()");
+		assert ((AbstractPort) p).getServerPortURI().equals(getInboundPortURI()) : new PostconditionException(
+				"((AbstractPort)return).getServerPortURI()." + "equals(getInboundPortURI())");
+		assert getClientSideInterface().isAssignableFrom(p.getClass())
+				: new PostconditionException("getImplementedInterface().isAssignableFrom(" + "return.getClass())");
+
 		// Invariant checking
-		assert	implementationInvariants(this) :
-				new ImplementationInvariantException(
-						"implementationInvariants(this)");
-		assert	invariants(this) : new InvariantException("invariants(this)");
-		
+		assert implementationInvariants(this) : new ImplementationInvariantException("implementationInvariants(this)");
+		assert invariants(this) : new InvariantException("invariants(this)");
+
 		return p;
 	}
 }
