@@ -1,7 +1,3 @@
-/**
- * @author	Awwal Fagbehouro
- * @author  Touré-Ydaou TEOURI
- */
 package etape2.ports;
 
 import java.io.Serializable;
@@ -12,7 +8,6 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;

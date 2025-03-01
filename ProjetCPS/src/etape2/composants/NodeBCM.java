@@ -260,6 +260,29 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 		}
 
 	}
+	
+	
+	/**
+	 * Efface les données liées à une computation spécifique identifiée par
+	 * {@code computationURI}.
+	 * 
+	 * <p>
+	 * Si le URI de la computation est présent dans la liste {@code uriPassCont}, il
+	 * est retiré de cette liste. La méthode appelle ensuite le serveur distant pour
+	 * nettoyer les données associées à cette computation.
+	 * </p>
+	 * 
+	 * @param computationURI L'URI de la computation dont les données doivent être
+	 *                       effacées.
+	 * @throws Exception
+	 */
+	@Override
+	public void clearComputation(String computationURI) throws Exception {
+		if (uriPassCont.contains(computationURI)) {
+			uriPassCont.remove(computationURI);
+			this.cmceOutbound.getContentAccessEndPoint().getClientSideReference().clearComputation(computationURI);
+		}
+	}
 
 	/**
 	 * Récupère les données associées à la clé spécifiée {@code key} dans la
@@ -299,7 +322,7 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 		for (ContentKeyI k : content.keySet()) {
 			if (((EntierKey) k).getCle() == ((EntierKey) key).getCle()) {
 				content.put(k, data);
-				return;
+				break;
 			}
 		}
 		content.put(key, data);
@@ -318,31 +341,12 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 		for (ContentKeyI k : content.keySet()) {
 			if (((EntierKey) k).getCle() == ((EntierKey) key).getCle()) {
 				content.remove(k);
+				break;
 			}
 		}
 	}
 
-	/**
-	 * Efface les données liées à une computation spécifique identifiée par
-	 * {@code computationURI}.
-	 * 
-	 * <p>
-	 * Si le URI de la computation est présent dans la liste {@code uriPassCont}, il
-	 * est retiré de cette liste. La méthode appelle ensuite le serveur distant pour
-	 * nettoyer les données associées à cette computation.
-	 * </p>
-	 * 
-	 * @param computationURI L'URI de la computation dont les données doivent être
-	 *                       effacées.
-	 * @throws Exception
-	 */
-	@Override
-	public void clearComputation(String computationURI) throws Exception {
-		if (uriPassCont.contains(computationURI)) {
-			uriPassCont.remove(computationURI);
-			this.cmceOutbound.getContentAccessEndPoint().getClientSideReference().clearComputation(computationURI);
-		}
-	}
+	
 
 	/**
 	 * Démarre le composant ClientBCM.
