@@ -18,9 +18,24 @@ import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
  * La classe {@code Facade} implémente l'interface {@code DHTServicesI} et
  * fournit des méthodes pour interagir avec les noeuds et exécuter des
  * opérations.
+ * 
+ * <p><strong>Description</strong></p>
+ * 
+ * <p>
+ *	Les facade sert de frontend à notre architecture. Elle permet de faire le 
+ * lien avec les données stockées dans les noeuds.
+ * </p>
+ * 
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
  */
 
+
 public class Facade implements DHTServicesI {
+	
+	// -------------------------------------------------------------------------
+	// Constantes et variables
+	// -------------------------------------------------------------------------
 
 	private static final String GET_URL = "GET";
 	private static final String PUT_URL = "PUT";
@@ -29,7 +44,13 @@ public class Facade implements DHTServicesI {
 
 	// point de connexion de la facade avec les noeuds
 	POJOContentNodeCompositeEndPoint outboundEndpoint;
+	// point de connexion de la facade avec le client
 	POJOEndPoint<DHTServicesI> inboundEndpoint;
+	
+
+	// -------------------------------------------------------------------------
+	// Constructeurs
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Constructeur de la classe {@code Facade}.

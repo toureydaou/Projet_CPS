@@ -16,6 +16,16 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI;
 import fr.sorbonne_u.cps.mapreduce.endpoints.POJOContentNodeCompositeEndPoint;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 
+//-----------------------------------------------------------------------------
+/**
+* Classe {@code MultiNodeTest}
+* Cette classe nous permet de tester nos différentes implémentations de l'étape 1.
+* 
+* @author Touré-Ydaou TEOURI
+* @author Awwal FAGBEHOURO
+*/
+
+
 public class MultiNodeTest {
 
 	// clés de la DHT
