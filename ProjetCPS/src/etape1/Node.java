@@ -17,14 +17,54 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 import fr.sorbonne_u.cps.mapreduce.endpoints.POJOContentNodeCompositeEndPoint;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 
-public class Node implements ContentAccessSyncI, MapReduceSyncI {
-	private HashMap<ContentKeyI, ContentDataI> content;
-	private IntInterval intervalle;
-	private ArrayList<String> uriPassages = new ArrayList<>();
-	private ArrayList<String> uriPassagesMapReduce = new ArrayList<>();
-	private HashMap<String, Stream<ContentDataI>> memory = new HashMap<>();
-	private POJOContentNodeCompositeEndPoint connexionSortante;
 
+/**
+ * Classe {@code Node} représentant un nœud d'une DHT avec support de MapReduce.
+ * Cette classe implémente les interfaces {@code ContentAccessSyncI} et {@code MapReduceSyncI}
+ * pour gérer le stockage, la récupération et le traitement distribué des données.
+ * 
+ * <p><strong>Description</strong></p>
+ *  
+ *  <p>
+ *	Les noeuds contiennent les données de la table et communiquent entre eux via des endpoints.
+ *  Seul le premier noeud est relié à la façade. 
+ * </p>
+ * 
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
+ */
+
+public class Node implements ContentAccessSyncI, MapReduceSyncI {
+	
+	// -------------------------------------------------------------------------
+	// Constantes et variables
+	// -------------------------------------------------------------------------
+	
+	/** Stockage local des données du nœud. */
+    private HashMap<ContentKeyI, ContentDataI> content;
+    /** Intervalle de clés gérées par ce nœud. */
+    private IntInterval intervalle;
+    /** Liste des URI des opérations en cours. */
+    private ArrayList<String> uriPassages = new ArrayList<>();
+    /** Liste des URI des opérations MapReduce en cours. */
+    private ArrayList<String> uriPassagesMapReduce = new ArrayList<>();
+    /** Mémoire temporaire pour le stockage des résultats intermédiaires de MapReduce. */
+    private HashMap<String, Stream<ContentDataI>> memory = new HashMap<>();
+    /** Endpoint pour la communication avec d'autres nœuds. */
+    private POJOContentNodeCompositeEndPoint connexionSortante;
+    
+    // -------------------------------------------------------------------------
+ 	// Constructeurs
+ 	// -------------------------------------------------------------------------   
+    
+    /**
+     * Initialise un nouveau nœud avec un intervalle de clés géré et des connexions entrantes et sortantes.
+     * 
+     * @param intervalle L'intervalle des clés gérées par ce nœud.
+     * @param connexionEntrante Endpoint pour recevoir des requêtes.
+     * @param connexionSortante Endpoint pour communiquer avec d'autres nœuds.
+     * @throws ConnectionException si l'initialisation de la connexion entrante échoue.
+     */
 	public Node(IntInterval intervalle, POJOContentNodeCompositeEndPoint connexionEntrante,
 			POJOContentNodeCompositeEndPoint connexionSortante) throws ConnectionException {
 		this.content = new HashMap<ContentKeyI, ContentDataI>();
@@ -32,14 +72,21 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 		this.connexionSortante = connexionSortante;
 		connexionEntrante.initialiseServerSide(this);
 	}
+	
+	// -------------------------------------------------------------------------
+	// Méthodes
+	// -------------------------------------------------------------------------
+			
 
 	@Override
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
 			throws Exception {
+		// Condition pour vérifier si le noeud est client d'un serveur préalablement initialisé
 		if (!connexionSortante.clientSideInitialised()) {
 			System.out.println("Serveur non initialisé " + intervalle.first());
 			connexionSortante.initialiseClientSide(connexionSortante);
 		}
+		
 		if (!uriPassagesMapReduce.contains(computationURI)) {
 			uriPassagesMapReduce.add(computationURI);
 			memory.put(computationURI,
@@ -53,10 +100,12 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 	@Override
 	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
 			CombinatorI<A> combinator, A currentAcc) throws Exception {
+		// Condition pour vérifier si le noeud est client d'un serveur préalablement initialisé
 		if (!connexionSortante.clientSideInitialised()) {
 			System.out.println("Serveur non initialisé " + intervalle.first());
 			connexionSortante.initialiseClientSide(connexionSortante);
 		}
+		
 		if (uriPassagesMapReduce.contains(computationURI)) {
 			uriPassagesMapReduce.remove(computationURI);
 			return combinator.apply(
@@ -71,10 +120,12 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
+		// Condition pour vérifier si le noeud est client d'un serveur préalablement initialisé
 		if (!connexionSortante.clientSideInitialised()) {
 			System.out.println("Serveur non initialisé " + intervalle.first());
 			connexionSortante.initialiseClientSide(connexionSortante);
 		}
+		
 		if (memory.containsKey(computationURI)) {
 			memory.remove(computationURI);
 			this.connexionSortante.getMapReduceEndpoint().getClientSideReference()
@@ -84,10 +135,12 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 
 	@Override
 	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
+		// Condition pour vérifier si le noeud est client d'un serveur préalablement initialisé
 		if (!connexionSortante.clientSideInitialised()) {
 			System.out.println("Serveur non initialisé " + intervalle.first());
 			connexionSortante.initialiseClientSide(connexionSortante);
 		}
+		
 		if (uriPassages.contains(computationURI)) {
 			return null;
 		} else {
@@ -103,11 +156,12 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 
 	@Override
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
-
+		// Condition pour vérifier si le noeud est client d'un serveur préalablement initialisé
 		if (!connexionSortante.clientSideInitialised()) {
 			System.out.println("Serveur non initialisé " + intervalle.first());
 			connexionSortante.initialiseClientSide(connexionSortante);
 		}
+		
 		if (uriPassages.contains(computationURI)) {
 			return null;
 		} else {
@@ -120,16 +174,17 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 			}
 			return this.connexionSortante.getContentAccessEndpoint().getClientSideReference().putSync(computationURI,
 					key, value);
-
 		}
 	}
 
 	@Override
 	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
+		// Condition pour vérifier si le noeud est client d'un serveur préalablement initialisé
 		if (!connexionSortante.clientSideInitialised()) {
 			System.out.println("Serveur non initialisé " + intervalle.first());
 			connexionSortante.initialiseClientSide(connexionSortante);
 		}
+		
 		if (uriPassages.contains(computationURI)) {
 			return null;
 		} else {

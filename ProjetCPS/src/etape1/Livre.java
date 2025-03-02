@@ -6,8 +6,22 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 /**
  * La classe {@code Livre} implémente l'interface {@code ContentDataI} et représente
  * un livre stocké dans la structure.
+ * 
+ * <p><strong>Description</strong></p>
+ * 
+ * <p>
+ *	Les livres produits grâce à cette classe nous serviront à tester notre implémentation
+ * </p>
+ * 
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
  */
+
 public class Livre implements ContentDataI {
+	
+	// -------------------------------------------------------------------------
+	// Constantes et variables
+	// -------------------------------------------------------------------------
 
 	private static final long serialVersionUID = 1L;
 	public static final String TITRE = "titre";
@@ -15,6 +29,11 @@ public class Livre implements ContentDataI {
 	
 	String nomLivre;
 	int nbPages;
+	
+
+	// -------------------------------------------------------------------------
+	// Constructeurs
+	// -------------------------------------------------------------------------
 	
 	/**
      * Constructeur de la classe {@code Livre}.
