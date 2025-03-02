@@ -17,26 +17,6 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 import fr.sorbonne_u.cps.mapreduce.endpoints.POJOContentNodeCompositeEndPoint;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 
-//-----------------------------------------------------------------------------
-/**
- * La classe <code>Node</code> représente un nœud d'une table de hachage
- * répartie (DHT). Elle offre des services de stockage et de récupération de
- * données, ainsi que des fonctionnalités de calcul distribué basées sur
- * MapReduce.
- * 
- * <p>
- * <strong>Description</strong>
- * </p>
- * 
- * <p>
- * Chaque instance de <code>Node</code> gère un intervalle spécifique de clés et
- * communique avec d'autres noeuds via des ports entrants et sortants.
- * </p>
- * 
- * @author Touré-Ydaou TEOURI
- * @author Awwal FAGBEHOURO
- */
-
 public class Node implements ContentAccessSyncI, MapReduceSyncI {
 	private HashMap<ContentKeyI, ContentDataI> content;
 	private IntInterval intervalle;
@@ -45,14 +25,6 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 	private HashMap<String, Stream<ContentDataI>> memory = new HashMap<>();
 	private POJOContentNodeCompositeEndPoint connexionSortante;
 
-	/**
-	 * Initialise un nœud de la DHT avec ses bornes d'intervalle et ses connexions.
-	 * 
-	 * @param intervalle        Intervalle de clés gérées par ce nœud
-	 * @param connexionEntrante Connexion entrante pour recevoir des requêtes
-	 * @param connexionSortante Connexion sortante pour communiquer avec d'autres
-	 *                          nœuds
-	 */
 	public Node(IntInterval intervalle, POJOContentNodeCompositeEndPoint connexionEntrante,
 			POJOContentNodeCompositeEndPoint connexionSortante) throws ConnectionException {
 		this.content = new HashMap<ContentKeyI, ContentDataI>();
@@ -61,17 +33,6 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 		connexionEntrante.initialiseServerSide(this);
 	}
 
-	/**
-	 * Applique la fonction de traitement {@code processor} sur les entrées de la
-	 * DHT sélectionnées par {@code selector}, et stocke les résultats en mémoire.
-	 * 
-	 * @param computationURI Identifiant unique de la computation MapReduce en
-	 *                       cours.
-	 * @param selector       Fonction qui filtre les données d'entrée avant
-	 *                       traitement.
-	 * @param processor      Fonction qui transforme les données sélectionnées.
-	 * @throws Exception .
-	 */
 	@Override
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
 			throws Exception {
@@ -89,24 +50,6 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 
 	}
 
-	/**
-	 * Réduit les résultats d'une computation MapReduce en utilisant les fonctions
-	 * {@code reductor} et {@code combinator}.
-	 * 
-	 * @param <A>            Le type de l'accumulateur utilisé pour la réduction.
-	 * 
-	 * @param <R>            Le type des résultats de la computation map qui vont
-	 *                       être réduits.
-	 * @param computationURI URI de la computation, utilisé pour distinguer les
-	 *                       différents traitements parallèles effectués sur la DHT.
-	 * @param reductor       Fonction qui applique une opération de réduction entre
-	 *                       un accumulateur courant et un résultat de la map.
-	 * @param combinator     Fonction qui combine deux valeurs d'accumulateur pour
-	 *                       obtenir un nouvel accumulateur.
-	 * @param currentAcc     La valeur courante de l'accumulateur.
-	 * @return Le nouvel accumulateur calculé après la réduction synchrone.
-	 * @throws Exception
-	 */
 	@Override
 	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
 			CombinatorI<A> combinator, A currentAcc) throws Exception {
@@ -126,17 +69,6 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 
 	}
 
-	/**
-	 * Supprime les données liées à une computation MapReduce, identifiée par son
-	 * URI {@code computationURI}. Cette méthode efface les résultats précédemment
-	 * stockés dans la mémoire locale pour l'URI spécifié et envoie une demande pour
-	 * nettoyer également les données associées sur les autres noeuds via le port de
-	 * sortie.
-	 * 
-	 * @param computationURI L'URI de la computation MapReduce dont les données
-	 *                       doivent être supprimées.
-	 * @throws Exception
-	 */
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
 		if (!connexionSortante.clientSideInitialised()) {
@@ -150,20 +82,6 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 		}
 	}
 
-	/**
-	 * Récupère les données associées à une clé spécifiée {@code key} dans le cadre
-	 * d'une computation identifiée par l'URI {@code computationURI}. Cette méthode
-	 * vérifie si la computation a déjà été traitée, et si c'est le cas, elle
-	 * renvoie les données locales. Sinon, elle délègue la requête à un autre noeud
-	 * via le port de sortie.
-	 * 
-	 * @param computationURI L'URI de la computation pour laquelle les données sont
-	 *                       demandées.
-	 * @param key            La clé associée aux données à récupérer.
-	 * @return Les données associées à la clé {@code key}, ou {@code null} si la
-	 *         computation a déjà été traitée localement.
-	 * @throws Exception
-	 */
 	@Override
 	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
 		if (!connexionSortante.clientSideInitialised()) {
@@ -183,22 +101,6 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 		}
 	}
 
-	/**
-	 * Insère ou met à jour les données associées à une clé spécifiée {@code key}
-	 * pour une computation identifiée par l'URI {@code computationURI}. Si la clé
-	 * est dans l'intervalle du noeud, les données sont stockées localement. Sinon,
-	 * la requête est envoyée à un autre nœud via le port de sortie.
-	 * 
-	 * @param computationURI L'URI de la computation pour laquelle les données
-	 *                       doivent être insérées ou mises à jour.
-	 * @param key            La clé associée aux données à insérer ou mettre à jour.
-	 * @param value          Les nouvelles données à insérer ou à utiliser pour
-	 *                       mettre à jour les anciennes données associées à la clé.
-	 * @return Les anciennes données associées à la clé {@code key} avant la mise à
-	 *         jour, ou {@code null} si la computation a déjà été traitée
-	 *         localement.
-	 * @throws Exception
-	 */
 	@Override
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
 
@@ -222,20 +124,6 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 		}
 	}
 
-	/**
-	 * Supprime les données associées à une clé spécifiée {@code key} pour une
-	 * computation identifiée par {@code computationURI}. Si la clé est dans
-	 * l'intervalle du noeud, les données sont supprimées localement. Sinon, la
-	 * requête est envoyée à un autre noeud via le port de sortie.
-	 * 
-	 * @param computationURI L'URI de la computation pour laquelle les données
-	 *                       doivent être supprimées.
-	 * @param key            La clé des données à supprimer.
-	 * @return Les anciennes données associées à la clé {@code key} avant la
-	 *         suppression, ou {@code null} si la computation a déjà été traitée
-	 *         localement.
-	 * @throws Exception
-	 */
 	@Override
 	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
 		if (!connexionSortante.clientSideInitialised()) {
@@ -257,20 +145,6 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 		}
 	}
 
-	/**
-	 * Efface les données liées à une computation spécifique identifiée par
-	 * {@code computationURI}.
-	 * 
-	 * <p>
-	 * Si le URI de la computation est présent dans la liste {@code uriPassCont}, il
-	 * est retiré de cette liste. La méthode appelle ensuite le serveur distant pour
-	 * nettoyer les données associées à cette computation.
-	 * </p>
-	 * 
-	 * @param computationURI L'URI de la computation dont les données doivent être
-	 *                       effacées.
-	 * @throws Exception
-	 */
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
 		if (!connexionSortante.clientSideInitialised()) {

@@ -42,13 +42,11 @@ public class PutClientTest extends ClientBCM {
 				try {
 
 					System.out.println(reflectionInboundPortURI);
-					((PutClientTest) this.getTaskOwner()).putContentData(new EntierKey(125), new Livre("Socrate", 500));
+					((PutClientTest) this.getTaskOwner()).putContentData(new EntierKey(700), new Livre("Socrate", 500));
 
 					// test de l'insertion
-					String oldValue = ((PutClientTest) this.getTaskOwner()).putContentData(new EntierKey(125),
+					String oldValue = ((PutClientTest) this.getTaskOwner()).putContentData(new EntierKey(700),
 							new Livre("Homere", 125));
-					
-					System.out.println(oldValue);
 
 					System.out.println("Test put : " + "Socrate".equals(oldValue));
 
