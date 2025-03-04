@@ -8,7 +8,6 @@ import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 
-
 public class TestCVM1 extends AbstractCVM {
 
 	protected static final String FACADE_COMPONENT_URI = "facade-URI";
@@ -27,7 +26,7 @@ public class TestCVM1 extends AbstractCVM {
 	@Override
 	public void deploy() throws Exception {
 		assert !this.deploymentDone();
-		
+
 //		AbstractCVM.DEBUG_MODE.add(CVMDebugModes.LIFE_CYCLE);
 //		AbstractCVM.DEBUG_MODE.add(CVMDebugModes.INTERFACES);
 //		AbstractCVM.DEBUG_MODE.add(CVMDebugModes.PORTS);
@@ -54,13 +53,17 @@ public class TestCVM1 extends AbstractCVM {
 						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
 		assert this.isDeployedComponent(facadeURI);
 
-		
+		this.toggleTracing(facadeURI);
+		this.toggleLogging(facadeURI);
+
 		// création du premier client
 		String client_1_URI = AbstractComponent.createComponent(PutClientTest.class.getCanonicalName(), new Object[] {
 				CLIENT_1_COMPONENT_URI, ((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
 
 		assert this.isDeployedComponent(client_1_URI);
 
+		this.toggleTracing(client_1_URI);
+		this.toggleLogging(client_1_URI);
 
 		// création du premier noeud
 		String firstNodeURI = AbstractComponent.createComponent(NodeBCM.class.getCanonicalName(),
@@ -71,6 +74,9 @@ public class TestCVM1 extends AbstractCVM {
 
 		assert this.isDeployedComponent(firstNodeURI);
 
+		this.toggleTracing(firstNodeURI);
+		this.toggleLogging(firstNodeURI);
+
 		// création du deuxième noeud
 		String secondNodeURI = AbstractComponent.createComponent(NodeBCM.class.getCanonicalName(),
 				new Object[] { SECOND_NODE_COMPONENT_URI,
@@ -80,11 +86,14 @@ public class TestCVM1 extends AbstractCVM {
 
 		assert this.isDeployedComponent(secondNodeURI);
 
-		/* 
-		 * Le dernier noeud de notre système communique avec le premier noeud en partageant 
-		 * le même endpoint que la facade
-		 * */
-		
+		this.toggleTracing(secondNodeURI);
+		this.toggleLogging(secondNodeURI);
+
+		/*
+		 * Le dernier noeud de notre système communique avec le premier noeud en
+		 * partageant le même endpoint que la facade
+		 */
+
 		// création du troisème noeud
 		String thirdNodeURI = AbstractComponent.createComponent(NodeBCM.class.getCanonicalName(),
 				new Object[] { THIRD_CLIENT_COMPONENT_URI,
@@ -101,18 +110,16 @@ public class TestCVM1 extends AbstractCVM {
 		assert this.deploymentDone();
 
 	}
-	
-	public static void		main(String[] args)
-	{
+
+	public static void main(String[] args) {
 		try {
-			// Create an instance of the defined component virtual machine.
+
 			TestCVM1 a = new TestCVM1();
-			// Execute the application.
+
 			a.startStandardLifeCycle(20000L);
-			// Give some time to see the traces (convenience).
+
 			Thread.sleep(5000L);
-			// Simplifies the termination (termination has yet to be treated
-			// properly in BCM).
+
 			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();

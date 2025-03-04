@@ -48,13 +48,16 @@ import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 
 @OfferedInterfaces(offered = { DHTServicesCI.class })
 @RequiredInterfaces(required = { ContentAccessSyncCI.class, MapReduceSyncCI.class })
-public class FacadeBCM extends AbstractComponent implements DHTServicesI {
+public class FacadeBCM extends AbstractComponent {
 
 	// URI constants pour l'accès aux services
 	private static final String GET_URI = "GET";
 	private static final String PUT_URI = "PUT";
 	private static final String REMOVE_URI = "REMOVE";
 	private static final String MAPREDUCE_URI = "MAPREDUCE";
+
+	private static final int SCHEDULABLE_THREADS = 1;
+	private static final int THREADS_NUMBER = 0;
 
 	// Endpoints pour accéder aux services
 	protected CompositeMapContentEndpoint cmce;
@@ -71,7 +74,7 @@ public class FacadeBCM extends AbstractComponent implements DHTServicesI {
 	 */
 	protected FacadeBCM(String uri, CompositeMapContentEndpoint cmce, DHTServicesEndPoint dsep)
 			throws ConnectionException {
-		super(uri, 0, 1);
+		super(uri, THREADS_NUMBER, SCHEDULABLE_THREADS);
 		this.cmce = cmce;
 		this.dsep = dsep;
 		dsep.initialiseServerSide(this);
@@ -84,11 +87,15 @@ public class FacadeBCM extends AbstractComponent implements DHTServicesI {
 	 * @return Les données associées à la clé.
 	 * @throws Exception Si une erreur se produit lors de l'exécution.
 	 */
-	@Override
+
 	public ContentDataI get(ContentKeyI key) throws Exception {
+
 		String request_uri = URIGenerator.generateURI(GET_URI);
+		System.out.println("Reception de la requête 'GET' sur la facade, identifiant de la requete : " + request_uri);
 		ContentDataI result = this.cmce.getContentAccessEndPoint().getClientSideReference().getSync(request_uri, key);
 		this.cmce.getContentAccessEndPoint().getClientSideReference().clearComputation(request_uri);
+		System.out.println(
+				"Renvoi de la réponse de la requête 'GET' au client,  identifiant de la requete : " + request_uri);
 		return result;
 	}
 
@@ -101,12 +108,14 @@ public class FacadeBCM extends AbstractComponent implements DHTServicesI {
 	 *         n'existait.
 	 * @throws Exception Si une erreur se produit lors de l'exécution.
 	 */
-	@Override
 	public ContentDataI put(ContentKeyI key, ContentDataI value) throws Exception {
 		String request_uri = URIGenerator.generateURI(PUT_URI);
+		System.out.println("Reception de la requête 'PUT' sur la facade identifiant requete : " + request_uri);
 		ContentDataI result = this.cmce.getContentAccessEndPoint().getClientSideReference().putSync(request_uri, key,
 				value);
 		this.cmce.getContentAccessEndPoint().getClientSideReference().clearComputation(request_uri);
+		System.out.println(
+				"Renvoi de la réponse de la requête 'PUT' au client,  identifiant de la requete : " + request_uri);
 		return result;
 	}
 
@@ -117,12 +126,15 @@ public class FacadeBCM extends AbstractComponent implements DHTServicesI {
 	 * @return Les données supprimées, ou null si aucune donnée n'existait.
 	 * @throws Exception Si une erreur se produit lors de l'exécution.
 	 */
-	@Override
+
 	public ContentDataI remove(ContentKeyI key) throws Exception {
 		String request_uri = URIGenerator.generateURI(REMOVE_URI);
+		System.out.println("Reception de la requête 'REMOVE' sur la facade identifiant requete : " + request_uri);
 		ContentDataI result = this.cmce.getContentAccessEndPoint().getClientSideReference().removeSync(request_uri,
 				key);
 		this.cmce.getContentAccessEndPoint().getClientSideReference().clearComputation(request_uri);
+		System.out.println(
+				"Renvoi de la réponse de la requête 'REMOVE' au client,  identifiant de la requete : " + request_uri);
 		return result;
 	}
 
@@ -140,15 +152,18 @@ public class FacadeBCM extends AbstractComponent implements DHTServicesI {
 	 * @return Le résultat de l'opération MapReduce.
 	 * @throws Exception Si une erreur se produit lors de l'exécution.
 	 */
-	@Override
+
 	public <R extends Serializable, A extends Serializable> A mapReduce(SelectorI selector, ProcessorI<R> processor,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A initialAcc) throws Exception {
 
 		String uriTete = URIGenerator.generateURI(MAPREDUCE_URI);
+		System.out.println("Reception de la requête 'MAP REDUCE' sur la facade identifiant requete : " + uriTete);
 		this.cmce.getMapReduceEndPoint().getClientSideReference().mapSync(uriTete, selector, processor);
 		A result = this.cmce.getMapReduceEndPoint().getClientSideReference().reduceSync(uriTete, reductor, combinator,
 				initialAcc);
 		this.cmce.getMapReduceEndPoint().getClientSideReference().clearMapReduceComputation(uriTete);
+		System.out.println(
+				"Renvoi de la réponse de la requête 'MAP REDUCE' au client,  identifiant de la requete : " + uriTete);
 		return result;
 	}
 

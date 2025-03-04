@@ -42,18 +42,26 @@ public class PutClientTest extends ClientBCM {
 				try {
 
 					System.out.println(reflectionInboundPortURI);
-					((PutClientTest) this.getTaskOwner()).putContentData(new EntierKey(700), new Livre("Socrate", 500));
+					((PutClientTest) this.getTaskOwner()).putContentData(new EntierKey(70), new Livre("Socrate", 500));
 
 					// test de l'insertion
-					String oldValue = ((PutClientTest) this.getTaskOwner()).putContentData(new EntierKey(700),
+					String oldValue = ((PutClientTest) this.getTaskOwner()).putContentData(new EntierKey(70),
 							new Livre("Homere", 125));
-
 					System.out.println("Test put : " + "Socrate".equals(oldValue));
 
 					// test de la récupération de données
-					String value = ((PutClientTest) this.getTaskOwner()).getContentData(new EntierKey(125));
-
+					String value = ((PutClientTest) this.getTaskOwner()).getContentData(new EntierKey(70));
 					System.out.println("Test get : " + "Homere".equals(value));
+					
+					// insertion d'une donnée en dehors de l'intervalle des clés de la table
+					((PutClientTest) this.getTaskOwner()).putContentData(new EntierKey(7500),
+							new Livre("Aristote", 750));
+					
+					Livre oldValue2 = (Livre) ((PutClientTest) this.getTaskOwner()).get(new EntierKey(7500));
+					
+					System.out.println("Test put out of DHT boundaries : " + (null == oldValue2));
+					
+					
 
 				} catch (Exception e) {
 					e.printStackTrace();

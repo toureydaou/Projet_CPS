@@ -30,16 +30,18 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 public class ClientBCM extends AbstractComponent {
 
 	protected DHTServicesEndPoint dsep; // Point d'accès aux services DHT
+	
+	private static final int SCHEDULABLE_THREADS = 1;
+	private static final int THREADS_NUMBER = 0;
 
 	/**
 	 * Constructeur du composant ClientBCM.
 	 * 
 	 * @param uri       URI du composant.
 	 * @param dsep      Point d'accès aux services DHT.
-	 * @param semaphore Sémaphore pour gérer l'accès concurrent.
 	 */
 	protected ClientBCM(String uri, DHTServicesEndPoint dsep) {
-		super(uri, 0, 2);
+		super(uri, THREADS_NUMBER, SCHEDULABLE_THREADS);
 		this.dsep = dsep;
 
 	}
@@ -52,6 +54,7 @@ public class ClientBCM extends AbstractComponent {
 	 * @throws Exception Si une erreur se produit lors de la récupération.
 	 */
 	public ContentDataI get(ContentKeyI key) throws Exception {
+		System.out.println("Envoi de la requête 'GET' sur la facade");
 		return this.dsep.getClientSideReference().get(key);
 	}
 
@@ -65,6 +68,7 @@ public class ClientBCM extends AbstractComponent {
 	 * @throws Exception Si une erreur se produit lors de l'ajout.
 	 */
 	public ContentDataI put(ContentKeyI key, ContentDataI value) throws Exception {
+		System.out.println("Envoi de la requête 'PUT' sur la facade");
 		return this.dsep.getClientSideReference().put(key, value);
 	}
 
@@ -76,6 +80,7 @@ public class ClientBCM extends AbstractComponent {
 	 * @throws Exception Si une erreur se produit lors de la suppression.
 	 */
 	public ContentDataI remove(ContentKeyI key) throws Exception {
+		System.out.println("Envoi de la requête 'REMOVE' sur la facade");
 		return this.dsep.getClientSideReference().remove(key);
 	}
 
@@ -92,40 +97,11 @@ public class ClientBCM extends AbstractComponent {
 	 */
 	public <R extends Serializable, A extends Serializable> A mapReduce(SelectorI selector, ProcessorI<R> processor,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A initialAcc) throws Exception {
+		System.out.println("Envoi de la requête 'MAP REDUCE' sur la facade");
 		return this.dsep.getClientSideReference().mapReduce(selector, processor, reductor, combinator, initialAcc);
 	}
 
-	/**
-     * Méthode pour ajouter une donnée et l'afficher ensuite.
-     * 
-     * 
-     * @throws Exception Si une erreur se produit lors de l'ajout ou de l'affichage.
-     */
-	public void getAndPrintContentData() throws Exception {
-		EntierKey k_125 = new EntierKey(125);
-		this.put(k_125, new Livre("famille", 300));
-		Livre livre = (Livre) this.get(k_125);
-		System.out.println(livre.getValue(Livre.TITRE));
-
-	}
-
-	/**
-     * Méthode pour exécuter une opération MapReduce et afficher le résultat.
-     * 
-     * @throws Exception Si une erreur se produit lors de l'exécution de MapReduce.
-     */
-	public void printMapReduceResult() throws Exception {
-		EntierKey k_22 = new EntierKey(22);
-		EntierKey k_120 = new EntierKey(120);
-		this.put(k_22, new Livre("soif", 100));
-		this.put(k_120, new Livre("douleur", 50));
-
-		int a = this.mapReduce(i -> ((int) i.getValue(Livre.NB_PAGES)) > 0,
-				i -> new Livre((String) i.getValue(Livre.TITRE), (int) i.getValue(Livre.NB_PAGES) / 2),
-				(acc, i) -> (acc + (int) i.getValue(Livre.NB_PAGES)), (acc, i) -> (acc + i), 0);
-		System.out.println("Map reduce " + a);
-	}
-
+	
 	
 	 /**
      * Méthode qui démarre le composant client.
@@ -159,10 +135,7 @@ public class ClientBCM extends AbstractComponent {
 			@Override
 			public void run() {
 				try {
-
 					System.out.println(reflectionInboundPortURI);
-					((ClientBCM) this.getTaskOwner()).getAndPrintContentData();
-					((ClientBCM) this.getTaskOwner()).printMapReduceResult();
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {

@@ -49,6 +49,10 @@ public class RemoveClientTest extends ClientBCM {
 					// test de la suppression des données
 					String removedValue = ((RemoveClientTest) this.getTaskOwner()).removeContentData(new EntierKey(70));
 					System.out.println("Test remove : " + "Socrate".equals(removedValue));
+					
+					// suppression d'une donnée en dehors de la table
+					Livre removeValue2 = (Livre) ((RemoveClientTest) this.getTaskOwner()).remove(new EntierKey(300));
+					System.out.println("Test remove out of bounds : " + (null == removeValue2));
 
 				} catch (Exception e) {
 					e.printStackTrace();

@@ -47,7 +47,7 @@ import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 
 @OfferedInterfaces(offered = { ContentAccessSyncCI.class, MapReduceSyncCI.class })
 @RequiredInterfaces(required = { ContentAccessSyncCI.class, MapReduceSyncCI.class })
-public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, MapReduceSyncI {
+public class NodeBCM extends AbstractComponent {
 
 	// Stocke les données associées aux clés de la DHT
 	private HashMap<ContentKeyI, ContentDataI> content;
@@ -67,6 +67,9 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 	protected CompositeMapContentEndpoint cmceInbound; // Port entrant (serveur)
 	protected CompositeMapContentEndpoint cmceOutbound; // Port sortant (client)
 
+	private static final int SCHEDULABLE_THREADS = 2;
+	private static final int THREADS_NUMBER = 0;
+
 	/**
 	 * Constructeur d'un nœud de la DHT.
 	 * 
@@ -78,7 +81,7 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 	 */
 	protected NodeBCM(String uri, CompositeMapContentEndpoint cmceInbound, CompositeMapContentEndpoint cmceOutbound,
 			IntInterval intervalle) throws ConnectionException {
-		super(uri, 0, 2);
+		super(uri, THREADS_NUMBER, SCHEDULABLE_THREADS);
 		this.content = new HashMap<>();
 		this.intervalle = intervalle;
 		this.cmceInbound = cmceInbound;
@@ -97,9 +100,11 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 	 * @param processor      Fonction qui transforme les données sélectionnées.
 	 * @throws Exception .
 	 */
-	@Override
+
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
 			throws Exception {
+		System.out.println("Reception de la requête 'MAP REDUCE' (MAP) sur le noeud " + this.intervalle.first() + " - "
+				+ this.intervalle.last() + ", identifiant de la requete : " + computationURI);
 		if (!uriPassMap.contains(computationURI)) {
 			uriPassMap.add(computationURI);
 			memory.put(computationURI,
@@ -130,10 +135,11 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 	 * @return Le nouvel accumulateur calculé après la réduction synchrone.
 	 * @throws Exception
 	 */
-	@Override
+
 	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
 			CombinatorI<A> combinator, A currentAcc) throws Exception {
-
+		System.out.println("Reception de la requête 'MAP REDUCE' (REDUCE) sur le noeud " + this.intervalle.first()
+				+ " - " + this.intervalle.last() + ", identifiant de la requete : " + computationURI);
 		if (uriPassMap.contains(computationURI)) {
 			uriPassMap.remove(computationURI);
 			return combinator.apply(
@@ -141,7 +147,6 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 					this.cmceOutbound.getMapReduceEndPoint().getClientSideReference().reduceSync(computationURI,
 							reductor, combinator, currentAcc));
 		} else {
-
 			return currentAcc;
 		}
 
@@ -158,8 +163,10 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 	 *                       doivent être supprimées.
 	 * @throws Exception
 	 */
-	@Override
+
 	public void clearMapReduceComputation(String computationURI) throws Exception {
+		System.out.println("Nettoyage des opérations du map reduce sur le noeud " + this.intervalle.first() + " - "
+				+ this.intervalle.last() + ", identifiant de la requete : " + computationURI);
 		if (memory.containsKey(computationURI)) {
 			memory.remove(computationURI);
 			this.cmceOutbound.getMapReduceEndPoint().getClientSideReference().clearMapReduceComputation(computationURI);
@@ -181,8 +188,9 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 	 *         computation a déjà été traitée localement.
 	 * @throws Exception
 	 */
-	@Override
 	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
+		System.out.println("Reception de la requête 'GET' sur le noeud " + this.intervalle.first() + " - "
+				+ this.intervalle.last() + ", identifiant de la requete : " + computationURI);
 		if (uriPassCont.contains(computationURI)) {
 			return null;
 		} else {
@@ -211,8 +219,10 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 	 *         localement.
 	 * @throws Exception
 	 */
-	@Override
+
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
+		System.out.println("Reception de la requête 'PUT' sur le noeud " + this.intervalle.first() + " - "
+				+ this.intervalle.last() + ", identifiant de la requete : " + computationURI);
 		if (uriPassCont.contains(computationURI)) {
 			return null;
 		} else {
@@ -243,8 +253,10 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 	 *         localement.
 	 * @throws Exception
 	 */
-	@Override
+
 	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
+		System.out.println("Reception de la requête 'REMOVE' sur le noeud " + this.intervalle.first() + " - "
+				+ this.intervalle.last() + ", identifiant de la requete : " + computationURI);
 		if (uriPassCont.contains(computationURI)) {
 			return null;
 		} else {
@@ -260,8 +272,7 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 		}
 
 	}
-	
-	
+
 	/**
 	 * Efface les données liées à une computation spécifique identifiée par
 	 * {@code computationURI}.
@@ -276,8 +287,10 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 	 *                       effacées.
 	 * @throws Exception
 	 */
-	@Override
+
 	public void clearComputation(String computationURI) throws Exception {
+		System.out.println("Nettoyage sur le noeud " + this.intervalle.first() + " - " + this.intervalle.last()
+				+ ", identifiant de la requete : " + computationURI);
 		if (uriPassCont.contains(computationURI)) {
 			uriPassCont.remove(computationURI);
 			this.cmceOutbound.getContentAccessEndPoint().getClientSideReference().clearComputation(computationURI);
@@ -345,8 +358,6 @@ public class NodeBCM extends AbstractComponent implements ContentAccessSyncI, Ma
 			}
 		}
 	}
-
-	
 
 	/**
 	 * Démarre le composant ClientBCM.
