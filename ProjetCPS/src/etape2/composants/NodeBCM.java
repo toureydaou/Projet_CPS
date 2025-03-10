@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.stream.Stream;
 
 import etape1.EntierKey;
-import etape2.endpoints.CompositeMapContentEndpoint;
+import etape2.endpoints.CompositeMapContentSyncEndpoint;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;
@@ -14,12 +14,10 @@ import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.components.exceptions.ConnectionException;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
@@ -64,8 +62,8 @@ public class NodeBCM extends AbstractComponent {
 	private HashMap<String, Stream<ContentDataI>> memory = new HashMap<>();
 
 	// Ports pour la communication avec d'autres noeuds
-	protected CompositeMapContentEndpoint cmceInbound; // Port entrant (serveur)
-	protected CompositeMapContentEndpoint cmceOutbound; // Port sortant (client)
+	protected CompositeMapContentSyncEndpoint cmceInbound; // Port entrant (serveur)
+	protected CompositeMapContentSyncEndpoint cmceOutbound; // Port sortant (client)
 
 	private static final int SCHEDULABLE_THREADS = 2;
 	private static final int THREADS_NUMBER = 0;
@@ -79,7 +77,7 @@ public class NodeBCM extends AbstractComponent {
 	 * @param intervalle   Intervalle de clés gérées par ce noeud
 	 * @throws ConnectionException en cas d'erreur de connexion
 	 */
-	protected NodeBCM(String uri, CompositeMapContentEndpoint cmceInbound, CompositeMapContentEndpoint cmceOutbound,
+	protected NodeBCM(String uri, CompositeMapContentSyncEndpoint cmceInbound, CompositeMapContentSyncEndpoint cmceOutbound,
 			IntInterval intervalle) throws ConnectionException {
 		super(uri, THREADS_NUMBER, SCHEDULABLE_THREADS);
 		this.content = new HashMap<>();

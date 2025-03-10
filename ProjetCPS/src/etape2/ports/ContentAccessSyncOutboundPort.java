@@ -1,6 +1,8 @@
 package etape2.ports;
 
 import fr.sorbonne_u.components.ComponentI;
+import fr.sorbonne_u.components.interfaces.OfferedCI;
+import fr.sorbonne_u.components.interfaces.RequiredCI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
@@ -64,6 +66,21 @@ public class ContentAccessSyncOutboundPort extends AbstractOutboundPort implemen
 
 		assert uri != null && owner != null;
 	}
+	
+	
+	
+
+	public ContentAccessSyncOutboundPort(Class<? extends RequiredCI> implementedInterface, ComponentI owner) throws Exception {
+		super(implementedInterface, owner);	
+	}
+	
+	
+	public ContentAccessSyncOutboundPort(String uri, Class<? extends RequiredCI> implementedInterface, ComponentI owner) throws Exception {
+		super(uri, implementedInterface, owner);	
+	}
+	
+	
+	
 
 	/**
 	 * Permet de contacter le service du serveur pour récupérer une donnée dans la

@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import etape2.composants.NodeBCM;
 import fr.sorbonne_u.components.ComponentI;
+import fr.sorbonne_u.components.interfaces.OfferedCI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI;
@@ -68,6 +69,21 @@ public class MapReduceSyncInboundPort extends AbstractInboundPort implements Map
 
 		assert uri != null && (owner instanceof NodeBCM);
 	}
+	
+	
+
+	public MapReduceSyncInboundPort(Class<? extends OfferedCI> implementedInterface, ComponentI owner) throws Exception {
+		super(implementedInterface, owner);	
+	}
+	
+	
+	public MapReduceSyncInboundPort(String uri, Class<? extends OfferedCI> implementedInterface, ComponentI owner) throws Exception {
+		super(uri, implementedInterface, owner);	
+	}
+	
+	
+	
+	
 
 	/**
 	 * Invoque la méthode <code>mapSync</code> du serveur.

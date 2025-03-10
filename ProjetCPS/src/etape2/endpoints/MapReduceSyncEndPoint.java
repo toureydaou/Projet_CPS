@@ -34,21 +34,21 @@ import fr.sorbonne_u.exceptions.PreconditionException;
  * @author Awwal FAGBEHOURO
  */
 
-public class MapReduceEndPoint extends BCMEndPoint<MapReduceSyncCI> {
+public class MapReduceSyncEndPoint extends BCMEndPoint<MapReduceSyncCI> {
 	// -------------------------------------------------------------------------
 	// Constants and variables
 	// -------------------------------------------------------------------------
 
 	private static final long serialVersionUID = 1L;
 
-	protected static boolean implementationInvariants(MapReduceEndPoint instance) {
+	protected static boolean implementationInvariants(MapReduceSyncEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 
 		boolean ret = true;
 		return ret;
 	}
 
-	protected static boolean invariants(MapReduceEndPoint instance) {
+	protected static boolean invariants(MapReduceSyncEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 
 		boolean ret = true;
@@ -61,7 +61,7 @@ public class MapReduceEndPoint extends BCMEndPoint<MapReduceSyncCI> {
 	 * 
 	 * @param inboundPortURI URI du port entrant auquel cet endpoint se connecte.
 	 */
-	public MapReduceEndPoint(String inboundPortURI) {
+	public MapReduceSyncEndPoint(String inboundPortURI) {
 		super(MapReduceSyncCI.class, MapReduceSyncCI.class, inboundPortURI);
 	}
 
@@ -69,7 +69,7 @@ public class MapReduceEndPoint extends BCMEndPoint<MapReduceSyncCI> {
 	 * crée un endpoint BCM.
 	 *
 	 */
-	public MapReduceEndPoint() {
+	public MapReduceSyncEndPoint() {
 		super(MapReduceSyncCI.class, MapReduceSyncCI.class);
 
 	}
@@ -100,9 +100,9 @@ public class MapReduceEndPoint extends BCMEndPoint<MapReduceSyncCI> {
 		assert getServerSideInterface().isAssignableFrom(p.getClass())
 				: new PostconditionException("getOfferedComponentInterface()." + "isAssignableFrom(return.getClass())");
 		// Invariant checking
-		assert MapReduceEndPoint.implementationInvariants(this)
+		assert MapReduceSyncEndPoint.implementationInvariants(this)
 				: new ImplementationInvariantException("implementationInvariants(this)");
-		assert MapReduceEndPoint.invariants(this) : new InvariantException("invariants(this)");
+		assert MapReduceSyncEndPoint.invariants(this) : new InvariantException("invariants(this)");
 
 		return p;
 	}

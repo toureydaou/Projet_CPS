@@ -2,7 +2,7 @@ package etape2.test;
 
 import etape2.composants.FacadeBCM;
 import etape2.composants.NodeBCM;
-import etape2.endpoints.CompositeMapContentEndpoint;
+import etape2.endpoints.CompositeMapContentSyncEndpoint;
 import etape2.endpoints.DHTServicesEndPoint;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
@@ -38,18 +38,18 @@ public class TestCVM3 extends AbstractCVM {
 		DHTServicesEndPoint dhtServicesEndPoint = new DHTServicesEndPoint();
 
 		// endpoint facade - 1er noeud
-		CompositeMapContentEndpoint compositeMapContentEndpointFacadeToFirstNode = new CompositeMapContentEndpoint();
+		CompositeMapContentSyncEndpoint compositeMapContentEndpointFacadeToFirstNode = new CompositeMapContentSyncEndpoint();
 
 		// endpoint 1er noeud - 2eme noeud
-		CompositeMapContentEndpoint compositeMapContentEndpointOnetoTwo = new CompositeMapContentEndpoint();
+		CompositeMapContentSyncEndpoint compositeMapContentEndpointOnetoTwo = new CompositeMapContentSyncEndpoint();
 
 		// endpoint 2eme noeud - 3eme noeud
-		CompositeMapContentEndpoint compositeMapContentEndpointTwotoThree = new CompositeMapContentEndpoint();
+		CompositeMapContentSyncEndpoint compositeMapContentEndpointTwotoThree = new CompositeMapContentSyncEndpoint();
 
 		// creation composant facade
 		String facadeURI = AbstractComponent.createComponent(FacadeBCM.class.getCanonicalName(),
 				new Object[] { FACADE_COMPONENT_URI,
-						((CompositeMapContentEndpoint) compositeMapContentEndpointFacadeToFirstNode).copyWithSharable(),
+						((CompositeMapContentSyncEndpoint) compositeMapContentEndpointFacadeToFirstNode).copyWithSharable(),
 						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
 		assert this.isDeployedComponent(facadeURI);
 
@@ -62,8 +62,8 @@ public class TestCVM3 extends AbstractCVM {
 		// création du premier noeud
 		String firstNodeURI = AbstractComponent.createComponent(NodeBCM.class.getCanonicalName(),
 				new Object[] { FIRST_NODE_COMPONENT_URI,
-						((CompositeMapContentEndpoint) compositeMapContentEndpointFacadeToFirstNode).copyWithSharable(),
-						((CompositeMapContentEndpoint) compositeMapContentEndpointOnetoTwo).copyWithSharable(),
+						((CompositeMapContentSyncEndpoint) compositeMapContentEndpointFacadeToFirstNode).copyWithSharable(),
+						((CompositeMapContentSyncEndpoint) compositeMapContentEndpointOnetoTwo).copyWithSharable(),
 						new IntInterval(0, 49) });
 
 		assert this.isDeployedComponent(firstNodeURI);
@@ -71,8 +71,8 @@ public class TestCVM3 extends AbstractCVM {
 		// création du deuxième noeud
 		String secondNodeURI = AbstractComponent.createComponent(NodeBCM.class.getCanonicalName(),
 				new Object[] { SECOND_NODE_COMPONENT_URI,
-						((CompositeMapContentEndpoint) compositeMapContentEndpointOnetoTwo).copyWithSharable(),
-						((CompositeMapContentEndpoint) compositeMapContentEndpointTwotoThree).copyWithSharable(),
+						((CompositeMapContentSyncEndpoint) compositeMapContentEndpointOnetoTwo).copyWithSharable(),
+						((CompositeMapContentSyncEndpoint) compositeMapContentEndpointTwotoThree).copyWithSharable(),
 						new IntInterval(50, 99) });
 
 		assert this.isDeployedComponent(secondNodeURI);
@@ -85,8 +85,8 @@ public class TestCVM3 extends AbstractCVM {
 		// création du troisème noeud
 		String thirdNodeURI = AbstractComponent.createComponent(NodeBCM.class.getCanonicalName(),
 				new Object[] { THIRD_CLIENT_COMPONENT_URI,
-						((CompositeMapContentEndpoint) compositeMapContentEndpointTwotoThree).copyWithSharable(),
-						((CompositeMapContentEndpoint) compositeMapContentEndpointFacadeToFirstNode).copyWithSharable(),
+						((CompositeMapContentSyncEndpoint) compositeMapContentEndpointTwotoThree).copyWithSharable(),
+						((CompositeMapContentSyncEndpoint) compositeMapContentEndpointFacadeToFirstNode).copyWithSharable(),
 						new IntInterval(100, 149) });
 
 		assert this.isDeployedComponent(thirdNodeURI);

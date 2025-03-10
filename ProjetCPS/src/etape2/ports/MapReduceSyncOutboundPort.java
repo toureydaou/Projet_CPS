@@ -3,6 +3,8 @@ package etape2.ports;
 import java.io.Serializable;
 
 import fr.sorbonne_u.components.ComponentI;
+import fr.sorbonne_u.components.interfaces.OfferedCI;
+import fr.sorbonne_u.components.interfaces.RequiredCI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI;
@@ -67,6 +69,18 @@ public class MapReduceSyncOutboundPort extends AbstractOutboundPort implements M
 
 		assert uri != null && owner != null;
 	}
+	
+	
+
+	public MapReduceSyncOutboundPort(Class<? extends RequiredCI> implementedInterface, ComponentI owner) throws Exception {
+		super(implementedInterface, owner);	
+	}
+	
+	
+	public MapReduceSyncOutboundPort(String uri, Class<? extends RequiredCI> implementedInterface, ComponentI owner) throws Exception {
+		super(uri, implementedInterface, owner);	
+	}
+	
 
 	/**
 	 * Invoque la méthode <code>mapSync</code> du connecteur

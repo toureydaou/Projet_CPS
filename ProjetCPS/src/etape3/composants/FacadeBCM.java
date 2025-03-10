@@ -1,55 +1,37 @@
-
-
-package etape2.composants;
+package etape3.composants;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
-import etape2.endpoints.CompositeMapContentSyncEndpoint;
 import etape2.endpoints.DHTServicesEndPoint;
+import etape3.endpoints.CompositeMapContentEndPoint;
+import etape3.endpoints.ResultReceptionEndPoint;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.components.exceptions.ConnectionException;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 
-/**
- * FacadeBCM est un composant qui fait office de façade pour l'accès aux
- * services DHT (Distributed Hash Table) et aux opérations de MapReduce via
- * l'interface {@link DHTServicesI}. Il délègue les appels aux services
- * spécifiques à l'endpoint {@link CompositeMapContentSyncEndpoint}.
- * 
- * 
- * <p>
- * <strong>Description</strong>
- * </p>
- * <p>
- * Ce composant offre plusieurs opérations synchrones : - Récupération, ajout et
- * suppression de données via des clés DHT, - Exécution de calculs MapReduce sur
- * les données DHT.
- * 
- * Les interfaces offertes sont {@link DHTServicesCI}, et il nécessite les
- * interfaces {@link ContentAccessSyncCI} et {@link MapReduceSyncCI}.
- * </p>
- * 
- * @author Touré-Ydaou TEOURI
- * @author Awwal FAGBEHOURO
- */
+@OfferedInterfaces(offered = { DHTServicesCI.class, ResultReceptionCI.class, MapReduceResultReceptionCI.class  })
+@RequiredInterfaces(required = { ContentAccessCI.class, MapReduceCI.class })
 
-@OfferedInterfaces(offered = { DHTServicesCI.class })
-@RequiredInterfaces(required = { ContentAccessSyncCI.class, MapReduceSyncCI.class })
-public class FacadeBCM extends AbstractComponent {
+public class FacadeBCM extends AbstractComponent implements ResultReceptionI, MapReduceResultReceptionI {
 
 	// URI constants pour l'accès aux services
 	private static final String GET_URI = "GET";
@@ -61,8 +43,12 @@ public class FacadeBCM extends AbstractComponent {
 	private static final int THREADS_NUMBER = 0;
 
 	// Endpoints pour accéder aux services
-	protected CompositeMapContentSyncEndpoint cmce;
+	protected CompositeMapContentEndPoint cmce;
 	protected DHTServicesEndPoint dsep;
+	protected ResultReceptionEndPoint rrep;
+
+	private HashMap<String, ContentDataI> results;
+	private HashMap<String, Serializable> resultsMapReduce;
 
 	/**
 	 * Constructeur pour initialiser le composant FacadeBCM.
@@ -73,12 +59,14 @@ public class FacadeBCM extends AbstractComponent {
 	 * @param dsep L'endpoint DHTServicesEndPoint pour la gestion des services DHT.
 	 * @throws ConnectionException Si une erreur de connexion se produit.
 	 */
-	protected FacadeBCM(String uri, CompositeMapContentSyncEndpoint cmce, DHTServicesEndPoint dsep)
-			throws ConnectionException {
+	protected FacadeBCM(String uri, CompositeMapContentEndPoint cmce, DHTServicesEndPoint dsep,
+			ResultReceptionEndPoint rrep) throws ConnectionException {
 		super(uri, THREADS_NUMBER, SCHEDULABLE_THREADS);
 		this.cmce = cmce;
 		this.dsep = dsep;
+		this.results = new HashMap<String, ContentDataI>();
 		dsep.initialiseServerSide(this);
+		rrep.initialiseServerSide(this);
 	}
 
 	/**
@@ -93,11 +81,8 @@ public class FacadeBCM extends AbstractComponent {
 
 		String request_uri = URIGenerator.generateURI(GET_URI);
 		System.out.println("Reception de la requête 'GET' sur la facade, identifiant de la requete : " + request_uri);
-		ContentDataI result = this.cmce.getContentAccessEndPoint().getClientSideReference().getSync(request_uri, key);
-		this.cmce.getContentAccessEndPoint().getClientSideReference().clearComputation(request_uri);
-		System.out.println(
-				"Renvoi de la réponse de la requête 'GET' au client,  identifiant de la requete : " + request_uri);
-		return result;
+		this.cmce.getContentAccessEndPoint().getClientSideReference().get(request_uri, key, rrep);
+		return results.get(request_uri);
 	}
 
 	/**
@@ -112,12 +97,8 @@ public class FacadeBCM extends AbstractComponent {
 	public ContentDataI put(ContentKeyI key, ContentDataI value) throws Exception {
 		String request_uri = URIGenerator.generateURI(PUT_URI);
 		System.out.println("Reception de la requête 'PUT' sur la facade identifiant requete : " + request_uri);
-		ContentDataI result = this.cmce.getContentAccessEndPoint().getClientSideReference().putSync(request_uri, key,
-				value);
-		this.cmce.getContentAccessEndPoint().getClientSideReference().clearComputation(request_uri);
-		System.out.println(
-				"Renvoi de la réponse de la requête 'PUT' au client,  identifiant de la requete : " + request_uri);
-		return result;
+		this.cmce.getContentAccessEndPoint().getClientSideReference().put(request_uri, key, value, rrep);
+		return results.get(request_uri);
 	}
 
 	/**
@@ -131,12 +112,8 @@ public class FacadeBCM extends AbstractComponent {
 	public ContentDataI remove(ContentKeyI key) throws Exception {
 		String request_uri = URIGenerator.generateURI(REMOVE_URI);
 		System.out.println("Reception de la requête 'REMOVE' sur la facade identifiant requete : " + request_uri);
-		ContentDataI result = this.cmce.getContentAccessEndPoint().getClientSideReference().removeSync(request_uri,
-				key);
-		this.cmce.getContentAccessEndPoint().getClientSideReference().clearComputation(request_uri);
-		System.out.println(
-				"Renvoi de la réponse de la requête 'REMOVE' au client,  identifiant de la requete : " + request_uri);
-		return result;
+		this.cmce.getContentAccessEndPoint().getClientSideReference().remove(request_uri, key, rrep);		
+		return results.get(request_uri);
 	}
 
 	/**
@@ -166,6 +143,20 @@ public class FacadeBCM extends AbstractComponent {
 		System.out.println(
 				"Renvoi de la réponse de la requête 'MAP REDUCE' au client,  identifiant de la requete : " + uriTete);
 		return result;
+	}
+
+	
+	
+	
+	@Override
+	public void acceptResult(String computationURI, Serializable result) throws Exception {
+		results.put(computationURI, (ContentDataI) result);
+	}
+	
+	@Override
+	public void acceptResult(String computationURI, String emitterId, Serializable acc) {
+		
+		
 	}
 
 	/**

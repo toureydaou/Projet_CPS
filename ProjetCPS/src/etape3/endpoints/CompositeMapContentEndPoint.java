@@ -1,20 +1,10 @@
-package etape2.endpoints;
+package etape3.endpoints;
 
 import fr.sorbonne_u.components.endpoints.BCMCompositeEndPoint;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
 
-/**
- * CompositeMapContentEndpoint est un point d'accès composite qui regroupe deux
- * points d'accès distincts : un pour l'accès aux contenus et un pour les
- * opérations de MapReduce. Il étend BCMCompositeEndPoint pour gérer plusieurs
- * points d'accès.
- * 
- * @author Touré-Ydaou TEOURI
- * @author Awwal FAGBEHOURO
- */
-
-public class CompositeMapContentEndpoint extends BCMCompositeEndPoint {
+public class CompositeMapContentEndPoint extends BCMCompositeEndPoint {
 	private static final long serialVersionUID = 1L;
 	/** Nombre de points d'accès dans ce point d'accès composite */
 	protected static final int NUMBER_OF_ENDPOINTS = 2;
@@ -23,7 +13,7 @@ public class CompositeMapContentEndpoint extends BCMCompositeEndPoint {
 	 * Constructeur qui initialise les points d'accès nécessaires. Il ajoute deux
 	 * points d'accès : un pour l'accès aux contenus et un pour MapReduce.
 	 */
-	public CompositeMapContentEndpoint() {
+	public CompositeMapContentEndPoint() {
 		super(NUMBER_OF_ENDPOINTS);
 		ContentAccessEndPoint contentAccessEndPoint = new ContentAccessEndPoint();
 		this.addEndPoint(contentAccessEndPoint);
@@ -37,7 +27,7 @@ public class CompositeMapContentEndpoint extends BCMCompositeEndPoint {
 	 * @return Le point d'accès pour l'accès aux contenus.
 	 */
 	public ContentAccessEndPoint getContentAccessEndPoint() {
-		return (ContentAccessEndPoint) this.getEndPoint(ContentAccessSyncCI.class);
+		return (ContentAccessEndPoint) this.getEndPoint(ContentAccessCI.class);
 	}
 
 	/**
@@ -46,6 +36,7 @@ public class CompositeMapContentEndpoint extends BCMCompositeEndPoint {
 	 * @return Le point d'accès pour les opérations MapReduce.
 	 */
 	public MapReduceEndPoint getMapReduceEndPoint() {
-		return (MapReduceEndPoint) this.getEndPoint(MapReduceSyncCI.class);
+		return (MapReduceEndPoint) this.getEndPoint(MapReduceCI.class);
 	}
 }
+

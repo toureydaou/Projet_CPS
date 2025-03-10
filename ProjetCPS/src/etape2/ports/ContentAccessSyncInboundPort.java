@@ -2,6 +2,7 @@ package etape2.ports;
 
 import etape2.composants.NodeBCM;
 import fr.sorbonne_u.components.ComponentI;
+import fr.sorbonne_u.components.interfaces.OfferedCI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
@@ -64,6 +65,20 @@ public class ContentAccessSyncInboundPort extends AbstractInboundPort implements
 
 		assert uri != null && (owner instanceof NodeBCM);
 	}
+	
+	
+	
+	
+	public ContentAccessSyncInboundPort(Class<? extends OfferedCI> implementedInterface, ComponentI owner) throws Exception {
+		super(implementedInterface, owner);	
+	}
+	
+	
+	public ContentAccessSyncInboundPort(String uri, Class<? extends OfferedCI> implementedInterface, ComponentI owner) throws Exception {
+		super(uri, implementedInterface, owner);	
+	}
+	
+	
 
 	/**
 	 * Permet d'appeler le service <code>getSync</code> du composant pour récupérer
