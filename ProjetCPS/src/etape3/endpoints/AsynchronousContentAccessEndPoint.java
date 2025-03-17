@@ -1,34 +1,33 @@
 package etape3.endpoints;
 
-import etape3.connecteurs.MapReduceConnector;
-import etape3.ports.MapReduceInboundPort;
-import etape3.ports.MapReduceOutboundPort;
+import etape3.connecteurs.ContentAccessConnector;
+import etape3.ports.AsynchronousContentAccessInboundPort;
+import etape3.ports.AsynchronousContentAccessOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.AbstractPort;
 import fr.sorbonne_u.components.endpoints.BCMEndPoint;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
 import fr.sorbonne_u.exceptions.ImplementationInvariantException;
 import fr.sorbonne_u.exceptions.InvariantException;
 import fr.sorbonne_u.exceptions.PostconditionException;
 import fr.sorbonne_u.exceptions.PreconditionException;
 
-public class MapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
-
+public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccessCI> {
 	// -------------------------------------------------------------------------
 	// Constants and variables
 	// -------------------------------------------------------------------------
 
 	private static final long serialVersionUID = 1L;
 
-	protected static boolean implementationInvariants(MapReduceEndPoint instance) {
+	protected static boolean implementationInvariants(AsynchronousContentAccessEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 
 		boolean ret = true;
 		return ret;
 	}
 
-	protected static boolean invariants(MapReduceEndPoint instance) {
+	protected static boolean invariants(AsynchronousContentAccessEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 
 		boolean ret = true;
@@ -41,16 +40,16 @@ public class MapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 	 * 
 	 * @param inboundPortURI URI du port entrant auquel cet endpoint se connecte.
 	 */
-	public MapReduceEndPoint(String inboundPortURI) {
-		super(MapReduceCI.class, MapReduceCI.class, inboundPortURI);
+	public AsynchronousContentAccessEndPoint(String inboundPortURI) {
+		super(ContentAccessCI.class, ContentAccessCI.class, inboundPortURI);
 	}
 
 	/**
 	 * crée un endpoint BCM.
 	 *
 	 */
-	public MapReduceEndPoint() {
-		super(MapReduceCI.class, MapReduceCI.class);
+	public AsynchronousContentAccessEndPoint() {
+		super(ContentAccessCI.class, ContentAccessCI.class);
 	}
 
 	/**
@@ -69,19 +68,19 @@ public class MapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 		assert inboundPortURI != null && !inboundPortURI.isEmpty()
 				: new PreconditionException("inboundPortURI != null && !inboundPortURI.isEmpty()");
 
-		MapReduceInboundPort p = new MapReduceInboundPort(this.inboundPortURI, c);
+		AsynchronousContentAccessInboundPort p = new AsynchronousContentAccessInboundPort(this.inboundPortURI, c);
 		p.publishPort();
 
 		// Postconditions checking
 		assert p != null && p.isPublished() : new PostconditionException("return != null && return.isPublished()");
 		assert ((AbstractPort) p).getPortURI().equals(inboundPortURI)
-				: new PostconditionException("((AbstractPort)return).getPortURI().equals(inboundPortURI)");
+		: new PostconditionException("((AbstractPort)return).getPortURI().equals(inboundPortURI)");
 		assert getServerSideInterface().isAssignableFrom(p.getClass())
-				: new PostconditionException("getOfferedComponentInterface()." + "isAssignableFrom(return.getClass())");
+		: new PostconditionException("getOfferedComponentInterface()." + "isAssignableFrom(return.getClass())");
 		// Invariant checking
-		assert MapReduceEndPoint.implementationInvariants(this)
-				: new ImplementationInvariantException("implementationInvariants(this)");
-		assert MapReduceEndPoint.invariants(this) : new InvariantException("invariants(this)");
+		assert AsynchronousContentAccessEndPoint.implementationInvariants(this)
+		: new ImplementationInvariantException("implementationInvariants(this)");
+		assert AsynchronousContentAccessEndPoint.invariants(this) : new InvariantException("invariants(this)");
 
 		return p;
 	}
@@ -100,13 +99,13 @@ public class MapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 	 * @throws Exception <i>to do</i>.
 	 */
 	@Override
-	protected MapReduceCI makeOutboundPort(AbstractComponent c, String inboundPortURI) throws Exception {
+	protected ContentAccessCI makeOutboundPort(AbstractComponent c, String inboundPortURI) throws Exception {
 		// Preconditions checking
 		assert c != null : new PreconditionException("c != null");
 
-		MapReduceOutboundPort p = new MapReduceOutboundPort(c);
+		AsynchronousContentAccessOutboundPort p = new AsynchronousContentAccessOutboundPort(c);
 		p.publishPort();
-		c.doPortConnection(p.getPortURI(), this.inboundPortURI, MapReduceConnector.class.getCanonicalName());
+		c.doPortConnection(p.getPortURI(), this.inboundPortURI, ContentAccessConnector.class.getCanonicalName());
 
 		// Postconditions checking
 		assert p != null && p.isPublished() && p.connected()
@@ -114,7 +113,7 @@ public class MapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 		assert ((AbstractPort) p).getServerPortURI().equals(getInboundPortURI()) : new PostconditionException(
 				"((AbstractPort)return).getServerPortURI()." + "equals(getInboundPortURI())");
 		assert getClientSideInterface().isAssignableFrom(p.getClass())
-				: new PostconditionException("getImplementedInterface().isAssignableFrom(" + "return.getClass())");
+		: new PostconditionException("getImplementedInterface().isAssignableFrom(" + "return.getClass())");
 
 		// Invariant checking
 		assert implementationInvariants(this) : new ImplementationInvariantException("implementationInvariants(this)");

@@ -1,7 +1,7 @@
 package etape3.endpoints;
 
 import etape2.connecteurs.ContentAccessSyncConnector;
-
+import etape3.connecteurs.ResultReceptionConnector;
 import etape3.ports.ResultReceptionInboundPort;
 import etape3.ports.ResultReceptionOutboundPort;
 import fr.sorbonne_u.components.AbstractComponent;
@@ -106,7 +106,7 @@ public class ResultReceptionEndPoint extends BCMEndPoint<ResultReceptionCI>  {
 
 		ResultReceptionOutboundPort p = new ResultReceptionOutboundPort(c);
 		p.publishPort();
-		c.doPortConnection(p.getPortURI(), this.inboundPortURI, ContentAccessSyncConnector.class.getCanonicalName());
+		c.doPortConnection(p.getPortURI(), this.inboundPortURI, ResultReceptionConnector.class.getCanonicalName());
 
 		// Postconditions checking
 		assert p != null && p.isPublished() && p.connected()

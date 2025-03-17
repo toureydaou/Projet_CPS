@@ -8,6 +8,7 @@ import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
@@ -54,7 +55,7 @@ public class DHTServicesInboundPort extends AbstractInboundPort implements DHTSe
 		super(DHTServicesCI.class, owner);
 
 		// le propriétaire de ce port est la facade jouant le role de serveur
-		assert (owner instanceof FacadeBCM);
+		assert (owner instanceof DHTServicesI);
 	}
 
 	/**
@@ -67,7 +68,7 @@ public class DHTServicesInboundPort extends AbstractInboundPort implements DHTSe
 	public DHTServicesInboundPort(String uri, ComponentI owner) throws Exception {
 		super(uri, DHTServicesCI.class, owner);
 
-		assert uri != null && (owner instanceof FacadeBCM);
+		assert uri != null && (owner instanceof DHTServicesI);
 	}
 
 	/**
@@ -81,7 +82,7 @@ public class DHTServicesInboundPort extends AbstractInboundPort implements DHTSe
 	 */
 	@Override
 	public ContentDataI get(ContentKeyI key) throws Exception {
-		return this.getOwner().handleRequest(owner -> ((FacadeBCM) owner).get(key));
+		return this.getOwner().handleRequest(owner -> ((DHTServicesI) owner).get(key));
 	}
 
 	/**
@@ -98,7 +99,7 @@ public class DHTServicesInboundPort extends AbstractInboundPort implements DHTSe
 	 */
 	@Override
 	public ContentDataI put(ContentKeyI key, ContentDataI value) throws Exception {
-		return this.getOwner().handleRequest(owner -> ((FacadeBCM) owner).put(key, value));
+		return this.getOwner().handleRequest(owner -> ((DHTServicesI) owner).put(key, value));
 	}
 
 	/**
@@ -112,7 +113,7 @@ public class DHTServicesInboundPort extends AbstractInboundPort implements DHTSe
 	 */
 	@Override
 	public ContentDataI remove(ContentKeyI key) throws Exception {
-		return this.getOwner().handleRequest(owner -> ((FacadeBCM) owner).remove(key));
+		return this.getOwner().handleRequest(owner -> ((DHTServicesI) owner).remove(key));
 	}
 
 	/**
@@ -136,7 +137,7 @@ public class DHTServicesInboundPort extends AbstractInboundPort implements DHTSe
 	public <R extends Serializable, A extends Serializable> A mapReduce(SelectorI selector, ProcessorI<R> processor,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A initialAcc) throws Exception {
 		return this.getOwner().handleRequest(
-				owner -> ((FacadeBCM) owner).mapReduce(selector, processor, reductor, combinator, initialAcc));
+				owner -> ((DHTServicesI) owner).mapReduce(selector, processor, reductor, combinator, initialAcc));
 	}
 
 }

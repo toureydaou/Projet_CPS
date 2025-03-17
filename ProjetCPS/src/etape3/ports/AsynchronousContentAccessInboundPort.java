@@ -2,12 +2,12 @@ package etape3.ports;
 
 
 import etape2.ports.ContentAccessSyncInboundPort;
-import etape3.composants.NodeBCM;
+import etape3.composants.AsynchronousNodeBCM;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
+import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
@@ -32,7 +32,7 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
  * @author Awwal FAGBEHOURO
  */
 
-public class ContentAccessInboundPort extends ContentAccessSyncInboundPort implements ContentAccessCI {
+public class AsynchronousContentAccessInboundPort extends AbstractInboundPort implements ContentAccessCI {
 
 	// -------------------------------------------------------------------------
 	// Constantes et variables
@@ -50,11 +50,11 @@ public class ContentAccessInboundPort extends ContentAccessSyncInboundPort imple
 	 * @param owner Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
-	public ContentAccessInboundPort(ComponentI owner) throws Exception {
+	public AsynchronousContentAccessInboundPort(ComponentI owner) throws Exception {
 		super(ContentAccessCI.class, owner);
 
 		// le propriétaire de ce port est un noeud jouant le role de serveur
-		assert (owner instanceof NodeBCM);
+		assert (owner instanceof AsynchronousNodeBCM);
 	}
 
 	/**
@@ -64,10 +64,10 @@ public class ContentAccessInboundPort extends ContentAccessSyncInboundPort imple
 	 * @param owner Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
-	public ContentAccessInboundPort(String uri, ComponentI owner) throws Exception {
+	public AsynchronousContentAccessInboundPort(String uri, ComponentI owner) throws Exception {
 		super(uri, ContentAccessCI.class, owner);
 
-		assert uri != null && (owner instanceof NodeBCM);
+		assert uri != null && (owner instanceof AsynchronousNodeBCM);
 	}
 
 	@Override
@@ -75,7 +75,7 @@ public class ContentAccessInboundPort extends ContentAccessSyncInboundPort imple
 			throws Exception {
 		this.getOwner().runTask(owner -> {
 			try {
-				((NodeBCM) owner).get(computationURI, key, caller);
+				((AsynchronousNodeBCM) owner).get(computationURI, key, caller);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -88,7 +88,7 @@ public class ContentAccessInboundPort extends ContentAccessSyncInboundPort imple
 			EndPointI<I> caller) throws Exception {
 		this.getOwner().runTask(owner -> {
 			try {
-				((NodeBCM) owner).put(computationURI, key, value, caller);
+				((AsynchronousNodeBCM) owner).put(computationURI, key, value, caller);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -102,12 +102,36 @@ public class ContentAccessInboundPort extends ContentAccessSyncInboundPort imple
 			throws Exception {
 		this.getOwner().runTask(owner -> {
 			try {
-				((NodeBCM) owner).remove(computationURI, key, caller);
+				((AsynchronousNodeBCM) owner).remove(computationURI, key, caller);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		});
+		
+	}
+
+	@Override
+	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void clearComputation(String computationURI) throws Exception {
+		// TODO Auto-generated method stub
 		
 	}
 

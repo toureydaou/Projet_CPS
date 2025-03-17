@@ -2,12 +2,10 @@ package etape3.ports;
 
 import java.io.Serializable;
 
-
-import etape2.ports.MapReduceSyncInboundPort;
-import etape3.composants.NodeBCM;
+import etape2.ports.MapReduceSyncOutboundPort;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
-import fr.sorbonne_u.components.ports.AbstractInboundPort;
+import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionCI;
@@ -36,7 +34,7 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
  * @author Awwal FAGBEHOURO
  */
 
-public class MapReduceInboundPort extends MapReduceSyncInboundPort implements MapReduceCI {
+public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort implements MapReduceCI {
 
 	// -------------------------------------------------------------------------
 	// Constantes et variables
@@ -49,58 +47,65 @@ public class MapReduceInboundPort extends MapReduceSyncInboundPort implements Ma
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Crée et initialise le port entrant avec le composant propriétaire.
+	 * Crée et initialise le port sortant avec le composant propriétaire.
 	 * 
 	 * @param owner Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
-	public MapReduceInboundPort(ComponentI owner) throws Exception {
+	public AsynchronousMapReduceOutboundPort(ComponentI owner) throws Exception {
 		super(MapReduceCI.class, owner);
 
-		// le propriétaire de ce port est un noeud jouant le role de serveur
-		assert (owner instanceof NodeBCM);
+		// le propriétaire de ce port est un noeud ou la facade jouant le role de client
+		assert owner != null;
 	}
 
 	/**
-	 * Crée et initialise un port entrant avec le composant propriétaire et une URI
+	 * Crée et initialise un port sortant avec le composant propriétaire et une URI
 	 * donnée.
 	 * 
 	 * @param owner Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
-	public MapReduceInboundPort(String uri, ComponentI owner) throws Exception {
+	public AsynchronousMapReduceOutboundPort(String uri, ComponentI owner) throws Exception {
 		super(uri, MapReduceCI.class, owner);
 
-		assert uri != null && (owner instanceof NodeBCM);
+		assert uri != null && owner != null;
 	}
 
 	@Override
 	public <R extends Serializable, I extends MapReduceResultReceptionCI> void map(String computationURI,
 			SelectorI selector, ProcessorI<R> processor) throws Exception {
-		this.getOwner().runTask(owner -> {
-			try {
-				((NodeBCM) owner).map(computationURI, selector, processor);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		});
+		((MapReduceCI) this.getConnector()).map(computationURI, selector, processor);
+
 	}
 
 	@Override
 	public <A extends Serializable, R, I extends MapReduceResultReceptionCI> void reduce(String computationURI,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A identityAcc, A currentAcc, EndPointI<I> callerNode)
 			throws Exception {
-		this.getOwner().runTask(owner -> {
-			try {
-				((NodeBCM) owner).reduce(computationURI, reductor, combinator, identityAcc, currentAcc, callerNode);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		});
+		((MapReduceCI) this.getConnector()).reduce(computationURI, reductor, combinator, identityAcc, currentAcc,
+				callerNode);
+
+	}
+
+	@Override
+	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
+			throws Exception {
+		// TODO Auto-generated method stub
 		
 	}
 
-	
+	@Override
+	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
+			CombinatorI<A> combinator, A currentAcc) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void clearMapReduceComputation(String computationURI) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

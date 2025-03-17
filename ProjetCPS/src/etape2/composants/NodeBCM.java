@@ -3,6 +3,7 @@ package etape2.composants;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 
 import etape1.EntierKey;
@@ -48,14 +49,15 @@ import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 public class NodeBCM extends AbstractComponent {
 
 	// Stocke les données associées aux clés de la DHT
-	private HashMap<ContentKeyI, ContentDataI> content;
+	protected HashMap<ContentKeyI, ContentDataI> content;
 
 	// Définition de l'intervalle de clés géré par ce nœud
-	private IntInterval intervalle;
+	protected IntInterval intervalle;
 
 	// Listes des URI des computations MapReduce et de stockage déjà traitées
-	private ArrayList<String> uriPassCont = new ArrayList<>();
-	private ArrayList<String> uriPassMap = new ArrayList<>();
+	protected CopyOnWriteArrayList<String> uriPassCont = new CopyOnWriteArrayList<>();
+	protected CopyOnWriteArrayList<String> uriPassMap = new CopyOnWriteArrayList<>();
+	
 
 	// Mémoire temporaire pour stocker les résultats intermédiaires des computations
 	// MapReduce
@@ -99,6 +101,7 @@ public class NodeBCM extends AbstractComponent {
 	 * @throws Exception .
 	 */
 
+	@SuppressWarnings("unchecked")
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
 			throws Exception {
 		System.out.println("Reception de la requête 'MAP REDUCE' (MAP) sur le noeud " + this.intervalle.first() + " - "
@@ -134,6 +137,7 @@ public class NodeBCM extends AbstractComponent {
 	 * @throws Exception
 	 */
 
+	@SuppressWarnings("unchecked")
 	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
 			CombinatorI<A> combinator, A currentAcc) throws Exception {
 		System.out.println("Reception de la requête 'MAP REDUCE' (REDUCE) sur le noeud " + this.intervalle.first()
@@ -306,7 +310,7 @@ public class NodeBCM extends AbstractComponent {
 	 * @return Les données associées à la clé {@code key} si elles existent, sinon
 	 *         {@code null}.
 	 */
-	private ContentDataI get(ContentKeyI key) {
+	protected ContentDataI get(ContentKeyI key) {
 		for (ContentKeyI k : content.keySet()) {
 
 			if (((EntierKey) k).getCle() == ((EntierKey) key).getCle()) {
@@ -329,7 +333,7 @@ public class NodeBCM extends AbstractComponent {
 	 *             jour.
 	 * @param data Les données à associer à la clé spécifiée.
 	 */
-	private void put(ContentKeyI key, ContentDataI data) {
+	protected void put(ContentKeyI key, ContentDataI data) {
 		for (ContentKeyI k : content.keySet()) {
 			if (((EntierKey) k).getCle() == ((EntierKey) key).getCle()) {
 				content.put(k, data);
@@ -348,7 +352,7 @@ public class NodeBCM extends AbstractComponent {
 	 * 
 	 * @param key La clé des données à supprimer.
 	 */
-	private void remove(ContentKeyI key) {
+	protected void remove(ContentKeyI key) {
 		for (ContentKeyI k : content.keySet()) {
 			if (((EntierKey) k).getCle() == ((EntierKey) key).getCle()) {
 				content.remove(k);

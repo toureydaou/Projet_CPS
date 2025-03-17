@@ -5,7 +5,6 @@ import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
@@ -30,7 +29,7 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
  * @author Awwal FAGBEHOURO
  */
 
-public class ContentAccessOutboundPort extends ContentAccessSyncOutboundPort implements ContentAccessCI {
+public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort implements ContentAccessCI {
 
 	// -------------------------------------------------------------------------
 	// Constantes et variables
@@ -48,7 +47,7 @@ public class ContentAccessOutboundPort extends ContentAccessSyncOutboundPort imp
 	 * @param owner Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
-	public ContentAccessOutboundPort(ComponentI owner) throws Exception {
+	public AsynchronousContentAccessOutboundPort(ComponentI owner) throws Exception {
 		super(ContentAccessCI.class, owner);
 
 		// le propriétaire de ce port est un noeud ou la facade tous deux jouant le role
@@ -63,7 +62,7 @@ public class ContentAccessOutboundPort extends ContentAccessSyncOutboundPort imp
 	 * @param owner Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
-	public ContentAccessOutboundPort(String uri, ComponentI owner) throws Exception {
+	public AsynchronousContentAccessOutboundPort(String uri, ComponentI owner) throws Exception {
 		super(uri, ContentAccessCI.class, owner);
 
 		assert uri != null && owner != null;
@@ -86,6 +85,30 @@ public class ContentAccessOutboundPort extends ContentAccessSyncOutboundPort imp
 	public <I extends ResultReceptionCI> void remove(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
 		((ContentAccessCI)this.getConnector()).remove(computationURI, key, caller);;
+		
+	}
+
+	@Override
+	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void clearComputation(String computationURI) throws Exception {
+		// TODO Auto-generated method stub
 		
 	}
 

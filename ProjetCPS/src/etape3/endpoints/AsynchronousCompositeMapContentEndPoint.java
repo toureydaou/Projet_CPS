@@ -4,7 +4,7 @@ import fr.sorbonne_u.components.endpoints.BCMCompositeEndPoint;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
 
-public class CompositeMapContentEndPoint extends BCMCompositeEndPoint {
+public class AsynchronousCompositeMapContentEndPoint extends BCMCompositeEndPoint {
 	private static final long serialVersionUID = 1L;
 	/** Nombre de points d'accès dans ce point d'accès composite */
 	protected static final int NUMBER_OF_ENDPOINTS = 2;
@@ -13,11 +13,11 @@ public class CompositeMapContentEndPoint extends BCMCompositeEndPoint {
 	 * Constructeur qui initialise les points d'accès nécessaires. Il ajoute deux
 	 * points d'accès : un pour l'accès aux contenus et un pour MapReduce.
 	 */
-	public CompositeMapContentEndPoint() {
+	public AsynchronousCompositeMapContentEndPoint() {
 		super(NUMBER_OF_ENDPOINTS);
-		ContentAccessEndPoint contentAccessEndPoint = new ContentAccessEndPoint();
+		AsynchronousContentAccessEndPoint contentAccessEndPoint = new AsynchronousContentAccessEndPoint();
 		this.addEndPoint(contentAccessEndPoint);
-		MapReduceEndPoint mapReduceEndpoint = new MapReduceEndPoint();
+		AsynchronousMapReduceEndPoint mapReduceEndpoint = new AsynchronousMapReduceEndPoint();
 		this.addEndPoint(mapReduceEndpoint);
 	}
 
@@ -26,8 +26,8 @@ public class CompositeMapContentEndPoint extends BCMCompositeEndPoint {
 	 * 
 	 * @return Le point d'accès pour l'accès aux contenus.
 	 */
-	public ContentAccessEndPoint getContentAccessEndPoint() {
-		return (ContentAccessEndPoint) this.getEndPoint(ContentAccessCI.class);
+	public AsynchronousContentAccessEndPoint getContentAccessEndPoint() {
+		return (AsynchronousContentAccessEndPoint) this.getEndPoint(ContentAccessCI.class);
 	}
 
 	/**
@@ -35,8 +35,8 @@ public class CompositeMapContentEndPoint extends BCMCompositeEndPoint {
 	 * 
 	 * @return Le point d'accès pour les opérations MapReduce.
 	 */
-	public MapReduceEndPoint getMapReduceEndPoint() {
-		return (MapReduceEndPoint) this.getEndPoint(MapReduceCI.class);
+	public AsynchronousMapReduceEndPoint getMapReduceEndPoint() {
+		return (AsynchronousMapReduceEndPoint) this.getEndPoint(MapReduceCI.class);
 	}
 }
 

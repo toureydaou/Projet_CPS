@@ -2,9 +2,14 @@ package etape3.composants;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import etape2.endpoints.DHTServicesEndPoint;
-import etape3.endpoints.CompositeMapContentEndPoint;
+import etape3.endpoints.AsynchronousCompositeMapContentEndPoint;
 import etape3.endpoints.ResultReceptionEndPoint;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
@@ -18,6 +23,7 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionCI;
@@ -28,10 +34,9 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 
-@OfferedInterfaces(offered = { DHTServicesCI.class, ResultReceptionCI.class, MapReduceResultReceptionCI.class  })
+@OfferedInterfaces(offered = { DHTServicesCI.class, ResultReceptionCI.class, MapReduceResultReceptionCI.class })
 @RequiredInterfaces(required = { ContentAccessCI.class, MapReduceCI.class })
-
-public class FacadeBCM extends AbstractComponent implements ResultReceptionI, MapReduceResultReceptionI {
+public class FacadeBCM extends AbstractComponent implements ResultReceptionI, MapReduceResultReceptionI, DHTServicesI {
 
 	// URI constants pour l'accès aux services
 	private static final String GET_URI = "GET";
@@ -39,15 +44,15 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	private static final String REMOVE_URI = "REMOVE";
 	private static final String MAPREDUCE_URI = "MAPREDUCE";
 
-	private static final int SCHEDULABLE_THREADS = 1;
-	private static final int THREADS_NUMBER = 0;
+	private static final int SCHEDULABLE_THREADS = 0;
+	private static final int THREADS_NUMBER = 2;
 
 	// Endpoints pour accéder aux services
-	protected CompositeMapContentEndPoint cmce;
+	protected AsynchronousCompositeMapContentEndPoint cmce;
 	protected DHTServicesEndPoint dsep;
 	protected ResultReceptionEndPoint rrep;
 
-	private HashMap<String, ContentDataI> results;
+	private HashMap<String, CompletableFuture<ContentDataI>> results;
 	private HashMap<String, Serializable> resultsMapReduce;
 
 	/**
@@ -59,12 +64,13 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	 * @param dsep L'endpoint DHTServicesEndPoint pour la gestion des services DHT.
 	 * @throws ConnectionException Si une erreur de connexion se produit.
 	 */
-	protected FacadeBCM(String uri, CompositeMapContentEndPoint cmce, DHTServicesEndPoint dsep,
+	protected FacadeBCM(String uri, AsynchronousCompositeMapContentEndPoint cmce, DHTServicesEndPoint dsep,
 			ResultReceptionEndPoint rrep) throws ConnectionException {
 		super(uri, THREADS_NUMBER, SCHEDULABLE_THREADS);
 		this.cmce = cmce;
 		this.dsep = dsep;
-		this.results = new HashMap<String, ContentDataI>();
+		this.rrep = rrep;
+		this.results = new HashMap<String, CompletableFuture<ContentDataI>>();
 		dsep.initialiseServerSide(this);
 		rrep.initialiseServerSide(this);
 	}
@@ -73,16 +79,20 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	 * Récupère les données associées à une clé via le service DHT.
 	 * 
 	 * @param key La clé des données à récupérer.
-	 * @return Les données associées à la clé.
+	 * @return Les données associées à la clé.results.get(request_ur
 	 * @throws Exception Si une erreur se produit lors de l'exécution.
 	 */
 
 	public ContentDataI get(ContentKeyI key) throws Exception {
-
 		String request_uri = URIGenerator.generateURI(GET_URI);
 		System.out.println("Reception de la requête 'GET' sur la facade, identifiant de la requete : " + request_uri);
+		CompletableFuture<ContentDataI> f = new CompletableFuture<ContentDataI>();
+		this.results.put(request_uri, f);
 		this.cmce.getContentAccessEndPoint().getClientSideReference().get(request_uri, key, rrep);
-		return results.get(request_uri);
+		ContentDataI value = this.results.get(request_uri).get();
+		this.results.remove(request_uri);
+		return value;
+
 	}
 
 	/**
@@ -97,8 +107,12 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	public ContentDataI put(ContentKeyI key, ContentDataI value) throws Exception {
 		String request_uri = URIGenerator.generateURI(PUT_URI);
 		System.out.println("Reception de la requête 'PUT' sur la facade identifiant requete : " + request_uri);
+		CompletableFuture<ContentDataI> f = new CompletableFuture<ContentDataI>();
+		this.results.put(request_uri, f);
 		this.cmce.getContentAccessEndPoint().getClientSideReference().put(request_uri, key, value, rrep);
-		return results.get(request_uri);
+		ContentDataI oldValue = this.results.get(request_uri).get();
+		this.results.remove(request_uri);
+		return oldValue;
 	}
 
 	/**
@@ -112,8 +126,12 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	public ContentDataI remove(ContentKeyI key) throws Exception {
 		String request_uri = URIGenerator.generateURI(REMOVE_URI);
 		System.out.println("Reception de la requête 'REMOVE' sur la facade identifiant requete : " + request_uri);
-		this.cmce.getContentAccessEndPoint().getClientSideReference().remove(request_uri, key, rrep);		
-		return results.get(request_uri);
+		CompletableFuture<ContentDataI> f = new CompletableFuture<ContentDataI>();
+		this.results.put(request_uri, f);
+		this.cmce.getContentAccessEndPoint().getClientSideReference().remove(request_uri, key, rrep);
+		ContentDataI oldValue = this.results.get(request_uri).get();
+		this.results.remove(request_uri);
+		return oldValue;
 	}
 
 	/**
@@ -146,17 +164,14 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	}
 
 	
-	
-	
 	@Override
 	public void acceptResult(String computationURI, Serializable result) throws Exception {
-		results.put(computationURI, (ContentDataI) result);
+		this.results.get(computationURI).complete((ContentDataI) result);
 	}
-	
+
 	@Override
 	public void acceptResult(String computationURI, String emitterId, Serializable acc) {
-		
-		
+
 	}
 
 	/**
@@ -166,7 +181,7 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	 *                                 composant.
 	 */
 	@Override
-	public synchronized void start() throws ComponentStartException {
+	public  void start() throws ComponentStartException {
 		this.logMessage("starting facade component.");
 		super.start();
 
@@ -185,7 +200,7 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	 * @throws Exception Si une erreur se produit lors de l'arrêt du composant.
 	 */
 	@Override
-	public synchronized void finalise() throws Exception {
+	public  void finalise() throws Exception {
 		this.logMessage("stopping facade component.");
 		this.printExecutionLogOnFile("facade");
 		this.cmce.cleanUpClientSide();
@@ -198,9 +213,10 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	 * @throws ComponentShutdownException Si une erreur se produit lors de l'arrêt.
 	 */
 	@Override
-	public synchronized void shutdown() throws ComponentShutdownException {
+	public  void shutdown() throws ComponentShutdownException {
 		try {
 			this.dsep.cleanUpServerSide();
+			this.rrep.cleanUpServerSide();
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e);
 		}
@@ -214,7 +230,7 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	 *                                    immédiat.
 	 */
 	@Override
-	public synchronized void shutdownNow() throws ComponentShutdownException {
+	public void shutdownNow() throws ComponentShutdownException {
 		try {
 			this.dsep.cleanUpServerSide();
 		} catch (Exception e) {
