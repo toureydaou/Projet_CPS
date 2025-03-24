@@ -10,7 +10,6 @@ public class ResultReceptionConnector extends AbstractConnector implements Resul
 	@Override
 	public void acceptResult(String computationURI, Serializable result) throws Exception {
 		((ResultReceptionCI) this.offering).acceptResult(computationURI, result);
-		
 	}
 
 }

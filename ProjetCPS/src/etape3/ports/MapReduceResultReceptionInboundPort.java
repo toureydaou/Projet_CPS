@@ -6,6 +6,7 @@ import etape3.composants.FacadeBCM;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionI;
 
 public class MapReduceResultReceptionInboundPort extends AbstractInboundPort implements MapReduceResultReceptionCI {
 
@@ -29,7 +30,7 @@ public class MapReduceResultReceptionInboundPort extends AbstractInboundPort imp
 		super(MapReduceResultReceptionCI.class, owner);
 
 		// le propriétaire de ce port est un noeud jouant le role de serveur
-		assert (owner instanceof FacadeBCM);
+		assert (owner instanceof MapReduceResultReceptionI);
 	}
 
 	/**
@@ -42,7 +43,7 @@ public class MapReduceResultReceptionInboundPort extends AbstractInboundPort imp
 	public MapReduceResultReceptionInboundPort(String uri, ComponentI owner) throws Exception {
 		super(uri, MapReduceResultReceptionCI.class, owner);
 
-		assert uri != null && (owner instanceof FacadeBCM);
+		assert uri != null && (owner instanceof MapReduceResultReceptionI);
 	}
 
 

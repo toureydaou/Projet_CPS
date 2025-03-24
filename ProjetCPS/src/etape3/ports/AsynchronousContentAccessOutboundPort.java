@@ -1,6 +1,5 @@
 package etape3.ports;
 
-import etape2.ports.ContentAccessSyncOutboundPort;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;

@@ -5,10 +5,8 @@ import java.io.Serializable;
 import etape3.composants.FacadeBCM;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionI;
 
 public class ResultReceptionInboundPort extends AbstractInboundPort implements ResultReceptionCI {
 	// -------------------------------------------------------------------------
@@ -31,7 +29,7 @@ public class ResultReceptionInboundPort extends AbstractInboundPort implements R
 		super(ResultReceptionCI.class, owner);
 
 		// le propriétaire de ce port est un noeud jouant le role de serveur
-		assert (owner instanceof FacadeBCM);
+		assert (owner instanceof ResultReceptionI);
 	}
 
 	/**
@@ -44,14 +42,14 @@ public class ResultReceptionInboundPort extends AbstractInboundPort implements R
 	public ResultReceptionInboundPort(String uri, ComponentI owner) throws Exception {
 		super(uri, ResultReceptionCI.class, owner);
 
-		assert uri != null && (owner instanceof FacadeBCM);
+		assert uri != null && (owner instanceof ResultReceptionI);
 	}
 
 	@Override
 	public void acceptResult(String computationURI, Serializable result) throws Exception {
 		this.getOwner().runTask(owner -> {
 			try {
-				((FacadeBCM) owner).acceptResult(computationURI, result);
+				((ResultReceptionI) owner).acceptResult(computationURI, result);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

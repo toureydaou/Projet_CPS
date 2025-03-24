@@ -2,7 +2,6 @@ package etape2.ports;
 
 import java.io.Serializable;
 
-import etape2.composants.FacadeBCM;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;

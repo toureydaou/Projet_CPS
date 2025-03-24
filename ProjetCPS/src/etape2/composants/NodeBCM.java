@@ -1,12 +1,10 @@
 package etape2.composants;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 
-import etape1.EntierKey;
 import etape2.endpoints.CompositeMapContentSyncEndpoint;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
@@ -197,9 +195,9 @@ public class NodeBCM extends AbstractComponent {
 			return null;
 		} else {
 			uriPassCont.add(computationURI);
-			int cle = ((EntierKey) key).getCle();
+			int cle = key.hashCode();
 			if (intervalle.in(cle)) {
-				return this.get(key);
+				return content.get(key);
 			}
 			return this.cmceOutbound.getContentAccessEndPoint().getClientSideReference().getSync(computationURI, key);
 		}
@@ -229,10 +227,10 @@ public class NodeBCM extends AbstractComponent {
 			return null;
 		} else {
 			uriPassCont.add(computationURI);
-			int cle = ((EntierKey) key).getCle();
+			int cle = key.hashCode();
 			if (intervalle.in(cle)) {
-				ContentDataI valuePrec = this.get(key);
-				this.put(key, value);
+				ContentDataI valuePrec = content.get(key);
+				content.put(key, value);
 				return valuePrec;
 			}
 			return this.cmceOutbound.getContentAccessEndPoint().getClientSideReference().putSync(computationURI, key,
@@ -263,10 +261,9 @@ public class NodeBCM extends AbstractComponent {
 			return null;
 		} else {
 			uriPassCont.add(computationURI);
-			int n = ((EntierKey) key).getCle();
+			int n = key.hashCode();
 			if (intervalle.in(n)) {
-				ContentDataI valuePrec = this.get(key);
-				this.remove(key);
+				ContentDataI valuePrec = content.remove(key);
 				return valuePrec;
 			}
 			return this.cmceOutbound.getContentAccessEndPoint().getClientSideReference().removeSync(computationURI,
@@ -299,67 +296,6 @@ public class NodeBCM extends AbstractComponent {
 		}
 	}
 
-	/**
-	 * Récupère les données associées à la clé spécifiée {@code key} dans la
-	 * collection locale de données {@code content}. Étant donnée qu'il s'agit des
-	 * réferences qui sont utilisées pour stocker nos données dans la DHT, on
-	 * récupère donc dans la DHT la clé ayant la même valeur que {@code key} puis on
-	 * récupère la valeur associé à la clé correspondante.
-	 * 
-	 * @param key La clé des données à récupérer.
-	 * @return Les données associées à la clé {@code key} si elles existent, sinon
-	 *         {@code null}.
-	 */
-	protected ContentDataI get(ContentKeyI key) {
-		for (ContentKeyI k : content.keySet()) {
-
-			if (((EntierKey) k).getCle() == ((EntierKey) key).getCle()) {
-
-				return content.get(k);
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Insère ou met à jour les données associées à la clé spécifiée {@code key}
-	 * dans la collection locale de données {@code content}.
-	 * 
-	 * Si la clé existe déjà dans la collection, elle sera mise à jour avec la
-	 * nouvelle valeur {@code data}. Sinon, la clé et la valeur seront ajoutées à la
-	 * collection.
-	 * 
-	 * @param key  La clé sous laquelle les données doivent être insérées ou mises à
-	 *             jour.
-	 * @param data Les données à associer à la clé spécifiée.
-	 */
-	protected void put(ContentKeyI key, ContentDataI data) {
-		for (ContentKeyI k : content.keySet()) {
-			if (((EntierKey) k).getCle() == ((EntierKey) key).getCle()) {
-				content.put(k, data);
-				break;
-			}
-		}
-		content.put(key, data);
-	}
-
-	/**
-	 * Supprime les données associées à la clé spécifiée {@code key} dans la
-	 * collection locale de données {@code content}.
-	 * 
-	 * La méthode parcourt les clés dans la collection {@code content} et supprime
-	 * la donnée associée à la clé spécifiée si une correspondance est trouvée.
-	 * 
-	 * @param key La clé des données à supprimer.
-	 */
-	protected void remove(ContentKeyI key) {
-		for (ContentKeyI k : content.keySet()) {
-			if (((EntierKey) k).getCle() == ((EntierKey) key).getCle()) {
-				content.remove(k);
-				break;
-			}
-		}
-	}
 
 	/**
 	 * Démarre le composant ClientBCM.

@@ -2,8 +2,6 @@ package etape2.composants;
 
 import java.io.Serializable;
 
-import etape1.EntierKey;
-import etape1.Livre;
 import etape2.endpoints.DHTServicesEndPoint;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;

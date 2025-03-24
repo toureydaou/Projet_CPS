@@ -1,7 +1,6 @@
 package etape3.connecteurs;
 
 import etape2.connecteurs.ContentAccessSyncConnector;
-import fr.sorbonne_u.components.connectors.AbstractConnector;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;

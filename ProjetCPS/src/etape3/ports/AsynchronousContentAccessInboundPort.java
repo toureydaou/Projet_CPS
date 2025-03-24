@@ -1,13 +1,11 @@
 package etape3.ports;
 
 
-import etape2.ports.ContentAccessSyncInboundPort;
-import etape3.composants.AsynchronousNodeBCM;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
-import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
@@ -54,7 +52,7 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 		super(ContentAccessCI.class, owner);
 
 		// le propriétaire de ce port est un noeud jouant le role de serveur
-		assert (owner instanceof AsynchronousNodeBCM);
+		assert (owner instanceof ContentAccessI);
 	}
 
 	/**
@@ -67,7 +65,7 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 	public AsynchronousContentAccessInboundPort(String uri, ComponentI owner) throws Exception {
 		super(uri, ContentAccessCI.class, owner);
 
-		assert uri != null && (owner instanceof AsynchronousNodeBCM);
+		assert uri != null && (owner instanceof ContentAccessI);
 	}
 
 	@Override
@@ -75,7 +73,7 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 			throws Exception {
 		this.getOwner().runTask(owner -> {
 			try {
-				((AsynchronousNodeBCM) owner).get(computationURI, key, caller);
+				((ContentAccessI) owner).get(computationURI, key, caller);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -88,7 +86,7 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 			EndPointI<I> caller) throws Exception {
 		this.getOwner().runTask(owner -> {
 			try {
-				((AsynchronousNodeBCM) owner).put(computationURI, key, value, caller);
+				((ContentAccessI) owner).put(computationURI, key, value, caller);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -102,7 +100,7 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 			throws Exception {
 		this.getOwner().runTask(owner -> {
 			try {
-				((AsynchronousNodeBCM) owner).remove(computationURI, key, caller);
+				((ContentAccessI) owner).remove(computationURI, key, caller);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

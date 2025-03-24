@@ -38,13 +38,14 @@ public class EntierKey implements ContentKeyI {
 		super();
 		this.cle = cle;
 	}
-	
+
 	/**
      * Retourne la valeur de la clé.
      * 
      * @return La valeur entière de la clé.
      */
-	public int getCle() {
+	@Override
+	public int hashCode() {
 		return cle;
 	}
 	

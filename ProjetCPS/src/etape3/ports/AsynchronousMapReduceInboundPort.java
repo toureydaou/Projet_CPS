@@ -3,15 +3,13 @@ package etape3.ports;
 import java.io.Serializable;
 
 
-import etape2.ports.MapReduceSyncInboundPort;
-import etape3.composants.AsynchronousNodeBCM;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionCI;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
@@ -58,7 +56,7 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 		super(MapReduceCI.class, owner);
 
 		// le propriétaire de ce port est un noeud jouant le role de serveur
-		assert (owner instanceof AsynchronousNodeBCM);
+		assert (owner instanceof MapReduceI);
 	}
 
 	/**
@@ -71,7 +69,7 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 	public AsynchronousMapReduceInboundPort(String uri, ComponentI owner) throws Exception {
 		super(uri, MapReduceCI.class, owner);
 
-		assert uri != null && (owner instanceof AsynchronousNodeBCM);
+		assert uri != null && (owner instanceof MapReduceI);
 	}
 
 	@Override
@@ -79,7 +77,7 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 			SelectorI selector, ProcessorI<R> processor) throws Exception {
 		this.getOwner().runTask(owner -> {
 			try {
-				((AsynchronousNodeBCM) owner).map(computationURI, selector, processor);
+				((MapReduceI) owner).map(computationURI, selector, processor);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -93,7 +91,7 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 			throws Exception {
 		this.getOwner().runTask(owner -> {
 			try {
-				((AsynchronousNodeBCM) owner).reduce(computationURI, reductor, combinator, identityAcc, currentAcc, callerNode);
+				((MapReduceI) owner).reduce(computationURI, reductor, combinator, identityAcc, currentAcc, callerNode);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

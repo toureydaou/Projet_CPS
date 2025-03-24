@@ -40,10 +40,6 @@ public class MultiNodeTest {
 	private Livre livre_2;
 	private Livre livre_3;
 	private Livre livre_4;
-	private Livre livre_5;
-	private Livre livre_6;
-	private Livre livre_7;
-
 	private static final String LIVRE_1_NOM = "Odysee";
 	private static final String LIVRE_2_NOM = "Horla";
 	private static final String LIVRE_3_NOM = "Un piege sans fin";
@@ -84,9 +80,9 @@ public class MultiNodeTest {
 		livre_2 = new Livre(LIVRE_2_NOM, LIVRE_2_PAGES);
 		livre_3 = new Livre(LIVRE_3_NOM, LIVRE_3_PAGES);
 		livre_4 = new Livre(LIVRE_4_NOM, LIVRE_4_PAGES);
-		livre_5 = new Livre(LIVRE_5_NOM, LIVRE_5_PAGES);
-		livre_6 = new Livre(LIVRE_6_NOM, LIVRE_6_PAGES);
-		livre_7 = new Livre(LIVRE_7_NOM, LIVRE_7_PAGES);
+		new Livre(LIVRE_5_NOM, LIVRE_5_PAGES);
+		new Livre(LIVRE_6_NOM, LIVRE_6_PAGES);
+		new Livre(LIVRE_7_NOM, LIVRE_7_PAGES);
 
 		for (int i = 0; i < NOMBRE_ENDPOINTS; i++) {
 			pojoEndpoints[i] = new POJOContentNodeCompositeEndPoint();

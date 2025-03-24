@@ -1,6 +1,5 @@
 package etape3.endpoints;
 
-import etape2.connecteurs.ContentAccessSyncConnector;
 import etape3.connecteurs.ResultReceptionConnector;
 import etape3.ports.ResultReceptionInboundPort;
 import etape3.ports.ResultReceptionOutboundPort;

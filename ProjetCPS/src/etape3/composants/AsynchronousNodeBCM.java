@@ -2,9 +2,11 @@ package etape3.composants;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import etape1.EntierKey;
@@ -31,60 +33,56 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 
 @OfferedInterfaces(offered = { MapReduceCI.class, ContentAccessCI.class })
-@RequiredInterfaces(required = { MapReduceCI.class, ContentAccessCI.class, ResultReceptionCI.class })
+@RequiredInterfaces(required = { MapReduceCI.class, ContentAccessCI.class, ResultReceptionCI.class, MapReduceResultReceptionCI.class })
 public class AsynchronousNodeBCM extends AbstractComponent implements ContentAccessI, MapReduceI {
 
 	// Stocke les données associées aux clés de la DHT
 	protected ConcurrentHashMap<ContentKeyI, ContentDataI> content;
+	
+	
 
 	protected IntInterval intervalle;
 
 	// Listes des URI des computations MapReduce et de stockage déjà traitées
-	protected CopyOnWriteArrayList<String> uriPassCont = new CopyOnWriteArrayList<>();
-	protected CopyOnWriteArrayList<String> uriPassMap = new CopyOnWriteArrayList<>();
+	protected CopyOnWriteArrayList<String> listeUriContentOperations = new CopyOnWriteArrayList<>();
+	protected CopyOnWriteArrayList<String> listeUriMapOperations = new CopyOnWriteArrayList<>();
 
 	// Mémoire temporaire pour stocker les résultats intermédiaires des computations
 	// MapReduce
-	private HashMap<String, Stream<ContentDataI>> memory = new HashMap<>();
+	private ConcurrentHashMap<String, CompletableFuture<Stream<ContentDataI>>> memory = new ConcurrentHashMap<>();
 
-	protected AsynchronousCompositeMapContentEndPoint cmceOutboundAsync;
-	protected AsynchronousCompositeMapContentEndPoint cmceInboundAsync;
+	protected AsynchronousCompositeMapContentEndPoint compositeMapEndpointOutboundAsync;
+	protected AsynchronousCompositeMapContentEndPoint compositeMapEndpointInboundAsync;
 
-	protected AsynchronousNodeBCM(String uri, AsynchronousCompositeMapContentEndPoint cmceInboundAsync,
-			AsynchronousCompositeMapContentEndPoint cmceOutboundAsync, IntInterval intervalle)
+	protected AsynchronousNodeBCM(String uri, AsynchronousCompositeMapContentEndPoint compositeMapEndpointInboundAsync,
+			AsynchronousCompositeMapContentEndPoint compositeMapEndpointOutboundAsync, IntInterval intervalle)
 			throws ConnectionException {
 		super(2, 0);
 		this.content = new ConcurrentHashMap<>();
 		this.intervalle = intervalle;
-		this.cmceInboundAsync = cmceInboundAsync;
-		this.cmceOutboundAsync = cmceOutboundAsync;
-		this.cmceInboundAsync.initialiseServerSide(this);
+		this.compositeMapEndpointInboundAsync = compositeMapEndpointInboundAsync;
+		this.compositeMapEndpointOutboundAsync = compositeMapEndpointOutboundAsync;
+		this.compositeMapEndpointInboundAsync.initialiseServerSide(this);
 	}
 
 	@Override
 	public <I extends ResultReceptionCI> void get(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
 
-		if (!uriPassCont.contains(computationURI)) {
-			uriPassCont.addIfAbsent(computationURI);
-			ExecutorCompletionService<ContentDataI> ecs = new ExecutorCompletionService<>(this.getExecutorService());
+		if (!listeUriContentOperations.contains(computationURI)) {
+			listeUriContentOperations.addIfAbsent(computationURI);
 
-			ecs.submit(() -> {
-				if (this.intervalle.in(((EntierKey) key).getCle())) {
-					if (!caller.clientSideInitialised()) {
-						caller.initialiseClientSide(this);
-					}
-					caller.getClientSideReference().acceptResult(computationURI, this.get(key));
-					caller.cleanUpClientSide();
+			if (this.intervalle.in(key.hashCode())) {
+				if (!caller.clientSideInitialised()) {
+					caller.initialiseClientSide(this);
 				}
-				return null;
-			});
+				caller.getClientSideReference().acceptResult(computationURI, content.get(key));
+				caller.cleanUpClientSide();
+			} else {
+				this.compositeMapEndpointOutboundAsync.getContentAccessEndPoint().getClientSideReference()
+						.get(computationURI, key, caller);
+			}
 
-			ecs.submit(() -> {
-				this.cmceOutboundAsync.getContentAccessEndPoint().getClientSideReference().get(computationURI, key,
-						caller);
-				return null;
-			});
 		}
 
 	}
@@ -93,134 +91,84 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	public <I extends ResultReceptionCI> void put(String computationURI, ContentKeyI key, ContentDataI value,
 			EndPointI<I> caller) throws Exception {
 
-		if (!uriPassCont.contains(computationURI)) {
-			uriPassCont.addIfAbsent(computationURI);
-			ExecutorCompletionService<ContentDataI> ecs = new ExecutorCompletionService<>(this.getExecutorService());
+		if (!listeUriContentOperations.contains(computationURI)) {
+			listeUriContentOperations.addIfAbsent(computationURI);
 
-			ecs.submit(() -> {
-				if (this.intervalle.in(((EntierKey) key).getCle())) {
-					if (!caller.clientSideInitialised()) {
-						caller.initialiseClientSide(this);
-					}
-					ContentDataI oldValue = this.get(key);
-					this.put(key, value);
-					caller.getClientSideReference().acceptResult(computationURI, oldValue);
-					caller.cleanUpClientSide();
+			if (this.intervalle.in(key.hashCode())) {
+				if (!caller.clientSideInitialised()) {
+					caller.initialiseClientSide(this);
 				}
-				return null;
-			});
-
-			ecs.submit(() -> {
-				this.cmceOutboundAsync.getContentAccessEndPoint().getClientSideReference().put(computationURI, key,
-						value, caller);
-				return null;
-			});
+				ContentDataI oldValue = content.putIfAbsent(key, value);
+				caller.getClientSideReference().acceptResult(computationURI, oldValue);
+				caller.cleanUpClientSide();
+			} else {
+				this.compositeMapEndpointOutboundAsync.getContentAccessEndPoint().getClientSideReference()
+						.put(computationURI, key, value, caller);
+			}
 		}
 	}
 
 	@Override
 	public <I extends ResultReceptionCI> void remove(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
-		if (!uriPassCont.contains(computationURI)) {
-			uriPassCont.addIfAbsent(computationURI);
-			ExecutorCompletionService<ContentDataI> ecs = new ExecutorCompletionService<>(this.getExecutorService());
+		if (!listeUriContentOperations.contains(computationURI)) {
+			listeUriContentOperations.addIfAbsent(computationURI);
 
-			ecs.submit(() -> {
-				if (this.intervalle.in(((EntierKey) key).getCle())) {
-					if (!caller.clientSideInitialised()) {
-						caller.initialiseClientSide(this);
-					}
-					ContentDataI oldValue = this.get(key);
-					this.remove(key);
-					caller.getClientSideReference().acceptResult(computationURI, oldValue);
-					caller.cleanUpClientSide();
+			if (this.intervalle.in(key.hashCode())) {
+				if (!caller.clientSideInitialised()) {
+					caller.initialiseClientSide(this);
 				}
-				return null;
-			});
+				ContentDataI oldValue = content.remove(key);
+				caller.getClientSideReference().acceptResult(computationURI, oldValue);
+				caller.cleanUpClientSide();
+			} else {
+				this.compositeMapEndpointOutboundAsync.getContentAccessEndPoint().getClientSideReference()
+						.remove(computationURI, key, caller);
 
-			ecs.submit(() -> {
-				this.cmceOutboundAsync.getContentAccessEndPoint().getClientSideReference().remove(computationURI, key,
-						caller);
-				return null;
-			});
+			}
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <R extends Serializable, I extends MapReduceResultReceptionCI> void map(String computationURI,
 			SelectorI selector, ProcessorI<R> processor) throws Exception {
-		// TODO Auto-generated method stub
+		if (!listeUriMapOperations.contains(computationURI)) {
+			listeUriMapOperations.addIfAbsent(computationURI);
+			
+			CompletableFuture<Stream<ContentDataI>> futureStream = new CompletableFuture<Stream<ContentDataI>>();
+			memory.putIfAbsent(computationURI, futureStream);
+			futureStream.complete((Stream<ContentDataI>) content.values().stream().filter(selector).map(processor));
+			
+
+			this.compositeMapEndpointOutboundAsync.getMapReduceEndPoint().getClientSideReference().map(computationURI,
+					selector, processor);
+
+		}
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <A extends Serializable, R, I extends MapReduceResultReceptionCI> void reduce(String computationURI,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A identityAcc, A currentAcc, EndPointI<I> callerNode)
 			throws Exception {
-		// TODO Auto-generated method stub
+		if (!listeUriMapOperations.contains(computationURI)) {
+			listeUriMapOperations.remove(computationURI);
+			
+			Stream<ContentDataI> localStream = memory.get(computationURI).get();
+			
+			A localReduce = localStream.reduce(identityAcc, (u, d) -> reductor.apply(u, (R) d), combinator);
+			localReduce = combinator.apply(currentAcc, localReduce);
+			this.compositeMapEndpointOutboundAsync.getMapReduceEndPoint().getClientSideReference().reduce(computationURI, reductor, combinator, identityAcc, localReduce, callerNode);	
 
-	}
-
-	/**
-	 * Récupère les données associées à la clé spécifiée {@code key} dans la
-	 * collection locale de données {@code content}. Étant donnée qu'il s'agit des
-	 * réferences qui sont utilisées pour stocker nos données dans la DHT, on
-	 * récupère donc dans la DHT la clé ayant la même valeur que {@code key} puis on
-	 * récupère la valeur associé à la clé correspondante.
-	 * 
-	 * @param key La clé des données à récupérer.
-	 * @return Les données associées à la clé {@code key} si elles existent, sinon
-	 *         {@code null}.
-	 */
-	protected ContentDataI get(ContentKeyI key) {
-		for (ContentKeyI k : content.keySet()) {
-
-			if (((EntierKey) k).getCle() == ((EntierKey) key).getCle()) {
-
-				return content.get(k);
+		} else {
+			if (!callerNode.clientSideInitialised()) {
+				callerNode.initialiseClientSide(this);
 			}
+			callerNode.getClientSideReference().acceptResult(computationURI, "" , currentAcc);
 		}
-		return null;
-	}
 
-	/**
-	 * Insère ou met à jour les données associées à la clé spécifiée {@code key}
-	 * dans la collection locale de données {@code content}.
-	 * 
-	 * Si la clé existe déjà dans la collection, elle sera mise à jour avec la
-	 * nouvelle valeur {@code data}. Sinon, la clé et la valeur seront ajoutées à la
-	 * collection.
-	 * 
-	 * @param key  La clé sous laquelle les données doivent être insérées ou mises à
-	 *             jour.
-	 * @param data Les données à associer à la clé spécifiée.
-	 */
-	protected void put(ContentKeyI key, ContentDataI data) {
-		for (ContentKeyI k : content.keySet()) {
-			if (((EntierKey) k).getCle() == ((EntierKey) key).getCle()) {
-				content.putIfAbsent(key, data);
-				break;
-			}
-		}
-		content.put(key, data);
-	}
-
-	/**
-	 * Supprime les données associées à la clé spécifiée {@code key} dans la
-	 * collection locale de données {@code content}.
-	 * 
-	 * La méthode parcourt les clés dans la collection {@code content} et supprime
-	 * la donnée associée à la clé spécifiée si une correspondance est trouvée.
-	 * 
-	 * @param key La clé des données à supprimer.
-	 */
-	protected void remove(ContentKeyI key) {
-		for (ContentKeyI k : content.keySet()) {
-			if (((EntierKey) k).getCle() == ((EntierKey) key).getCle()) {
-				content.remove(key);
-				break;
-			}
-		}
 	}
 
 	/**
@@ -234,8 +182,8 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		this.logMessage("starting node component.");
 		super.start();
 		try {
-			if (!this.cmceOutboundAsync.clientSideInitialised()) {
-				this.cmceOutboundAsync.initialiseClientSide(this);
+			if (!this.compositeMapEndpointOutboundAsync.clientSideInitialised()) {
+				this.compositeMapEndpointOutboundAsync.initialiseClientSide(this);
 			}
 		} catch (ConnectionException e) {
 			throw new ComponentStartException(e);
@@ -251,7 +199,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	public void finalise() throws Exception {
 		this.logMessage("stopping node component.");
 		this.printExecutionLogOnFile("node");
-		this.cmceOutboundAsync.cleanUpClientSide();
+		this.compositeMapEndpointOutboundAsync.cleanUpClientSide();
 		super.finalise();
 	}
 
@@ -263,7 +211,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	@Override
 	public void shutdown() throws ComponentShutdownException {
 		try {
-			this.cmceInboundAsync.cleanUpServerSide();
+			this.compositeMapEndpointInboundAsync.cleanUpServerSide();
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e);
 		}
@@ -279,7 +227,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	@Override
 	public void shutdownNow() throws ComponentShutdownException {
 		try {
-			this.cmceInboundAsync.cleanUpServerSide();
+			this.compositeMapEndpointInboundAsync.cleanUpServerSide();
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e);
 		}
