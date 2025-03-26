@@ -30,15 +30,15 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 public class ClientBCM extends AbstractComponent {
 
 	protected DHTServicesEndPoint endPointClientFacade; // Point d'accès aux services DHT
-	
+
 	private static final int SCHEDULABLE_THREADS = 1;
 	private static final int THREADS_NUMBER = 0;
 
 	/**
 	 * Constructeur du composant ClientBCM.
 	 * 
-	 * @param uri       URI du composant.
-	 * @param endpointClientFacade      Point d'accès aux services DHT.
+	 * @param uri                  URI du composant.
+	 * @param endpointClientFacade Point d'accès aux services DHT.
 	 */
 	protected ClientBCM(String uri, DHTServicesEndPoint endpointClientFacade) {
 		super(uri, THREADS_NUMBER, SCHEDULABLE_THREADS);
@@ -98,13 +98,12 @@ public class ClientBCM extends AbstractComponent {
 	public <R extends Serializable, A extends Serializable> A mapReduce(SelectorI selector, ProcessorI<R> processor,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A initialAcc) throws Exception {
 		System.out.println("Envoi de la requête 'MAP REDUCE' sur la facade");
-		return this.endPointClientFacade.getClientSideReference().mapReduce(selector, processor, reductor, combinator, initialAcc);
+		return this.endPointClientFacade.getClientSideReference().mapReduce(selector, processor, reductor, combinator,
+				initialAcc);
 	}
 
-	
-
 	@Override
-	public  void start() throws ComponentStartException {
+	public void start() throws ComponentStartException {
 		this.logMessage("starting client component.");
 		super.start();
 		try {
@@ -116,7 +115,6 @@ public class ClientBCM extends AbstractComponent {
 		}
 	}
 
-
 	@Override
 	public void execute() throws Exception {
 		this.logMessage("executing client component." + isStarted());
@@ -125,8 +123,22 @@ public class ClientBCM extends AbstractComponent {
 			@Override
 			public void run() {
 				try {
-					((ClientBCM) this.taskOwner).put(new EntierKey(10), new Livre("Harry potter", 200));
-					System.out.println(((ClientBCM) this.taskOwner).get(new EntierKey(10)));
+					EntierKey k_10 = new EntierKey(10);
+					EntierKey k_50 = new EntierKey(50);
+					EntierKey k_100 = new EntierKey(100);
+					EntierKey k_500 = new EntierKey(500);
+				
+					((ClientBCM) this.taskOwner).put(k_10, new Livre("Harry potter", 200));
+					((ClientBCM) this.taskOwner).put(k_50, new Livre("Harry potter", 200));
+					((ClientBCM) this.taskOwner).put(k_100, new Livre("Harry potter", 200));
+					System.out.println(((ClientBCM) this.taskOwner).get(k_500));
+				
+					
+					int reduce = ((ClientBCM) this.taskOwner).mapReduce(i -> ((int) i.getValue(Livre.NB_PAGES)) > 0,
+							i -> new Livre((String) i.getValue(Livre.TITRE), (int) i.getValue(Livre.NB_PAGES)),
+							(acc, i) -> (acc + (int) i.getValue(Livre.NB_PAGES)), (acc, i) -> (acc + i), 0);
+
+					System.out.println("Map reduce : " + reduce);
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
@@ -136,9 +148,8 @@ public class ClientBCM extends AbstractComponent {
 		});
 	}
 
-	
 	@Override
-	public  void finalise() throws Exception {
+	public void finalise() throws Exception {
 		this.logMessage("stopping client component.");
 		this.printExecutionLogOnFile("client");
 

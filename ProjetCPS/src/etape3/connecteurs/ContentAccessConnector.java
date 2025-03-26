@@ -28,5 +28,10 @@ public class ContentAccessConnector extends ContentAccessSyncConnector implement
 			throws Exception {
 		((ContentAccessCI)this.offering).remove(computationURI, key, caller);
 	}
+	
+	@Override
+	public void clearComputation(String computationURI) throws Exception {
+		((ContentAccessCI)this.offering).clearComputation(computationURI);
+	}
 
 }

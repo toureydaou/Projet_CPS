@@ -70,20 +70,20 @@ public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort 
 	@Override
 	public <I extends ResultReceptionCI> void get(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
-		((ContentAccessCI)this.getConnector()).get(computationURI, key, caller);;
+		((ContentAccessCI)this.getConnector()).get(computationURI, key, caller);
 	}
 
 	@Override
 	public <I extends ResultReceptionCI> void put(String computationURI, ContentKeyI key, ContentDataI value,
 			EndPointI<I> caller) throws Exception {
-		((ContentAccessCI)this.getConnector()).put(computationURI, key, value, caller);;
+		((ContentAccessCI)this.getConnector()).put(computationURI, key, value, caller);
 		
 	}
 
 	@Override
 	public <I extends ResultReceptionCI> void remove(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
-		((ContentAccessCI)this.getConnector()).remove(computationURI, key, caller);;
+		((ContentAccessCI)this.getConnector()).remove(computationURI, key, caller);
 		
 	}
 
@@ -107,7 +107,7 @@ public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort 
 
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
-		// TODO Auto-generated method stub
+		((ContentAccessCI)this.getConnector()).clearComputation(computationURI);
 		
 	}
 

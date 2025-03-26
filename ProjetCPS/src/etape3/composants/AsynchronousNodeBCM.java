@@ -1,15 +1,11 @@
 package etape3.composants;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
-import etape1.EntierKey;
 import etape3.endpoints.AsynchronousCompositeMapContentEndPoint;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
@@ -33,42 +29,42 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 
 @OfferedInterfaces(offered = { MapReduceCI.class, ContentAccessCI.class })
-@RequiredInterfaces(required = { MapReduceCI.class, ContentAccessCI.class, ResultReceptionCI.class, MapReduceResultReceptionCI.class })
+@RequiredInterfaces(required = { MapReduceCI.class, ContentAccessCI.class, ResultReceptionCI.class,
+		MapReduceResultReceptionCI.class })
 public class AsynchronousNodeBCM extends AbstractComponent implements ContentAccessI, MapReduceI {
 
 	// Stocke les données associées aux clés de la DHT
 	protected ConcurrentHashMap<ContentKeyI, ContentDataI> content;
-	
-	
 
 	protected IntInterval intervalle;
 
 	// Listes des URI des computations MapReduce et de stockage déjà traitées
 	protected CopyOnWriteArrayList<String> listeUriContentOperations = new CopyOnWriteArrayList<>();
 	protected CopyOnWriteArrayList<String> listeUriMapOperations = new CopyOnWriteArrayList<>();
+	protected CopyOnWriteArrayList<String> listeUriReduceOperations = new CopyOnWriteArrayList<>();
 
 	// Mémoire temporaire pour stocker les résultats intermédiaires des computations
 	// MapReduce
 	private ConcurrentHashMap<String, CompletableFuture<Stream<ContentDataI>>> memory = new ConcurrentHashMap<>();
 
-	protected AsynchronousCompositeMapContentEndPoint compositeMapEndpointOutboundAsync;
-	protected AsynchronousCompositeMapContentEndPoint compositeMapEndpointInboundAsync;
+	protected AsynchronousCompositeMapContentEndPoint compositeMapContentEndpointOutboundAsync;
+	protected AsynchronousCompositeMapContentEndPoint compositeMapContentEndpointInboundAsync;
 
 	protected AsynchronousNodeBCM(String uri, AsynchronousCompositeMapContentEndPoint compositeMapEndpointInboundAsync,
 			AsynchronousCompositeMapContentEndPoint compositeMapEndpointOutboundAsync, IntInterval intervalle)
 			throws ConnectionException {
-		super(2, 0);
+		super(1, 1);
 		this.content = new ConcurrentHashMap<>();
 		this.intervalle = intervalle;
-		this.compositeMapEndpointInboundAsync = compositeMapEndpointInboundAsync;
-		this.compositeMapEndpointOutboundAsync = compositeMapEndpointOutboundAsync;
-		this.compositeMapEndpointInboundAsync.initialiseServerSide(this);
+		this.compositeMapContentEndpointInboundAsync = compositeMapEndpointInboundAsync;
+		this.compositeMapContentEndpointOutboundAsync = compositeMapEndpointOutboundAsync;
+		this.compositeMapContentEndpointInboundAsync.initialiseServerSide(this);
 	}
 
 	@Override
 	public <I extends ResultReceptionCI> void get(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
-
+		System.out.println("Reception de la requete 'GET' sur le noeud " + this.intervalle.first());
 		if (!listeUriContentOperations.contains(computationURI)) {
 			listeUriContentOperations.addIfAbsent(computationURI);
 
@@ -79,11 +75,18 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 				caller.getClientSideReference().acceptResult(computationURI, content.get(key));
 				caller.cleanUpClientSide();
 			} else {
-				this.compositeMapEndpointOutboundAsync.getContentAccessEndPoint().getClientSideReference()
+				this.compositeMapContentEndpointOutboundAsync.getContentAccessEndPoint().getClientSideReference()
 						.get(computationURI, key, caller);
 			}
 
+		} else {
+			System.out.println(
+					"Envoi du résultat du 'GET' sur la facade depuis le noeud " + this.intervalle.first());
+			// la valeur de hachage de la clé se situe en dehors de l'intervalle de clés de la DHT
+			caller.getClientSideReference().acceptResult(computationURI, null);
+			caller.cleanUpClientSide();
 		}
+		
 
 	}
 
@@ -102,7 +105,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 				caller.getClientSideReference().acceptResult(computationURI, oldValue);
 				caller.cleanUpClientSide();
 			} else {
-				this.compositeMapEndpointOutboundAsync.getContentAccessEndPoint().getClientSideReference()
+				this.compositeMapContentEndpointOutboundAsync.getContentAccessEndPoint().getClientSideReference()
 						.put(computationURI, key, value, caller);
 			}
 		}
@@ -122,7 +125,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 				caller.getClientSideReference().acceptResult(computationURI, oldValue);
 				caller.cleanUpClientSide();
 			} else {
-				this.compositeMapEndpointOutboundAsync.getContentAccessEndPoint().getClientSideReference()
+				this.compositeMapContentEndpointOutboundAsync.getContentAccessEndPoint().getClientSideReference()
 						.remove(computationURI, key, caller);
 
 			}
@@ -133,18 +136,19 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	@Override
 	public <R extends Serializable, I extends MapReduceResultReceptionCI> void map(String computationURI,
 			SelectorI selector, ProcessorI<R> processor) throws Exception {
+		System.out.println("Reception de la requete 'MAP REDUCE' (MAP) sur le noeud " + this.intervalle.first());
 		if (!listeUriMapOperations.contains(computationURI)) {
 			listeUriMapOperations.addIfAbsent(computationURI);
-			
+
 			CompletableFuture<Stream<ContentDataI>> futureStream = new CompletableFuture<Stream<ContentDataI>>();
 			memory.putIfAbsent(computationURI, futureStream);
 			futureStream.complete((Stream<ContentDataI>) content.values().stream().filter(selector).map(processor));
-			
 
-			this.compositeMapEndpointOutboundAsync.getMapReduceEndPoint().getClientSideReference().map(computationURI,
+			this.compositeMapContentEndpointOutboundAsync.getMapReduceEndPoint().getClientSideReference().map(computationURI,
 					selector, processor);
 
 		}
+		
 
 	}
 
@@ -153,23 +157,53 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	public <A extends Serializable, R, I extends MapReduceResultReceptionCI> void reduce(String computationURI,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A identityAcc, A currentAcc, EndPointI<I> callerNode)
 			throws Exception {
-		if (!listeUriMapOperations.contains(computationURI)) {
-			listeUriMapOperations.remove(computationURI);
-			
+		System.out.println("Reception de la requete 'MAP REDUCE' (REDUCE) sur le noeud " + this.intervalle.first());
+		if (!listeUriReduceOperations.contains(computationURI)) {
+			listeUriReduceOperations.add(computationURI);
+
 			Stream<ContentDataI> localStream = memory.get(computationURI).get();
-			
+
 			A localReduce = localStream.reduce(identityAcc, (u, d) -> reductor.apply(u, (R) d), combinator);
 			localReduce = combinator.apply(currentAcc, localReduce);
-			this.compositeMapEndpointOutboundAsync.getMapReduceEndPoint().getClientSideReference().reduce(computationURI, reductor, combinator, identityAcc, localReduce, callerNode);	
+			
+			this.compositeMapContentEndpointOutboundAsync.getMapReduceEndPoint().getClientSideReference()
+					.reduce(computationURI, reductor, combinator, identityAcc, localReduce, callerNode);
 
 		} else {
 			if (!callerNode.clientSideInitialised()) {
 				callerNode.initialiseClientSide(this);
 			}
-			callerNode.getClientSideReference().acceptResult(computationURI, "" , currentAcc);
+			System.out.println(
+					"Envoi du résultat du 'MAP REDUCE' sur la facade depuis le noeud " + this.intervalle.first());
+			callerNode.getClientSideReference().acceptResult(computationURI, "", currentAcc);
+			callerNode.cleanUpClientSide();
 		}
 
 	}
+	
+	@Override
+	public void clearComputation(String computationURI) throws Exception {
+		if (listeUriContentOperations.contains(computationURI)) {
+			listeUriContentOperations.remove(computationURI);
+		} else {
+			this.compositeMapContentEndpointOutboundAsync.getContentAccessEndPoint().getClientSideReference()
+			.clearComputation(computationURI);
+		}
+	}
+	
+	@Override
+	public void clearMapReduceComputation(String computationURI) throws Exception {
+		if ( listeUriMapOperations.contains(computationURI) && listeUriReduceOperations.contains(computationURI)) {
+			this.listeUriMapOperations.remove(computationURI);
+			this.listeUriReduceOperations.remove(computationURI);
+			this.memory.remove(computationURI);
+		} else {
+			this.compositeMapContentEndpointOutboundAsync.getMapReduceEndPoint().getClientSideReference()
+			.clearMapReduceComputation(computationURI);
+		}
+	}
+	
+	
 
 	/**
 	 * Démarre le composant ClientBCM.
@@ -182,52 +216,39 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		this.logMessage("starting node component.");
 		super.start();
 		try {
-			if (!this.compositeMapEndpointOutboundAsync.clientSideInitialised()) {
-				this.compositeMapEndpointOutboundAsync.initialiseClientSide(this);
+			if (!this.compositeMapContentEndpointOutboundAsync.clientSideInitialised()) {
+				this.compositeMapContentEndpointOutboundAsync.initialiseClientSide(this);
 			}
 		} catch (ConnectionException e) {
 			throw new ComponentStartException(e);
 		}
 	}
 
-	/**
-	 * Finalise et arrête le composant ClientBCM.
-	 * 
-	 * @throws Exception Si une erreur se produit lors de l'arrêt du composant.
-	 */
+	
 	@Override
 	public void finalise() throws Exception {
 		this.logMessage("stopping node component.");
 		this.printExecutionLogOnFile("node");
-		this.compositeMapEndpointOutboundAsync.cleanUpClientSide();
+		this.compositeMapContentEndpointOutboundAsync.cleanUpClientSide();
 		super.finalise();
 	}
 
-	/**
-	 * Effectue un arrêt propre du composant ClientBCM.
-	 * 
-	 * @throws ComponentShutdownException Si une erreur se produit lors de l'arrêt.
-	 */
+	
 	@Override
 	public void shutdown() throws ComponentShutdownException {
 		try {
-			this.compositeMapEndpointInboundAsync.cleanUpServerSide();
+			this.compositeMapContentEndpointInboundAsync.cleanUpServerSide();
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e);
 		}
 		super.shutdown();
 	}
 
-	/**
-	 * Force un arrêt immédiat du composant ClientBCM.
-	 * 
-	 * @throws ComponentShutdownException Si une erreur se produit lors de l'arrêt
-	 *                                    immédiat.
-	 */
+	
 	@Override
 	public void shutdownNow() throws ComponentShutdownException {
 		try {
-			this.compositeMapEndpointInboundAsync.cleanUpServerSide();
+			this.compositeMapContentEndpointInboundAsync.cleanUpServerSide();
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e);
 		}
@@ -252,11 +273,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		return null;
 	}
 
-	@Override
-	public void clearComputation(String computationURI) throws Exception {
-		// TODO Auto-generated method stub
-
-	}
+	
 
 	@Override
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
@@ -272,10 +289,6 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		return null;
 	}
 
-	@Override
-	public void clearMapReduceComputation(String computationURI) throws Exception {
-		// TODO Auto-generated method stub
-
-	}
+	
 
 }

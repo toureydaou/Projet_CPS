@@ -2,7 +2,6 @@ package etape3.ports;
 
 import java.io.Serializable;
 
-
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
@@ -79,7 +78,6 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 			try {
 				((MapReduceI) owner).map(computationURI, selector, processor);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		});
@@ -93,18 +91,17 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 			try {
 				((MapReduceI) owner).reduce(computationURI, reductor, combinator, identityAcc, currentAcc, callerNode);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		});
-		
+
 	}
 
 	@Override
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
 			throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -116,9 +113,15 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
-		// TODO Auto-generated method stub
-		
+		this.getOwner().runTask(owner -> {
+			try {
+				((MapReduceI) owner).clearMapReduceComputation(computationURI);
+			} catch (Exception e) {
+
+				e.printStackTrace();
+			}
+		});
+
 	}
 
-	
 }

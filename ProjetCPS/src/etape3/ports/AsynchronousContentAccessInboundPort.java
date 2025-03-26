@@ -75,7 +75,6 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 			try {
 				((ContentAccessI) owner).get(computationURI, key, caller);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		});
@@ -88,7 +87,6 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 			try {
 				((ContentAccessI) owner).put(computationURI, key, value, caller);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		});
@@ -102,7 +100,6 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 			try {
 				((ContentAccessI) owner).remove(computationURI, key, caller);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		});
@@ -129,7 +126,14 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
-		// TODO Auto-generated method stub
+		this.getOwner().runTask(owner -> {
+			try {
+				((ContentAccessI) owner).clearComputation(computationURI);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		});
 		
 	}
 

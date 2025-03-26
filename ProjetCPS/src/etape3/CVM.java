@@ -9,6 +9,7 @@ import etape3.composants.AsynchronousNodeBCM;
 import etape3.composants.ClientBCM;
 import etape3.composants.FacadeBCM;
 import etape3.endpoints.AsynchronousCompositeMapContentEndPoint;
+import etape3.endpoints.MapReduceResultReceptionEndPoint;
 import etape3.endpoints.ResultReceptionEndPoint;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
@@ -55,6 +56,8 @@ public class CVM extends AbstractCVM {
 		
 		ResultReceptionEndPoint rrep = new ResultReceptionEndPoint();
 		
+		MapReduceResultReceptionEndPoint mapReduceResultReceptionEndPoint = new MapReduceResultReceptionEndPoint();
+		
 		
 		
 		
@@ -62,7 +65,7 @@ public class CVM extends AbstractCVM {
 		String facadeURI = AbstractComponent.createComponent(FacadeBCM.class.getCanonicalName(),
 				new Object[] { FACADE_COMPONENT_URI,
 						((AsynchronousCompositeMapContentEndPoint) asynchronousCompositeMapContentEndpointFacadeToFirstNode).copyWithSharable(),
-						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable(), rrep.copyWithSharable() });
+						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable(), rrep.copyWithSharable(), mapReduceResultReceptionEndPoint.copyWithSharable() });
 		assert	this.isDeployedComponent(facadeURI);
 		
 		this.toggleTracing(facadeURI);

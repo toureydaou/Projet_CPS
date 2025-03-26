@@ -102,8 +102,7 @@ public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort impl
 
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
-		// TODO Auto-generated method stub
-		
+		((MapReduceCI) this.getConnector()).clearMapReduceComputation(computationURI);
 	}
 
 }

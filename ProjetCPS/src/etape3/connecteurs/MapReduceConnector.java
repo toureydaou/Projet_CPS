@@ -26,5 +26,10 @@ public class MapReduceConnector extends MapReduceSyncConnector implements MapRed
 			throws Exception {
 		((MapReduceCI)this.offering).reduce(computationURI, reductor, combinator, identityAcc, currentAcc, callerNode);
 	}
+	
+	@Override
+	public void clearMapReduceComputation(String computationURI) throws Exception {
+		((MapReduceCI)this.offering).clearMapReduceComputation(computationURI);
+	}
 
 }
