@@ -15,6 +15,7 @@ public class MapReduceResultReceptionInboundPort extends AbstractInboundPort imp
 	// -------------------------------------------------------------------------
 
 	private static final long serialVersionUID = 1L;
+	protected final int executorIndex;
 
 	// -------------------------------------------------------------------------
 	// Constructeurs
@@ -26,11 +27,15 @@ public class MapReduceResultReceptionInboundPort extends AbstractInboundPort imp
 	 * @param owner Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
-	public MapReduceResultReceptionInboundPort(ComponentI owner) throws Exception {
+	public MapReduceResultReceptionInboundPort(int executorIndex, ComponentI owner) throws Exception {
 		super(MapReduceResultReceptionCI.class, owner);
 
 		// le propriétaire de ce port est un noeud jouant le role de serveur
 		assert (owner instanceof MapReduceResultReceptionI);
+		
+		assert owner.validExecutorServiceIndex(executorIndex);
+
+		this.executorIndex = executorIndex;
 	}
 
 	/**
@@ -40,16 +45,19 @@ public class MapReduceResultReceptionInboundPort extends AbstractInboundPort imp
 	 * @param owner Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
-	public MapReduceResultReceptionInboundPort(String uri, ComponentI owner) throws Exception {
+	public MapReduceResultReceptionInboundPort(String uri, int executorIndex, ComponentI owner) throws Exception {
 		super(uri, MapReduceResultReceptionCI.class, owner);
 
 		assert uri != null && (owner instanceof MapReduceResultReceptionI);
+		assert owner.validExecutorServiceIndex(executorIndex);
+
+		this.executorIndex = executorIndex;
 	}
 
 
 	@Override
 	public void acceptResult(String computationURI, String emitterId, Serializable acc) throws Exception {
-		this.getOwner().runTask(owner -> {
+		this.getOwner().runTask(executorIndex, owner -> {
 			try {
 				((FacadeBCM) owner).acceptResult(computationURI, emitterId, acc);
 			} catch (Exception e) {

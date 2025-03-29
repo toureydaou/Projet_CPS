@@ -8,6 +8,7 @@ import etape2.endpoints.DHTServicesEndPoint;
 import etape3.endpoints.AsynchronousCompositeMapContentEndPoint;
 import etape3.endpoints.MapReduceResultReceptionEndPoint;
 import etape3.endpoints.ResultReceptionEndPoint;
+import etape3.utils.ThreadsPolicy;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;
@@ -39,6 +40,9 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	private static final String PUT_URI_PREFIX = "PUT";
 	private static final String REMOVE_URI_PREFIX = "REMOVE";
 	private static final String MAPREDUCE_URI_PREFIX = "MAPREDUCE";
+	
+	private static final String RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Content-Access-Pool-Threads";
+	private static final String MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Map-Reduce-Pool-Threads";
 
 	private static final int SCHEDULABLE_THREADS = 0;
 	private static final int THREADS_NUMBER = 2;
@@ -51,6 +55,8 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 
 	private HashMap<String, CompletableFuture<Serializable>> resultsContentAccess;
 	private HashMap<String, CompletableFuture<Serializable>> resultsMapReduce;
+	
+
 
 
 	/**
@@ -71,9 +77,21 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		this.mapReduceResultatReceptionEndPoint = mapReduceResultReceptionEndPoint;
 		this.resultsContentAccess = new HashMap<String, CompletableFuture<Serializable>>();
 		this.resultsMapReduce = new HashMap<String, CompletableFuture<Serializable>>();
+		
+		
+		
+		this.resultatReceptionEndPoint.setExecutorIndex(
+				this.createNewExecutorService(URIGenerator.generateURI(RESULT_RECEPTION_HANDLER_URI),
+						ThreadsPolicy.NUMBER_ACCEPT_RESULT_CONTENT_ACCESS_THREADS, false));
+
+		this.mapReduceResultatReceptionEndPoint.setExecutorIndex(
+				this.createNewExecutorService(URIGenerator.generateURI(MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI),
+						ThreadsPolicy.NUMBER_ACCEPT_RESULT_MAP_REDUCE_THREADS, false));
+		
 		this.endPointClientFacade.initialiseServerSide(this);
 		this.resultatReceptionEndPoint.initialiseServerSide(this);
 		this.mapReduceResultatReceptionEndPoint.initialiseServerSide(this);
+		
 	}
 
 	

@@ -1,6 +1,5 @@
 package etape3.ports;
 
-
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
@@ -37,6 +36,7 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 	// -------------------------------------------------------------------------
 
 	private static final long serialVersionUID = 1L;
+	protected final int executorIndex;
 
 	// -------------------------------------------------------------------------
 	// Constructeurs
@@ -45,14 +45,19 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 	/**
 	 * Crée et initialise le port entrant avec le composant propriétaire.
 	 * 
-	 * @param owner Composant propriétaire du port.
+	 * @param owner         Composant propriétaire du port.
+	 * @param executorIndex
 	 * @throws Exception <i>to do</i>.
 	 */
-	public AsynchronousContentAccessInboundPort(ComponentI owner) throws Exception {
+	public AsynchronousContentAccessInboundPort(int executorIndex, ComponentI owner) throws Exception {
 		super(ContentAccessCI.class, owner);
 
 		// le propriétaire de ce port est un noeud jouant le role de serveur
 		assert (owner instanceof ContentAccessI);
+
+		assert owner.validExecutorServiceIndex(executorIndex);
+
+		this.executorIndex = executorIndex;
 	}
 
 	/**
@@ -62,80 +67,83 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 	 * @param owner Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
-	public AsynchronousContentAccessInboundPort(String uri, ComponentI owner) throws Exception {
+	public AsynchronousContentAccessInboundPort(String uri, int executorIndex, ComponentI owner) throws Exception {
 		super(uri, ContentAccessCI.class, owner);
 
 		assert uri != null && (owner instanceof ContentAccessI);
+		assert owner.validExecutorServiceIndex(executorIndex);
+
+		this.executorIndex = executorIndex;
 	}
 
 	@Override
 	public <I extends ResultReceptionCI> void get(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
-		this.getOwner().runTask(owner -> {
+
+		this.getOwner().runTask(executorIndex, owner -> {
 			try {
 				((ContentAccessI) owner).get(computationURI, key, caller);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		});
+
 	}
 
 	@Override
 	public <I extends ResultReceptionCI> void put(String computationURI, ContentKeyI key, ContentDataI value,
 			EndPointI<I> caller) throws Exception {
-		this.getOwner().runTask(owner -> {
+		this.getOwner().runTask(executorIndex, owner -> {
 			try {
 				((ContentAccessI) owner).put(computationURI, key, value, caller);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		});
-		
+
 	}
 
 	@Override
 	public <I extends ResultReceptionCI> void remove(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
-		this.getOwner().runTask(owner -> {
+		this.getOwner().runTask(executorIndex, owner -> {
 			try {
 				((ContentAccessI) owner).remove(computationURI, key, caller);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		});
-		
+
 	}
 
 	@Override
 	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
 	@Override
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
 	@Override
 	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
-		this.getOwner().runTask(owner -> {
+		this.getOwner().runTask(executorIndex, owner -> {
 			try {
 				((ContentAccessI) owner).clearComputation(computationURI);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		});
-		
-	}
 
+	}
 
 }

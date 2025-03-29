@@ -130,7 +130,7 @@ public class ClientBCM extends AbstractComponent {
 				
 					((ClientBCM) this.taskOwner).put(k_10, new Livre("Harry potter", 200));
 					((ClientBCM) this.taskOwner).put(k_50, new Livre("Harry potter", 200));
-					((ClientBCM) this.taskOwner).put(k_100, new Livre("Harry potter", 200));
+					((ClientBCM) this.taskOwner).put(k_500, new Livre("Harry potter", 200));
 					System.out.println(((ClientBCM) this.taskOwner).get(k_500));
 				
 					
@@ -152,9 +152,7 @@ public class ClientBCM extends AbstractComponent {
 	public void finalise() throws Exception {
 		this.logMessage("stopping client component.");
 		this.printExecutionLogOnFile("client");
-
 		this.endPointClientFacade.cleanUpClientSide();
-
 		super.finalise();
 	}
 

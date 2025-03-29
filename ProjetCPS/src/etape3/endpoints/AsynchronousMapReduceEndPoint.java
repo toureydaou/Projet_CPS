@@ -20,6 +20,9 @@ public class AsynchronousMapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 	// -------------------------------------------------------------------------
 
 	private static final long serialVersionUID = 1L;
+	private int executorServiceIndex;
+
+	
 
 	protected static boolean implementationInvariants(AsynchronousMapReduceEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
@@ -41,8 +44,9 @@ public class AsynchronousMapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 	 * 
 	 * @param inboundPortURI URI du port entrant auquel cet endpoint se connecte.
 	 */
-	public AsynchronousMapReduceEndPoint(String inboundPortURI) {
+	public AsynchronousMapReduceEndPoint( int executorIndex, String inboundPortURI) {
 		super(MapReduceCI.class, MapReduceCI.class, inboundPortURI);
+		this.executorServiceIndex = executorIndex;
 	}
 
 	/**
@@ -50,7 +54,7 @@ public class AsynchronousMapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 	 *
 	 */
 	public AsynchronousMapReduceEndPoint() {
-		super(MapReduceCI.class, MapReduceCI.class);
+		super(MapReduceCI.class, MapReduceCI.class);	
 	}
 
 	/**
@@ -69,7 +73,7 @@ public class AsynchronousMapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 		assert inboundPortURI != null && !inboundPortURI.isEmpty()
 				: new PreconditionException("inboundPortURI != null && !inboundPortURI.isEmpty()");
 
-		AsynchronousMapReduceInboundPort p = new AsynchronousMapReduceInboundPort(this.inboundPortURI, c);
+		AsynchronousMapReduceInboundPort p = new AsynchronousMapReduceInboundPort(this.inboundPortURI, this.executorServiceIndex, c);
 		p.publishPort();
 
 		// Postconditions checking
@@ -121,6 +125,10 @@ public class AsynchronousMapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 		assert invariants(this) : new InvariantException("invariants(this)");
 
 		return p;
+	}
+	
+	public void setExecutorIndex(int executorIndex) {
+		this.executorServiceIndex = executorIndex;
 	}
 
 }

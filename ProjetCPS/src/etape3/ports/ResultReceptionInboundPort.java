@@ -13,6 +13,7 @@ public class ResultReceptionInboundPort extends AbstractInboundPort implements R
 	// -------------------------------------------------------------------------
 
 	private static final long serialVersionUID = 1L;
+	protected final int executorIndex;
 
 	// -------------------------------------------------------------------------
 	// Constructeurs
@@ -24,11 +25,15 @@ public class ResultReceptionInboundPort extends AbstractInboundPort implements R
 	 * @param owner Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
-	public ResultReceptionInboundPort(ComponentI owner) throws Exception {
+	public ResultReceptionInboundPort(int executorIndex, ComponentI owner) throws Exception {
 		super(ResultReceptionCI.class, owner);
 
 		// le propriétaire de ce port est un noeud jouant le role de serveur
 		assert (owner instanceof ResultReceptionI);
+		
+		assert owner.validExecutorServiceIndex(executorIndex);
+
+		this.executorIndex = executorIndex;
 	}
 
 	/**
@@ -38,10 +43,13 @@ public class ResultReceptionInboundPort extends AbstractInboundPort implements R
 	 * @param owner Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
-	public ResultReceptionInboundPort(String uri, ComponentI owner) throws Exception {
+	public ResultReceptionInboundPort(String uri, int executorIndex, ComponentI owner) throws Exception {
 		super(uri, ResultReceptionCI.class, owner);
 
 		assert uri != null && (owner instanceof ResultReceptionI);
+		assert owner.validExecutorServiceIndex(executorIndex);
+
+		this.executorIndex = executorIndex;
 	}
 
 	@Override

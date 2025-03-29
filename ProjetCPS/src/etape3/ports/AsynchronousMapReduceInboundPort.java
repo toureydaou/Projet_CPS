@@ -40,6 +40,7 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 	// -------------------------------------------------------------------------
 
 	private static final long serialVersionUID = 1L;
+	protected final int executorServiceIndex;
 
 	// -------------------------------------------------------------------------
 	// Constructeurs
@@ -51,11 +52,15 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 	 * @param owner Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
-	public AsynchronousMapReduceInboundPort(ComponentI owner) throws Exception {
+	public AsynchronousMapReduceInboundPort(int executorServiceIndex, ComponentI owner) throws Exception {
 		super(MapReduceCI.class, owner);
 
 		// le propriétaire de ce port est un noeud jouant le role de serveur
 		assert (owner instanceof MapReduceI);
+
+		assert owner.validExecutorServiceIndex(executorServiceIndex);
+
+		this.executorServiceIndex = executorServiceIndex;
 	}
 
 	/**
@@ -65,16 +70,20 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 	 * @param owner Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
-	public AsynchronousMapReduceInboundPort(String uri, ComponentI owner) throws Exception {
+	public AsynchronousMapReduceInboundPort( String uri, int executorServiceIndex, ComponentI owner) throws Exception {
 		super(uri, MapReduceCI.class, owner);
 
 		assert uri != null && (owner instanceof MapReduceI);
+
+		assert owner.validExecutorServiceIndex(executorServiceIndex);
+
+		this.executorServiceIndex = executorServiceIndex;
 	}
 
 	@Override
 	public <R extends Serializable, I extends MapReduceResultReceptionCI> void map(String computationURI,
 			SelectorI selector, ProcessorI<R> processor) throws Exception {
-		this.getOwner().runTask(owner -> {
+		this.getOwner().runTask(executorServiceIndex, owner -> {
 			try {
 				((MapReduceI) owner).map(computationURI, selector, processor);
 			} catch (Exception e) {
@@ -87,7 +96,7 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 	public <A extends Serializable, R, I extends MapReduceResultReceptionCI> void reduce(String computationURI,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A identityAcc, A currentAcc, EndPointI<I> callerNode)
 			throws Exception {
-		this.getOwner().runTask(owner -> {
+		this.getOwner().runTask(executorServiceIndex, owner -> {
 			try {
 				((MapReduceI) owner).reduce(computationURI, reductor, combinator, identityAcc, currentAcc, callerNode);
 			} catch (Exception e) {
@@ -100,20 +109,19 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 	@Override
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
 			throws Exception {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
 			CombinatorI<A> combinator, A currentAcc) throws Exception {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
-		this.getOwner().runTask(owner -> {
+		this.getOwner().runTask(executorServiceIndex, owner -> {
 			try {
 				((MapReduceI) owner).clearMapReduceComputation(computationURI);
 			} catch (Exception e) {

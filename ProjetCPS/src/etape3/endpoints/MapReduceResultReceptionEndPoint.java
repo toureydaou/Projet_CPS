@@ -19,6 +19,7 @@ public class MapReduceResultReceptionEndPoint extends BCMEndPoint<MapReduceResul
 	// -------------------------------------------------------------------------
 
 	private static final long serialVersionUID = 1L;
+	protected int executorServiceIndex;
 
 	protected static boolean implementationInvariants(MapReduceResultReceptionEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
@@ -40,8 +41,9 @@ public class MapReduceResultReceptionEndPoint extends BCMEndPoint<MapReduceResul
 	 * 
 	 * @param inboundPortURI URI du port entrant auquel cet endpoint se connecte.
 	 */
-	public MapReduceResultReceptionEndPoint(String inboundPortURI) {
+	public MapReduceResultReceptionEndPoint(String inboundPortURI, int executorServiceIndex) {
 		super(MapReduceResultReceptionCI.class, MapReduceResultReceptionCI.class, inboundPortURI);
+		this.executorServiceIndex = executorServiceIndex;
 	}
 
 	/**
@@ -68,7 +70,7 @@ public class MapReduceResultReceptionEndPoint extends BCMEndPoint<MapReduceResul
 		assert inboundPortURI != null && !inboundPortURI.isEmpty()
 				: new PreconditionException("inboundPortURI != null && !inboundPortURI.isEmpty()");
 
-		MapReduceResultReceptionInboundPort p = new MapReduceResultReceptionInboundPort(this.inboundPortURI, c);
+		MapReduceResultReceptionInboundPort p = new MapReduceResultReceptionInboundPort(this.inboundPortURI, this.executorServiceIndex,  c);
 		p.publishPort();
 
 		// Postconditions checking
@@ -121,6 +123,11 @@ public class MapReduceResultReceptionEndPoint extends BCMEndPoint<MapReduceResul
 
 		return p;
 	}
+	
+	public void setExecutorIndex(int executorIndex) {
+		this.executorServiceIndex = executorIndex;
+	}
+
 
 }
 

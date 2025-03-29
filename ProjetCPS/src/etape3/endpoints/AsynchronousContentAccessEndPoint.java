@@ -19,6 +19,7 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 	// -------------------------------------------------------------------------
 
 	private static final long serialVersionUID = 1L;
+	protected int executorServiceIndex;
 
 	protected static boolean implementationInvariants(AsynchronousContentAccessEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
@@ -40,8 +41,9 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 	 * 
 	 * @param inboundPortURI URI du port entrant auquel cet endpoint se connecte.
 	 */
-	public AsynchronousContentAccessEndPoint(String inboundPortURI) {
+	public AsynchronousContentAccessEndPoint(String inboundPortURI, int executorServiceIndex) {
 		super(ContentAccessCI.class, ContentAccessCI.class, inboundPortURI);
+		this.executorServiceIndex = executorServiceIndex;
 	}
 
 	/**
@@ -50,6 +52,7 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 	 */
 	public AsynchronousContentAccessEndPoint() {
 		super(ContentAccessCI.class, ContentAccessCI.class);
+		
 	}
 
 	/**
@@ -68,7 +71,7 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 		assert inboundPortURI != null && !inboundPortURI.isEmpty()
 				: new PreconditionException("inboundPortURI != null && !inboundPortURI.isEmpty()");
 
-		AsynchronousContentAccessInboundPort p = new AsynchronousContentAccessInboundPort(this.inboundPortURI, c);
+		AsynchronousContentAccessInboundPort p = new AsynchronousContentAccessInboundPort(this.inboundPortURI, this.executorServiceIndex ,c);
 		p.publishPort();
 
 		// Postconditions checking
@@ -120,6 +123,10 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 		assert invariants(this) : new InvariantException("invariants(this)");
 
 		return p;
+	}
+	
+	public void setExecutorIndex(int executorIndex) {
+		this.executorServiceIndex = executorIndex;
 	}
 
 }

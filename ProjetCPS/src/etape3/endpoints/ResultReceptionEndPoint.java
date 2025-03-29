@@ -19,6 +19,7 @@ public class ResultReceptionEndPoint extends BCMEndPoint<ResultReceptionCI>  {
 	// -------------------------------------------------------------------------
 
 	private static final long serialVersionUID = 1L;
+	protected int executorServiceIndex;
 
 	protected static boolean implementationInvariants(ResultReceptionEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
@@ -68,7 +69,7 @@ public class ResultReceptionEndPoint extends BCMEndPoint<ResultReceptionCI>  {
 		assert inboundPortURI != null && !inboundPortURI.isEmpty()
 				: new PreconditionException("inboundPortURI != null && !inboundPortURI.isEmpty()");
 
-		ResultReceptionInboundPort p = new ResultReceptionInboundPort(this.inboundPortURI, c);
+		ResultReceptionInboundPort p = new ResultReceptionInboundPort(this.inboundPortURI, this.executorServiceIndex, c);
 		p.publishPort();
 
 		// Postconditions checking
@@ -121,5 +122,10 @@ public class ResultReceptionEndPoint extends BCMEndPoint<ResultReceptionCI>  {
 
 		return p;
 	}
+	
+	public void setExecutorIndex(int executorIndex) {
+		this.executorServiceIndex = executorIndex;
+	}
+
 
 }

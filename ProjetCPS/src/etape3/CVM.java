@@ -39,6 +39,8 @@ public class CVM extends AbstractCVM {
 //		AbstractCVM.DEBUG_MODE.add(CVMDebugModes.EXECUTOR_SERVICES);
 
 		
+		
+		
 		// endpoint client - facade
 		DHTServicesEndPoint dhtServicesEndPoint = new DHTServicesEndPoint();
 
@@ -58,7 +60,7 @@ public class CVM extends AbstractCVM {
 		
 		MapReduceResultReceptionEndPoint mapReduceResultReceptionEndPoint = new MapReduceResultReceptionEndPoint();
 		
-		
+
 		
 		
 		// creation composant facade
