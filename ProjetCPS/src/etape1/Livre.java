@@ -58,6 +58,11 @@ public class Livre implements ContentDataI {
 		if(p == Livre.NB_PAGES) return nbPages;
 		return null;
 	}
+
+	@Override
+	public String toString() {
+		return "Livre[" + nomLivre + ", " + nbPages + "]";
+	}
 	
 	
 

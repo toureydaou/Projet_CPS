@@ -48,7 +48,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 
 	/** The content. */
 	// Stocke les données associées aux clés de la DHT
-	protected ConcurrentHashMap<ContentKeyI, ContentDataI> content;
+	protected ConcurrentHashMap<Integer, ContentDataI> content;
 
 	/** The intervalle. */
 	protected IntInterval intervalle;
@@ -89,7 +89,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	protected AsynchronousNodeBCM(String uri, AsynchronousCompositeMapContentEndPoint compositeMapEndpointInboundAsync,
 			AsynchronousCompositeMapContentEndPoint compositeMapEndpointOutboundAsync, IntInterval intervalle)
 			throws ConnectionException {
-		super(1, 0);
+		super(2, 0);
 		this.content = new ConcurrentHashMap<>();
 		this.intervalle = intervalle;
 		this.compositeMapContentEndpointInboundAsync = compositeMapEndpointInboundAsync;
@@ -98,11 +98,11 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 
 		this.compositeMapContentEndpointInboundAsync.setExecutorServiceIndexContentAccessService(
 				this.createNewExecutorService(URIGenerator.generateURI(CONTENT_ACCESS_HANDLER_URI),
-						ThreadsPolicy.NUMBER_CONTENT_ACCESS_THREADS, false));
+						ThreadsPolicy.NUMBER_CONTENT_ACCESS_THREADS, true));
 
 		this.compositeMapContentEndpointInboundAsync.setExecutorServiceIndexContentAccessService(
 				this.createNewExecutorService(URIGenerator.generateURI(MAP_REDUCE_HANDLER_URI),
-						ThreadsPolicy.NUMBER_MAP_REDUCE_THREADS, false));
+						ThreadsPolicy.NUMBER_MAP_REDUCE_THREADS, true));
 
 		this.compositeMapContentEndpointInboundAsync.initialiseServerSide(this);
 
@@ -124,7 +124,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 					if (!caller.clientSideInitialised()) {
 						caller.initialiseClientSide(this);
 					}
-					caller.getClientSideReference().acceptResult(computationURI, content.get(key));
+					caller.getClientSideReference().acceptResult(computationURI, content.get(key.hashCode()));
 					caller.cleanUpClientSide();
 				} finally {
 					this.hashMapLock.readLock().unlock();
@@ -153,7 +153,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	@Override
 	public <I extends ResultReceptionCI> void put(String computationURI, ContentKeyI key, ContentDataI value,
 			EndPointI<I> caller) throws Exception {
-
+		System.out.println("Reception de la requete 'PUT' le noeud " + this.intervalle.first() + " identifiant requete : " + computationURI);
 		if (!listeUriContentOperations.contains(computationURI)) {
 			listeUriContentOperations.addIfAbsent(computationURI);
 
@@ -163,7 +163,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 					if (!caller.clientSideInitialised()) {
 						caller.initialiseClientSide(this);
 					}
-					ContentDataI oldValue = content.putIfAbsent(key, value);
+					ContentDataI oldValue = content.putIfAbsent(key.hashCode(), value);
 					caller.getClientSideReference().acceptResult(computationURI, oldValue);
 					caller.cleanUpClientSide();
 				} finally {
@@ -177,7 +177,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 			if (!caller.clientSideInitialised()) {
 				caller.initialiseClientSide(this);
 			}
-			System.out.println("Envoi du résultat du 'GET' sur la facade depuis le noeud " + this.intervalle.first());
+			System.out.println("Envoi du résultat du 'PUT' sur la facade depuis le noeud " + this.intervalle.first());
 			// la valeur de hachage de la clé se situe en dehors de l'intervalle de clés de
 			// la DHT
 			caller.getClientSideReference().acceptResult(computationURI, null);
@@ -191,6 +191,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	@Override
 	public <I extends ResultReceptionCI> void remove(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
+		System.out.println("Reception de la requete 'REMOVE' le noeud " + this.intervalle.first() + " identifiant requete : " + computationURI);
 		if (!listeUriContentOperations.contains(computationURI)) {
 			listeUriContentOperations.addIfAbsent(computationURI);
 
@@ -200,7 +201,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 					if (!caller.clientSideInitialised()) {
 						caller.initialiseClientSide(this);
 					}
-					ContentDataI oldValue = content.remove(key);
+					ContentDataI oldValue = content.remove(key.hashCode());
 					caller.getClientSideReference().acceptResult(computationURI, oldValue);
 					caller.cleanUpClientSide();
 				} finally {
@@ -214,7 +215,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 			if (!caller.clientSideInitialised()) {
 				caller.initialiseClientSide(this);
 			}
-			System.out.println("Envoi du résultat du 'GET' sur la facade depuis le noeud " + this.intervalle.first());
+			System.out.println("Envoi du résultat du 'REMOVE' sur la facade depuis le noeud " + this.intervalle.first());
 			// la valeur de hachage de la clé se situe en dehors de l'intervalle de clés de
 			// la DHT
 			caller.getClientSideReference().acceptResult(computationURI, null);
@@ -243,7 +244,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 				this.compositeMapContentEndpointOutboundAsync.getMapReduceEndpoint().getClientSideReference()
 						.map(computationURI, selector, processor);
 			} finally {
-				this.hashMapLock.readLock().lock();
+				this.hashMapLock.readLock().unlock();
 			}	
 		}
 
@@ -260,8 +261,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		System.out.println("Reception de la requete 'MAP REDUCE' (REDUCE) sur le noeud " + this.intervalle.first());
 		if (!listeUriReduceOperations.contains(computationURI)) {
 			listeUriReduceOperations.add(computationURI);
-			this.hashMapLock.readLock().lock();
-			try {
+			
 			Stream<ContentDataI> localStream = memory.get(computationURI).get();
 
 			A localReduce = localStream.reduce(identityAcc, (u, d) -> reductor.apply(u, (R) d), combinator);
@@ -269,10 +269,6 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 
 			this.compositeMapContentEndpointOutboundAsync.getMapReduceEndpoint().getClientSideReference()
 					.reduce(computationURI, reductor, combinator, identityAcc, localReduce, callerNode);
-			} finally {
-				this.hashMapLock.readLock().unlock();
-			}
-			
 		} else {
 			if (!callerNode.clientSideInitialised()) {
 				callerNode.initialiseClientSide(this);

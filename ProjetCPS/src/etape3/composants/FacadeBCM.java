@@ -45,7 +45,7 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	private static final String MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Map-Reduce-Pool-Threads";
 
 	private static final int SCHEDULABLE_THREADS = 0;
-	private static final int THREADS_NUMBER = 2;
+	private static final int THREADS_NUMBER = 4;
 
 	// Endpoints pour accéder aux services
 	protected AsynchronousCompositeMapContentEndPoint endPointFacadeNoeud;
@@ -82,11 +82,11 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		
 		this.resultatReceptionEndPoint.setExecutorIndex(
 				this.createNewExecutorService(URIGenerator.generateURI(RESULT_RECEPTION_HANDLER_URI),
-						ThreadsPolicy.NUMBER_ACCEPT_RESULT_CONTENT_ACCESS_THREADS, false));
+						ThreadsPolicy.NUMBER_ACCEPT_RESULT_CONTENT_ACCESS_THREADS, true));
 
 		this.mapReduceResultatReceptionEndPoint.setExecutorIndex(
 				this.createNewExecutorService(URIGenerator.generateURI(MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI),
-						ThreadsPolicy.NUMBER_ACCEPT_RESULT_MAP_REDUCE_THREADS, false));
+						ThreadsPolicy.NUMBER_ACCEPT_RESULT_MAP_REDUCE_THREADS, true));
 		
 		this.endPointClientFacade.initialiseServerSide(this);
 		this.resultatReceptionEndPoint.initialiseServerSide(this);
@@ -105,7 +105,6 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		ContentDataI value = (ContentDataI) this.resultsContentAccess.get(request_uri).get();
 		this.resultsContentAccess.remove(request_uri);
 		this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
-		System.out.println(value);
 		return value;
 
 	}
