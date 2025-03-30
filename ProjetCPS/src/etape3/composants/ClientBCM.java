@@ -158,22 +158,19 @@ public class ClientBCM extends AbstractComponent {
 			@Override
 			public void run() {
 				try {
-					EntierKey k_10 = new EntierKey(10);
-					EntierKey k_50 = new EntierKey(50);
-					EntierKey k_100 = new EntierKey(100);
-					EntierKey k_500 = new EntierKey(500);
-				
-					((ClientBCM) this.taskOwner).put(k_10, new Livre("Harry potter", 200));
-					((ClientBCM) this.taskOwner).put(k_50, new Livre("Harry potter", 200));
-					((ClientBCM) this.taskOwner).put(k_500, new Livre("Harry potter", 200));
-					System.out.println(((ClientBCM) this.taskOwner).get(k_500));
-				
-					
-					int reduce = ((ClientBCM) this.taskOwner).mapReduce(i -> ((int) i.getValue(Livre.NB_PAGES)) > 0,
-							i -> new Livre((String) i.getValue(Livre.TITRE), (int) i.getValue(Livre.NB_PAGES)),
-							(acc, i) -> (acc + (int) i.getValue(Livre.NB_PAGES)), (acc, i) -> (acc + i), 0);
-
-					System.out.println("Map reduce : " + reduce);
+					    
+					    // Test 1: Insertion de données
+					    testInsertion();
+					    
+					    // Test 2: Récupération de données
+					    testRecuperation();
+					    
+					    // Test 3: MapReduce
+					    testMapReduce();
+					    
+					    // Test 4: Suppression de données
+					    testSuppression();
+					    
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
@@ -181,6 +178,99 @@ public class ClientBCM extends AbstractComponent {
 				}
 			}
 		});
+	}
+
+	//--------------------------------------------------------
+	// Méthodes de test
+	//--------------------------------------------------------
+
+	/**
+	 * Teste l'insertion de données dans le DHT.
+	 */
+	private void testInsertion() throws Exception {
+	    System.out.println("\n=== TEST INSERTION ===");
+	    
+	    EntierKey k10 = new EntierKey(10);
+	    Livre livreHP = new Livre("Harry Potter", 200);
+	    
+	    System.out.println("Insertion de la clé 10 avec valeur: " + livreHP);
+	    ContentDataI previousValue = this.put(k10, livreHP);
+	    
+	    System.out.println("Résultat attendu: null (première insertion)");
+	    System.out.println("Résultat obtenu: " + previousValue);
+	    
+	    // Vérification
+	    if (previousValue != null) {
+	        System.err.println("ERREUR: La valeur précédente devrait être null");
+	    }
+	}
+
+	/**
+	 * Teste la récupération de données depuis le DHT.
+	 */
+	private void testRecuperation() throws Exception {
+	    System.out.println("\n=== TEST RECUPERATION ===");
+	    
+	    EntierKey k10 = new EntierKey(10);
+	    System.out.println("Récupération de la clé 10");
+	    
+	    ContentDataI value = this.get(k10);
+	    System.out.println("Résultat attendu: Livre[Harry Potter, 200]");
+	    System.out.println("Résultat obtenu: " + value);
+	}
+
+	/**
+	 * Teste l'opération MapReduce.
+	 */
+	private void testMapReduce() throws Exception {
+	    System.out.println("\n=== TEST MAPREDUCE ===");
+	    EntierKey k_10 = new EntierKey(10);
+		EntierKey k_50 = new EntierKey(50);
+		EntierKey k_100 = new EntierKey(100);
+		EntierKey k_500 = new EntierKey(500);
+	
+		this.put(k_10, new Livre("Harry potter", 200));
+		this.put(k_50, new Livre("Harry potter", 200));
+		this.put(k_500, new Livre("Harry potter", 200));
+	    
+	    System.out.println("Calcul du total des pages de tous les livres");
+	    int totalPages = this.mapReduce(
+	        i -> ((int) i.getValue(Livre.NB_PAGES)) > 0,
+	        i -> new Livre((String) i.getValue(Livre.TITRE), (int) i.getValue(Livre.NB_PAGES)),
+	        (acc, i) -> acc + (int) i.getValue(Livre.NB_PAGES),
+	        (acc1, acc2) -> acc1 + acc2,
+	        0
+	    );
+	    
+	    System.out.println("Résultat attendu: 600 (200 pages x 3 livres insérés)");
+	    System.out.println("Résultat obtenu: " + totalPages);
+	    
+	    // Vérification
+	    if (totalPages != 600) {
+	        System.err.println("ERREUR: Le calcul MapReduce est incorrect");
+	    }
+	}
+
+	/**
+	 * Teste la suppression de données dans le DHT.
+	 */
+	private void testSuppression() throws Exception {
+	    System.out.println("\n=== TEST SUPPRESSION ===");
+	    
+	    EntierKey k10 = new EntierKey(10);
+	    System.out.println("Suppression de la clé 10");
+	    
+	    ContentDataI deletedValue = this.get(k10);
+	    System.out.println("Résultat attendu: Livre[Harry Potter, 200]");
+	    System.out.println("Résultat obtenu: " + deletedValue);
+	    
+	    // Vérification post-suppression
+	    ContentDataI shouldBeNull = this.get(k10);
+	    System.out.println("Vérification post-suppression (devrait être null): " + shouldBeNull);
+	    
+	    if (shouldBeNull != null) {
+	        System.err.println("ERREUR: La valeur n'a pas été correctement supprimée");
+	    }
 	}
 
 	@Override
