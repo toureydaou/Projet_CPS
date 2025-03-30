@@ -4,6 +4,9 @@ package etape3;
 
 
 
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
+
 import etape2.endpoints.DHTServicesEndPoint;
 import etape3.composants.AsynchronousNodeBCM;
 import etape3.composants.ClientBCM;
@@ -14,8 +17,16 @@ import etape3.endpoints.ResultReceptionEndPoint;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
+import fr.sorbonne_u.utils.aclocks.ClocksServer;
 
 public class CVM extends AbstractCVM {
+	
+	public static final String TEST_CLOCK_URI = "test-clock";
+	public static final Instant START_INSTANT = Instant.parse("2024-01-31T09:00:00.00Z");
+	protected static final long START_DELAY = 3000L;
+	public static final double ACCELERATION_FACTOR = 60.0;
+	
+	
 
 	protected static final String FACADE_COMPONENT_URI = "facade-URI";
 	protected static final String CLIENT_COMPONENT_URI = "client-URI";
@@ -39,7 +50,18 @@ public class CVM extends AbstractCVM {
 //		AbstractCVM.DEBUG_MODE.add(CVMDebugModes.EXECUTOR_SERVICES);
 
 		
+		long unixEpochStartTimeInNanos =
+				TimeUnit.MILLISECONDS.toNanos(System.currentTimeMillis() + START_DELAY);
 		
+		String clockServerURI = AbstractComponent.createComponent(
+				ClocksServer.class.getCanonicalName(),
+				new Object[]{
+				TEST_CLOCK_URI,
+				unixEpochStartTimeInNanos,
+				START_INSTANT,
+				ACCELERATION_FACTOR});
+		
+	    assert this.isDeployedComponent(clockServerURI);
 		
 		// endpoint client - facade
 		DHTServicesEndPoint dhtServicesEndPoint = new DHTServicesEndPoint();

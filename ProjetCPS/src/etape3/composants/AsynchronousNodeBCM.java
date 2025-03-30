@@ -31,37 +31,65 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class AsynchronousNodeBCM.
+ */
 @OfferedInterfaces(offered = { MapReduceCI.class, ContentAccessCI.class })
 @RequiredInterfaces(required = { MapReduceCI.class, ContentAccessCI.class, ResultReceptionCI.class,
 		MapReduceResultReceptionCI.class })
 public class AsynchronousNodeBCM extends AbstractComponent implements ContentAccessI, MapReduceI {
 
+	/** The Constant CONTENT_ACCESS_HANDLER_URI. */
 	private static final String CONTENT_ACCESS_HANDLER_URI = "Content-Access-Pool-Threads";
+	
+	/** The Constant MAP_REDUCE_HANDLER_URI. */
 	private static final String MAP_REDUCE_HANDLER_URI = "Content-Access-Pool-Threads";
 
+	/** The content. */
 	// Stocke les données associées aux clés de la DHT
 	protected ConcurrentHashMap<ContentKeyI, ContentDataI> content;
 
+	/** The intervalle. */
 	protected IntInterval intervalle;
 
+	/** The liste uri content operations. */
 	// Listes des URI des computations MapReduce et de stockage déjà traitées
 	protected CopyOnWriteArrayList<String> listeUriContentOperations = new CopyOnWriteArrayList<>();
+	
+	/** The liste uri map operations. */
 	protected CopyOnWriteArrayList<String> listeUriMapOperations = new CopyOnWriteArrayList<>();
+	
+	/** The liste uri reduce operations. */
 	protected CopyOnWriteArrayList<String> listeUriReduceOperations = new CopyOnWriteArrayList<>();
 
 	// Mémoire temporaire pour stocker les résultats intermédiaires des computations
+	/** The memory. */
 	// MapReduce
 	private ConcurrentHashMap<String, CompletableFuture<Stream<ContentDataI>>> memory = new ConcurrentHashMap<>();
 
+	/** The composite map content endpoint outbound async. */
 	protected AsynchronousCompositeMapContentEndPoint compositeMapContentEndpointOutboundAsync;
+	
+	/** The composite map content endpoint inbound async. */
 	protected AsynchronousCompositeMapContentEndPoint compositeMapContentEndpointInboundAsync;
 
+	/** The hash map lock. */
 	protected final ReentrantReadWriteLock hashMapLock;
 
+	/**
+	 * Instantiates a new asynchronous node BCM.
+	 *
+	 * @param uri the uri
+	 * @param compositeMapEndpointInboundAsync the composite map endpoint inbound async
+	 * @param compositeMapEndpointOutboundAsync the composite map endpoint outbound async
+	 * @param intervalle the intervalle
+	 * @throws ConnectionException the connection exception
+	 */
 	protected AsynchronousNodeBCM(String uri, AsynchronousCompositeMapContentEndPoint compositeMapEndpointInboundAsync,
 			AsynchronousCompositeMapContentEndPoint compositeMapEndpointOutboundAsync, IntInterval intervalle)
 			throws ConnectionException {
-		super(1, 1);
+		super(1, 0);
 		this.content = new ConcurrentHashMap<>();
 		this.intervalle = intervalle;
 		this.compositeMapContentEndpointInboundAsync = compositeMapEndpointInboundAsync;
@@ -80,6 +108,9 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessI#get(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.components.endpoints.EndPointI)
+	 */
 	@Override
 	public <I extends ResultReceptionCI> void get(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
@@ -99,7 +130,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 					this.hashMapLock.readLock().unlock();
 				}
 			} else {
-				this.compositeMapContentEndpointOutboundAsync.getContentAccessEndPoint().getClientSideReference()
+				this.compositeMapContentEndpointOutboundAsync.getContentAccessEndpoint().getClientSideReference()
 						.get(computationURI, key, caller);
 			}
 
@@ -116,6 +147,9 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessI#put(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI, fr.sorbonne_u.components.endpoints.EndPointI)
+	 */
 	@Override
 	public <I extends ResultReceptionCI> void put(String computationURI, ContentKeyI key, ContentDataI value,
 			EndPointI<I> caller) throws Exception {
@@ -136,7 +170,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 					this.hashMapLock.writeLock().unlock();
 				}
 			} else {
-				this.compositeMapContentEndpointOutboundAsync.getContentAccessEndPoint().getClientSideReference()
+				this.compositeMapContentEndpointOutboundAsync.getContentAccessEndpoint().getClientSideReference()
 						.put(computationURI, key, value, caller);
 			}
 		} else {
@@ -151,6 +185,9 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		}
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessI#remove(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.components.endpoints.EndPointI)
+	 */
 	@Override
 	public <I extends ResultReceptionCI> void remove(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
@@ -170,7 +207,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 					this.hashMapLock.writeLock().unlock();
 				}
 			} else {
-				this.compositeMapContentEndpointOutboundAsync.getContentAccessEndPoint().getClientSideReference()
+				this.compositeMapContentEndpointOutboundAsync.getContentAccessEndpoint().getClientSideReference()
 						.remove(computationURI, key, caller);
 			}
 		} else {
@@ -185,6 +222,9 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		}
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceI#map(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <R extends Serializable, I extends MapReduceResultReceptionCI> void map(String computationURI,
@@ -200,7 +240,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 				memory.putIfAbsent(computationURI, futureStream);
 				futureStream.complete((Stream<ContentDataI>) content.values().stream().filter(selector).map(processor));
 
-				this.compositeMapContentEndpointOutboundAsync.getMapReduceEndPoint().getClientSideReference()
+				this.compositeMapContentEndpointOutboundAsync.getMapReduceEndpoint().getClientSideReference()
 						.map(computationURI, selector, processor);
 			} finally {
 				this.hashMapLock.readLock().lock();
@@ -209,6 +249,9 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceI#reduce(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A, A, fr.sorbonne_u.components.endpoints.EndPointI)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <A extends Serializable, R, I extends MapReduceResultReceptionCI> void reduce(String computationURI,
@@ -224,7 +267,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 			A localReduce = localStream.reduce(identityAcc, (u, d) -> reductor.apply(u, (R) d), combinator);
 			localReduce = combinator.apply(currentAcc, localReduce);
 
-			this.compositeMapContentEndpointOutboundAsync.getMapReduceEndPoint().getClientSideReference()
+			this.compositeMapContentEndpointOutboundAsync.getMapReduceEndpoint().getClientSideReference()
 					.reduce(computationURI, reductor, combinator, identityAcc, localReduce, callerNode);
 			} finally {
 				this.hashMapLock.readLock().unlock();
@@ -242,16 +285,22 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI#clearComputation(java.lang.String)
+	 */
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
 		if (listeUriContentOperations.contains(computationURI)) {
 			listeUriContentOperations.remove(computationURI);
 		} else {
-			this.compositeMapContentEndpointOutboundAsync.getContentAccessEndPoint().getClientSideReference()
+			this.compositeMapContentEndpointOutboundAsync.getContentAccessEndpoint().getClientSideReference()
 					.clearComputation(computationURI);
 		}
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI#clearMapReduceComputation(java.lang.String)
+	 */
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
 		if (listeUriMapOperations.contains(computationURI) && listeUriReduceOperations.contains(computationURI)) {
@@ -259,7 +308,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 			this.listeUriReduceOperations.remove(computationURI);
 			this.memory.remove(computationURI);
 		} else {
-			this.compositeMapContentEndpointOutboundAsync.getMapReduceEndPoint().getClientSideReference()
+			this.compositeMapContentEndpointOutboundAsync.getMapReduceEndpoint().getClientSideReference()
 					.clearMapReduceComputation(computationURI);
 		}
 	}
@@ -283,6 +332,9 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		}
 	}
 
+	/**
+	 * @see fr.sorbonne_u.components.AbstractComponent#finalise()
+	 */
 	@Override
 	public void finalise() throws Exception {
 		this.logMessage("stopping node component.");
@@ -291,6 +343,9 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		super.finalise();
 	}
 
+	/**
+	 * @see fr.sorbonne_u.components.AbstractComponent#shutdown()
+	 */
 	@Override
 	public void shutdown() throws ComponentShutdownException {
 		try {
@@ -301,6 +356,9 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		super.shutdown();
 	}
 
+	/**
+	 * @see fr.sorbonne_u.components.AbstractComponent#shutdownNow()
+	 */
 	@Override
 	public void shutdownNow() throws ComponentShutdownException {
 		try {
@@ -311,24 +369,36 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		super.shutdownNow();
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI#getSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
+	 */
 	@Override
 	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI#putSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
+	 */
 	@Override
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI#removeSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
+	 */
 	@Override
 	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI#mapSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI)
+	 */
 	@Override
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
 			throws Exception {
@@ -336,6 +406,9 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI#reduceSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A)
+	 */
 	@Override
 	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
 			CombinatorI<A> combinator, A currentAcc) throws Exception {

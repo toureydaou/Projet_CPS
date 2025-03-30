@@ -101,10 +101,10 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		System.out.println("Reception de la requête 'GET' sur la facade, identifiant de la requete : " + request_uri);
 		CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
 		this.resultsContentAccess.put(request_uri, f);
-		this.endPointFacadeNoeud.getContentAccessEndPoint().getClientSideReference().get(request_uri, key, resultatReceptionEndPoint);
+		this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().get(request_uri, key, resultatReceptionEndPoint);
 		ContentDataI value = (ContentDataI) this.resultsContentAccess.get(request_uri).get();
 		this.resultsContentAccess.remove(request_uri);
-		this.endPointFacadeNoeud.getContentAccessEndPoint().getClientSideReference().clearComputation(request_uri);
+		this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
 		System.out.println(value);
 		return value;
 
@@ -117,10 +117,10 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		System.out.println("Reception de la requête 'PUT' sur la facade identifiant requete : " + request_uri);
 		CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
 		this.resultsContentAccess.put(request_uri, f);
-		this.endPointFacadeNoeud.getContentAccessEndPoint().getClientSideReference().put(request_uri, key, value, resultatReceptionEndPoint);
+		this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().put(request_uri, key, value, resultatReceptionEndPoint);
 		ContentDataI oldValue = (ContentDataI) this.resultsContentAccess.get(request_uri).get();
 		this.resultsContentAccess.remove(request_uri);
-		this.endPointFacadeNoeud.getContentAccessEndPoint().getClientSideReference().clearComputation(request_uri);
+		this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
 		return oldValue;
 	}
 
@@ -138,10 +138,10 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		System.out.println("Reception de la requête 'REMOVE' sur la facade identifiant requete : " + request_uri);
 		CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
 		this.resultsContentAccess.put(request_uri, f);
-		this.endPointFacadeNoeud.getContentAccessEndPoint().getClientSideReference().remove(request_uri, key, resultatReceptionEndPoint);
+		this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().remove(request_uri, key, resultatReceptionEndPoint);
 		ContentDataI oldValue = (ContentDataI) this.resultsContentAccess.get(request_uri).get();
 		this.resultsContentAccess.remove(request_uri);
-		this.endPointFacadeNoeud.getContentAccessEndPoint().getClientSideReference().clearComputation(request_uri);
+		this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
 		return oldValue;
 	}
 
@@ -168,21 +168,21 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		System.out.println("Reception de la requête 'MAP REDUCE' sur la facade identifiant requete : " + request_uri);
 		CompletableFuture<Serializable> reduceResult = new CompletableFuture<Serializable>();
 		resultsMapReduce.put(request_uri, reduceResult);
-		this.endPointFacadeNoeud.getMapReduceEndPoint().getClientSideReference().map(request_uri, selector, processor);
-		this.endPointFacadeNoeud.getMapReduceEndPoint().getClientSideReference().reduce(request_uri, reductor, combinator, initialAcc, initialAcc, this.mapReduceResultatReceptionEndPoint);
+		this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().map(request_uri, selector, processor);
+		this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().reduce(request_uri, reductor, combinator, initialAcc, initialAcc, this.mapReduceResultatReceptionEndPoint);
 		A result = (A) reduceResult.get();
 		
-		this.endPointFacadeNoeud.getMapReduceEndPoint().getClientSideReference().clearMapReduceComputation(request_uri);
+		this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().clearMapReduceComputation(request_uri);
 		this.resultsMapReduce.remove(request_uri);
 		return  result;
 	}
 	
 	public void clearComputation(String computationURI) throws Exception {
-		this.endPointFacadeNoeud.getContentAccessEndPoint().getClientSideReference().clearComputation(computationURI);
+		this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().clearComputation(computationURI);
 	}
 	
 	public void clearMapReduceComputation(String computationURI) throws Exception {
-		this.endPointFacadeNoeud.getMapReduceEndPoint().getClientSideReference().clearMapReduceComputation(computationURI);
+		this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().clearMapReduceComputation(computationURI);
 
 	}
 

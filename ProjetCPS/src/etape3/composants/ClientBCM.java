@@ -5,6 +5,7 @@ import java.io.Serializable;
 import etape1.EntierKey;
 import etape1.Livre;
 import etape2.endpoints.DHTServicesEndPoint;
+import etape3.CVM;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
@@ -16,6 +17,10 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
+import fr.sorbonne_u.utils.aclocks.AcceleratedClock;
+import fr.sorbonne_u.utils.aclocks.ClocksServer;
+import fr.sorbonne_u.utils.aclocks.ClocksServerConnector;
+import fr.sorbonne_u.utils.aclocks.ClocksServerOutboundPort;
 
 /**
  * ClientBCM est un composant client qui interagit avec le service DHT pour
@@ -30,6 +35,7 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 public class ClientBCM extends AbstractComponent {
 
 	protected DHTServicesEndPoint endPointClientFacade; // Point d'accès aux services DHT
+    protected AcceleratedClock dhtClock;  // Référence à l'horloge
 
 	private static final int SCHEDULABLE_THREADS = 1;
 	private static final int THREADS_NUMBER = 0;
@@ -44,6 +50,27 @@ public class ClientBCM extends AbstractComponent {
 		super(uri, THREADS_NUMBER, SCHEDULABLE_THREADS);
 		this.endPointClientFacade = endpointClientFacade;
 
+	}
+	
+	protected void connectToClockServer() throws Exception {
+	    ClocksServerOutboundPort p = new ClocksServerOutboundPort(this);
+	    p.publishPort();
+	    
+	    this.doPortConnection(
+	        p.getPortURI(),
+	        ClocksServer.STANDARD_INBOUNDPORT_URI,
+	        ClocksServerConnector.class.getCanonicalName()
+	    );
+	    
+	    this.dhtClock = p.getClock(CVM.TEST_CLOCK_URI);
+	    
+	    this.doPortDisconnection(p.getPortURI());
+	    p.unpublishPort();
+	    p.destroyPort();
+	    
+	    this.logMessage("En attente du démarrage de l'horloge...");
+	    dhtClock.waitUntilStart();
+	    this.logMessage("Horloge démarrée : " + dhtClock.getStartInstant());
 	}
 
 	/**
@@ -105,13 +132,21 @@ public class ClientBCM extends AbstractComponent {
 	@Override
 	public void start() throws ComponentStartException {
 		this.logMessage("starting client component.");
-		super.start();
 		try {
+			
+			this.connectToClockServer();
+			
 			if (!endPointClientFacade.clientSideInitialised()) {
 				this.endPointClientFacade.initialiseClientSide(this);
 			}
+			
+			super.start();
+
 		} catch (ConnectionException e) {
 			throw new ComponentStartException(e);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
