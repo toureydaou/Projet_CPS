@@ -12,6 +12,7 @@ import etape3.composants.ConcurrentPutClient3;
 import etape3.composants.FacadeBCM;
 import etape3.composants.GetClient;
 import etape3.composants.MapReduceClient;
+import etape3.composants.MapReduceVideClient;
 import etape3.composants.PutClient;
 import etape3.composants.RemoveClient;
 import etape3.endpoints.AsynchronousCompositeMapContentEndPoint;
@@ -30,6 +31,7 @@ public class CVM extends AbstractCVM {
 	public static final double ACCELERATION_FACTOR = 60.0;
 
 	protected static final String FACADE_COMPONENT_URI = "facade-URI";
+	protected static final String MAP_REDUCE_VIDE_CLIENT_COMPONENT_URI = "map-reduce-vide-client-URI";
 	protected static final String GET_1_CLIENT_COMPONENT_URI = "get-1-client-URI";
 	protected static final String GET_2_CLIENT_COMPONENT_URI = "get-2-client-URI";
 	protected static final String CONCURRENT_GET_1_CLIENT_COMPONENT_URI = "concurrent-get-1-client-URI";
@@ -88,6 +90,11 @@ public class CVM extends AbstractCVM {
 				mapReduceResultReceptionEndPoint.copyWithSharable() });
 		assert this.isDeployedComponent(facadeURI);
 
+		
+
+		String mapReduceVideClientURI = AbstractComponent.createComponent(MapReduceVideClient.class.getCanonicalName(),
+				new Object[] { MAP_REDUCE_VIDE_CLIENT_COMPONENT_URI, ((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
+		assert this.isDeployedComponent(mapReduceVideClientURI);
 		
 		String getClientURI_1 = AbstractComponent.createComponent(GetClient.class.getCanonicalName(),
 				new Object[] { GET_1_CLIENT_COMPONENT_URI, ((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });

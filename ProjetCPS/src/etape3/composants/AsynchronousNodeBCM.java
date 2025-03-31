@@ -244,7 +244,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 
 				CompletableFuture<Stream<ContentDataI>> futureStream = new CompletableFuture<Stream<ContentDataI>>();
 				memory.putIfAbsent(computationURI, futureStream);
-				futureStream.complete((Stream<ContentDataI>) content.values().stream().filter(selector).map(processor));
+				memory.get(computationURI).complete((Stream<ContentDataI>) content.values().stream().filter(selector).map(processor));
 
 				this.compositeMapContentEndpointOutboundAsync.getMapReduceEndpoint().getClientSideReference()
 						.map(computationURI, selector, processor);
@@ -266,6 +266,9 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		System.out.println("Reception de la requete 'MAP REDUCE' (REDUCE) sur le noeud " + this.intervalle.first() + " identifiant requete : " + computationURI);
 		if (!listeUriReduceOperations.contains(computationURI)) {
 			listeUriReduceOperations.add(computationURI);
+			
+			CompletableFuture<Stream<ContentDataI>> futureStream = new CompletableFuture<Stream<ContentDataI>>();
+			memory.putIfAbsent(computationURI, futureStream);
 			
 			Stream<ContentDataI> localStream = memory.get(computationURI).get();
 
