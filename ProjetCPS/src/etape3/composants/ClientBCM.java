@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
-import etape1.EntierKey;
-import etape1.Livre;
 import etape2.endpoints.DHTServicesEndPoint;
 import etape3.CVM;
 import fr.sorbonne_u.components.AbstractComponent;
@@ -38,10 +36,11 @@ import fr.sorbonne_u.utils.aclocks.ClocksServerOutboundPort;
 public class ClientBCM extends AbstractComponent {
 
 	protected DHTServicesEndPoint endPointClientFacade; // Point d'accès aux services DHT
-    protected AcceleratedClock dhtClock;  // Référence à l'horloge
+	protected AcceleratedClock dhtClock; // Référence à l'horloge
 
 	private static final int SCHEDULABLE_THREADS = 2;
 	private static final int THREADS_NUMBER = 0;
+	ClocksServerOutboundPort p;
 
 	/**
 	 * Constructeur du composant ClientBCM.
@@ -54,26 +53,21 @@ public class ClientBCM extends AbstractComponent {
 		this.endPointClientFacade = endpointClientFacade;
 
 	}
-	
+
 	protected void connectToClockServer() throws Exception {
-	    ClocksServerOutboundPort p = new ClocksServerOutboundPort(this);
-	    p.publishPort();
-	    
-	    this.doPortConnection(
-	        p.getPortURI(),
-	        ClocksServer.STANDARD_INBOUNDPORT_URI,
-	        ClocksServerConnector.class.getCanonicalName()
-	    );
-	    
-	    this.dhtClock = p.getClock(CVM.TEST_CLOCK_URI);
-	    
-	    this.doPortDisconnection(p.getPortURI());
-	    p.unpublishPort();
-	    p.destroyPort();
-	    
-	    this.logMessage("En attente du démarrage de l'horloge...");
-	    dhtClock.waitUntilStart();
-	    this.logMessage("Horloge démarrée : " + dhtClock.getStartInstant());
+		p = new ClocksServerOutboundPort(this);
+		p.publishPort();
+
+		this.doPortConnection(p.getPortURI(), ClocksServer.STANDARD_INBOUNDPORT_URI,
+				ClocksServerConnector.class.getCanonicalName());
+
+		this.dhtClock = p.getClock(CVM.TEST_CLOCK_URI);
+
+		this.logMessage("En attente du démarrage de l'horloge...");
+		if (dhtClock.startTimeNotReached()) {
+			dhtClock.waitUntilStart();
+		}
+		this.logMessage("Horloge démarrée : " + dhtClock.getStartInstant());
 	}
 
 	/**
@@ -136,19 +130,19 @@ public class ClientBCM extends AbstractComponent {
 	public void start() throws ComponentStartException {
 		this.logMessage("starting client component.");
 		try {
-			
+
 			this.connectToClockServer();
-			
+
 			if (!endPointClientFacade.clientSideInitialised()) {
 				this.endPointClientFacade.initialiseClientSide(this);
 			}
-			
+
 			super.start();
 
 		} catch (ConnectionException e) {
 			throw new ComponentStartException(e);
 		} catch (Exception e) {
-			
+
 			e.printStackTrace();
 		}
 	}
@@ -156,29 +150,18 @@ public class ClientBCM extends AbstractComponent {
 	@Override
 	public void execute() throws Exception {
 		this.logMessage("executing client component." + isStarted());
-		
+
 		Instant i0 = dhtClock.getStartInstant();
 		Instant i1 = i0.plusSeconds(60);
-		
+
 		long delay = dhtClock.nanoDelayUntilInstant(i1);
-		
+
 		this.scheduleTask(new AbstractComponent.AbstractTask() {
 			@Override
 			public void run() {
 				try {
 
-					    // Test 1: Insertion de données
-					    testInsertion();
-					    
-					    // Test 2: Récupération de données
-					    testRecuperation();
-					    
-					    // Test 3: MapReduce
-					    testMapReduce();
-					    
-					    // Test 4: Suppression de données
-					    testSuppression();
-					    
+
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
@@ -189,207 +172,15 @@ public class ClientBCM extends AbstractComponent {
 
 	}
 
-	//--------------------------------------------------------
-	// Méthodes de test
-	//--------------------------------------------------------
-
-	/**
-	 * Teste l'insertion de données dans le DHT.
-	 */
-	protected void testInsertion() throws Exception {
-	    System.out.println("\n=== TEST INSERTION ===");
-	    
-	    
-	    System.out.println("Client "  + this.reflectionInboundPortURI);
-	    
-	    EntierKey k10 = new EntierKey(10);
-	    EntierKey k20 = new EntierKey(11);
-	    EntierKey k30 = new EntierKey(12);
-	    EntierKey k40 = new EntierKey(13);
-	    EntierKey k50 = new EntierKey(14);
-	    EntierKey k60 = new EntierKey(15);
-	    EntierKey k70 = new EntierKey(16);
-	    EntierKey k80 = new EntierKey(17);
-	    EntierKey k90 = new EntierKey(18);
-	    EntierKey k100 = new EntierKey(19);
-	    EntierKey k120 = new EntierKey(20);
-	    EntierKey k130 = new EntierKey(21);
-	    
-	    Livre livreHP_10 = new Livre("Harry Potter", 200);
-	    
-	    Livre livreHP_20 = new Livre("Harry Potter", 400);
-	    Livre livreHP_new_20 = new Livre("Harry Potter", 500);
-	
-	    Livre livreHP_new_30 = new Livre("Harry Potter", 700);
-
-	    Livre livreHP_new_40 = new Livre("Harry Potter", 900);
-	   
-	    Livre livreHP_new_50 = new Livre("Harry Potter", 1100);
-	   
-	    Livre livreHP_new_60 = new Livre("Harry Potter", 1300);
-	    
-	    Livre livreHP_new_70 = new Livre("Harry Potter", 1500);
-	    
-	    Livre livreHP_new_80 = new Livre("Harry Potter", 1700);
-	   
-	    Livre livreHP_new_90 = new Livre("Harry Potter", 1900);
-	  
-	    Livre livreHP_new_100 = new Livre("Harry Potter", 2100);
-	
-	    Livre livreHP_new_120 = new Livre("Harry Potter", 2300);
-
-	    Livre livreHP_new_130 = new Livre("Harry Potter", 2300);
-	    
-	    
-	    System.out.println("Insertion de la clé 10 avec valeur: " + livreHP_10);
-	    ContentDataI previousValue_10 = this.put(k10, livreHP_10);
-	    this.put(k20, livreHP_10);
-	    ContentDataI previousValue_20 = this.put(k20, livreHP_new_20);
-	    this.put(k30, livreHP_20);
-	    ContentDataI previousValue_30 = this.put(k30, livreHP_new_30);
-	    this.put(k40, livreHP_20);
-	    ContentDataI previousValue_40 = this.put(k40, livreHP_new_40);
-	    this.put(k50, livreHP_20);
-	    ContentDataI previousValue_50 = this.put(k50, livreHP_new_50);
-	    this.put(k60, livreHP_20);
-	    ContentDataI previousValue_60 = this.put(k60, livreHP_new_60);
-	    this.put(k70, livreHP_20);
-	    ContentDataI previousValue_70 = this.put(k70, livreHP_new_70);
-	    this.put(k80, livreHP_20);
-	    ContentDataI previousValue_80 = this.put(k80, livreHP_new_80);
-	    this.put(k90, livreHP_20);
-	    ContentDataI previousValue_90 = this.put(k90, livreHP_new_90);
-	    this.put(k100, livreHP_20);
-	    ContentDataI previousValue_100 = this.put(k100, livreHP_new_100);
-	    this.put(k120, livreHP_20);
-	    ContentDataI previousValue_120 = this.put(k120, livreHP_new_120);
-	    this.put(k130, livreHP_20);
-	    ContentDataI previousValue_130 = this.put(k130, livreHP_new_130);
-	    
-	    
-	    System.out.println("Résultat attendu: null (première insertion)");
-	    System.out.println("Résultat obtenu: " + previousValue_10);
-	    
-	    System.out.println("Résultat attendu: Livre[Harry Potter, 400]");
-	    System.out.println("Résultat obtenu: " + previousValue_20);
-
-	    System.out.println("Résultat attendu: Livre[Harry Potter, 400]");
-	    System.out.println("Résultat obtenu: " + previousValue_30);
-	    
-	    System.out.println("Résultat attendu: Livre[Harry Potter, 400]");
-	    System.out.println("Résultat obtenu: " + previousValue_40);
-	    
-	    System.out.println("Résultat attendu: Livre[Harry Potter, 400]");
-	    System.out.println("Résultat obtenu: " + previousValue_50);
-	    
-	    System.out.println("Résultat attendu: Livre[Harry Potter, 400]");
-	    System.out.println("Résultat obtenu: " + previousValue_60);
-	    
-	    System.out.println("Résultat attendu: Livre[Harry Potter, 400]");
-	    System.out.println("Résultat obtenu: " + previousValue_70);
-	    
-	    System.out.println("Résultat attendu: Livre[Harry Potter, 400]");
-	    System.out.println("Résultat obtenu: " + previousValue_80);
-	    
-	    System.out.println("Résultat attendu: Livre[Harry Potter, 400]");
-	    System.out.println("Résultat obtenu: " + previousValue_90);
-	    
-	    System.out.println("Résultat attendu: Livre[Harry Potter, 400]");
-	    System.out.println("Résultat obtenu: " + previousValue_100);
-	    
-	    System.out.println("Résultat attendu: Livre[Harry Potter, 400]");
-	    System.out.println("Résultat obtenu: " + previousValue_120);
-	    
-	    System.out.println("Résultat attendu: Livre[Harry Potter, 400]");
-	    System.out.println("Résultat obtenu: " + previousValue_130);
-	    
-	    // Vérification
-	    if (previousValue_10 != null) {
-	        System.err.println("ERREUR: La valeur précédente devrait être null");
-	    }
-	}
-
-	/**
-	 * Teste la récupération de données depuis le DHT.
-	 */
-	protected void testRecuperation() throws Exception {
-	    System.out.println("\n=== TEST RECUPERATION ===");
-	    
-	    System.out.println("Client "  + this.reflectionInboundPortURI);
-	    
-	    EntierKey k10 = new EntierKey(10);
-	    System.out.println("Récupération de la clé 10");
-	    
-	    ContentDataI value = this.get(k10);
-	    System.out.println("Résultat attendu: Livre[Harry Potter, 200]");
-	    System.out.println("Résultat obtenu: " + value);
-	}
-
-	/**
-	 * Teste l'opération MapReduce.
-	 */
-	protected void testMapReduce() throws Exception {
-	    System.out.println("\n=== TEST MAPREDUCE ===");
-	    
-	    System.out.println("Client "  + this.reflectionInboundPortURI);
-	    
-	    
-	    EntierKey k_10 = new EntierKey(10);
-		EntierKey k_50 = new EntierKey(50);
-		EntierKey k_100 = new EntierKey(100);
-		
-	
-		this.put(k_10, new Livre("Harry potter", 200));
-		this.put(k_50, new Livre("Harry potter", 200));
-		this.put(k_100, new Livre("Harry potter", 200));
-	    
-	    System.out.println("Calcul du total des pages de tous les livres");
-	    int totalPages = this.mapReduce(
-	        i -> ((int) i.getValue(Livre.NB_PAGES)) > 0,
-	        i -> new Livre((String) i.getValue(Livre.TITRE), (int) i.getValue(Livre.NB_PAGES)),
-	        (acc, i) -> acc + (int) i.getValue(Livre.NB_PAGES),
-	        (acc1, acc2) -> acc1 + acc2,
-	        0
-	    );
-	    
-	    System.out.println("Résultat attendu: 600 (200 pages x 3 livres insérés)");
-	    System.out.println("Résultat obtenu: " + totalPages);
-	    
-	    // Vérification
-	    if (totalPages != 600) {
-	        System.err.println("ERREUR: Le calcul MapReduce est incorrect");
-	    }
-	}
-
-	/**
-	 * Teste la suppression de données dans le DHT.
-	 */
-	protected void testSuppression() throws Exception {
-	    System.out.println("\n=== TEST SUPPRESSION ===");
-	    
-	    System.out.println("Client "  + this.reflectionInboundPortURI);
-	    
-	    EntierKey k10 = new EntierKey(10);
-	    System.out.println("Suppression de la clé 10");
-	    
-	    ContentDataI deletedValue = this.remove(k10);
-	    System.out.println("Résultat attendu: Livre[Harry Potter, 200]");
-	    System.out.println("Résultat obtenu: " + deletedValue);
-	    
-	    // Vérification post-suppression
-	    ContentDataI shouldBeNull = this.get(k10);
-	    System.out.println("Vérification post-suppression (devrait être null): " + shouldBeNull);
-	    
-	    if (shouldBeNull != null) {
-	        System.err.println("ERREUR: La valeur n'a pas été correctement supprimée");
-	    }
-	}
 
 	@Override
 	public void finalise() throws Exception {
 		this.logMessage("stopping client component.");
 		this.printExecutionLogOnFile("client");
 		this.endPointClientFacade.cleanUpClientSide();
+		this.doPortDisconnection(p.getPortURI());
+		p.unpublishPort();
+		p.destroyPort();
 		super.finalise();
 	}
 

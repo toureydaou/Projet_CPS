@@ -39,6 +39,9 @@ import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 @RequiredInterfaces(required = { MapReduceCI.class, ContentAccessCI.class, ResultReceptionCI.class,
 		MapReduceResultReceptionCI.class })
 public class AsynchronousNodeBCM extends AbstractComponent implements ContentAccessI, MapReduceI {
+	
+	private static final int SCHEDULABLE_THREADS = 2;
+	private static final int THREADS_NUMBER = 0;
 
 	/** The Constant CONTENT_ACCESS_HANDLER_URI. */
 	private static final String CONTENT_ACCESS_HANDLER_URI = "Content-Access-Pool-Threads";
@@ -89,7 +92,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	protected AsynchronousNodeBCM(String uri, AsynchronousCompositeMapContentEndPoint compositeMapEndpointInboundAsync,
 			AsynchronousCompositeMapContentEndPoint compositeMapEndpointOutboundAsync, IntInterval intervalle)
 			throws ConnectionException {
-		super(2, 0);
+		super(THREADS_NUMBER, SCHEDULABLE_THREADS);
 		this.content = new ConcurrentHashMap<>();
 		this.intervalle = intervalle;
 		this.compositeMapContentEndpointInboundAsync = compositeMapEndpointInboundAsync;
@@ -119,6 +122,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 			listeUriContentOperations.addIfAbsent(computationURI);
 
 			if (this.intervalle.in(key.hashCode())) {
+				
 				this.hashMapLock.readLock().lock();
 				try {
 					if (!caller.clientSideInitialised()) {
@@ -154,6 +158,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	public <I extends ResultReceptionCI> void put(String computationURI, ContentKeyI key, ContentDataI value,
 			EndPointI<I> caller) throws Exception {
 		System.out.println("Reception de la requete 'PUT' le noeud " + this.intervalle.first() + " identifiant requete : " + computationURI);
+		
 		if (!listeUriContentOperations.contains(computationURI)) {
 			listeUriContentOperations.addIfAbsent(computationURI);
 
@@ -163,7 +168,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 					if (!caller.clientSideInitialised()) {
 						caller.initialiseClientSide(this);
 					}
-					ContentDataI oldValue = content.putIfAbsent(key.hashCode(), value);
+					ContentDataI oldValue = content.put(key.hashCode(), value);
 					caller.getClientSideReference().acceptResult(computationURI, oldValue);
 					caller.cleanUpClientSide();
 				} finally {
@@ -230,7 +235,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	@Override
 	public <R extends Serializable, I extends MapReduceResultReceptionCI> void map(String computationURI,
 			SelectorI selector, ProcessorI<R> processor) throws Exception {
-		System.out.println("Reception de la requete 'MAP REDUCE' (MAP) sur le noeud " + this.intervalle.first());
+		System.out.println("Reception de la requete 'MAP REDUCE' (MAP) sur le noeud " + this.intervalle.first() + " identifiant requete : " + computationURI);
 		if (!listeUriMapOperations.contains(computationURI)) {
 			listeUriMapOperations.addIfAbsent(computationURI);
 			this.hashMapLock.readLock().lock();
@@ -258,7 +263,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	public <A extends Serializable, R, I extends MapReduceResultReceptionCI> void reduce(String computationURI,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A identityAcc, A currentAcc, EndPointI<I> callerNode)
 			throws Exception {
-		System.out.println("Reception de la requete 'MAP REDUCE' (REDUCE) sur le noeud " + this.intervalle.first());
+		System.out.println("Reception de la requete 'MAP REDUCE' (REDUCE) sur le noeud " + this.intervalle.first() + " identifiant requete : " + computationURI);
 		if (!listeUriReduceOperations.contains(computationURI)) {
 			listeUriReduceOperations.add(computationURI);
 			
