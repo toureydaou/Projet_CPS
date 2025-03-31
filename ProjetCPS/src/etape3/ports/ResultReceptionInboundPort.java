@@ -54,7 +54,7 @@ public class ResultReceptionInboundPort extends AbstractInboundPort implements R
 
 	@Override
 	public void acceptResult(String computationURI, Serializable result) throws Exception {
-		this.getOwner().runTask(owner -> {
+		this.getOwner().runTask(executorIndex, owner -> {
 			try {
 				((ResultReceptionI) owner).acceptResult(computationURI, result);
 			} catch (Exception e) {

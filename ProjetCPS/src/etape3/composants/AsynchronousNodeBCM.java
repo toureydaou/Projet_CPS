@@ -40,7 +40,7 @@ import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 		MapReduceResultReceptionCI.class })
 public class AsynchronousNodeBCM extends AbstractComponent implements ContentAccessI, MapReduceI {
 	
-	private static final int SCHEDULABLE_THREADS = 2;
+	private static final int SCHEDULABLE_THREADS = 1;
 	private static final int THREADS_NUMBER = 0;
 
 	/** The Constant CONTENT_ACCESS_HANDLER_URI. */
@@ -109,6 +109,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 
 		this.compositeMapContentEndpointInboundAsync.initialiseServerSide(this);
 
+		
 	}
 
 	/**
@@ -238,6 +239,8 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		System.out.println("Reception de la requete 'MAP REDUCE' (MAP) sur le noeud " + this.intervalle.first() + " identifiant requete : " + computationURI);
 		if (!listeUriMapOperations.contains(computationURI)) {
 			listeUriMapOperations.addIfAbsent(computationURI);
+			this.compositeMapContentEndpointOutboundAsync.getMapReduceEndpoint().getClientSideReference()
+			.map(computationURI, selector, processor);
 			this.hashMapLock.readLock().lock();
 			try {
 				
@@ -246,11 +249,10 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 				memory.putIfAbsent(computationURI, futureStream);
 				memory.get(computationURI).complete((Stream<ContentDataI>) content.values().stream().filter(selector).map(processor));
 
-				this.compositeMapContentEndpointOutboundAsync.getMapReduceEndpoint().getClientSideReference()
-						.map(computationURI, selector, processor);
 			} finally {
 				this.hashMapLock.readLock().unlock();
 			}	
+			
 		}
 
 	}

@@ -26,7 +26,7 @@ public class MapReduceResultReceptionOutboundPort extends AbstractOutboundPort i
 	 * @throws Exception <i>to do</i>.
 	 */
 	public  MapReduceResultReceptionOutboundPort (ComponentI owner) throws Exception {
-		super(MapReduceResultReceptionCI.class, owner);
+		super(MapReduceResultReceptionCI.class, owner );
 
 		// le propriétaire de ce port est un noeud ou la facade tous deux jouant le role
 		// de client
