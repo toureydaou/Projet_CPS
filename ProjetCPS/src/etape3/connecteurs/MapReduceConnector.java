@@ -14,22 +14,22 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 public class MapReduceConnector extends MapReduceSyncConnector implements MapReduceCI {
 
 	@Override
-	public <R extends Serializable, I extends MapReduceResultReceptionCI> void map(String computationURI,
-			SelectorI selector, ProcessorI<R> processor) throws Exception {
-		((MapReduceCI)this.offering).map(computationURI, selector, processor);
-		
-	}
-
-	@Override
 	public <A extends Serializable, R, I extends MapReduceResultReceptionCI> void reduce(String computationURI,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A identityAcc, A currentAcc, EndPointI<I> callerNode)
 			throws Exception {
-		((MapReduceCI)this.offering).reduce(computationURI, reductor, combinator, identityAcc, currentAcc, callerNode);
+		((MapReduceCI) this.offering).reduce(computationURI, reductor, combinator, identityAcc, currentAcc, callerNode);
 	}
-	
+
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
-		((MapReduceCI)this.offering).clearMapReduceComputation(computationURI);
+		((MapReduceCI) this.offering).clearMapReduceComputation(computationURI);
+	}
+
+	@Override
+	public <R extends Serializable> void map(String computationURI, SelectorI selector, ProcessorI<R> processor)
+			throws Exception {
+		((MapReduceCI) this.offering).map(computationURI, selector, processor);
+
 	}
 
 }

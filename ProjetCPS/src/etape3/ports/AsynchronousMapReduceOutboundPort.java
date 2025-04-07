@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
+import fr.sorbonne_u.components.interfaces.RequiredCI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
@@ -44,6 +45,16 @@ public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort impl
 	// Constructeurs
 	// -------------------------------------------------------------------------
 
+	public AsynchronousMapReduceOutboundPort(String uri, Class<? extends RequiredCI> implementedInterface,
+			ComponentI owner) throws Exception {
+		super(uri, implementedInterface, owner);
+	}
+
+	public AsynchronousMapReduceOutboundPort(Class<? extends RequiredCI> implementedInterface, ComponentI owner)
+			throws Exception {
+		super(implementedInterface, owner);
+	}
+
 	/**
 	 * Crée et initialise le port sortant avec le composant propriétaire.
 	 * 
@@ -71,13 +82,6 @@ public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort impl
 	}
 
 	@Override
-	public <R extends Serializable, I extends MapReduceResultReceptionCI> void map(String computationURI,
-			SelectorI selector, ProcessorI<R> processor) throws Exception {
-		((MapReduceCI) this.getConnector()).map(computationURI, selector, processor);
-
-	}
-
-	@Override
 	public <A extends Serializable, R, I extends MapReduceResultReceptionCI> void reduce(String computationURI,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A identityAcc, A currentAcc, EndPointI<I> callerNode)
 			throws Exception {
@@ -90,7 +94,7 @@ public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort impl
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
 			throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -103,6 +107,13 @@ public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort impl
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
 		((MapReduceCI) this.getConnector()).clearMapReduceComputation(computationURI);
+	}
+
+	@Override
+	public <R extends Serializable> void map(String computationURI, SelectorI selector, ProcessorI<R> processor)
+			throws Exception {
+		((MapReduceCI) this.getConnector()).map(computationURI, selector, processor);
+
 	}
 
 }

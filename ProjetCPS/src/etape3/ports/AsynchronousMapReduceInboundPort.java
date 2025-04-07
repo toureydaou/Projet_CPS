@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
+import fr.sorbonne_u.components.interfaces.OfferedCI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
@@ -46,6 +47,17 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 	// Constructeurs
 	// -------------------------------------------------------------------------
 
+	
+	public AsynchronousMapReduceInboundPort(String uri, Class<? extends OfferedCI> implementedInterface, ComponentI owner, int executorServiceIndex) throws Exception {
+		super(uri, (Class<? extends OfferedCI>) implementedInterface, owner);
+		this.executorServiceIndex = executorServiceIndex;
+	}
+	
+	public AsynchronousMapReduceInboundPort(Class<? extends OfferedCI> implementedInterface, ComponentI owner, int executorServiceIndex) throws Exception {
+		super((Class<? extends OfferedCI>) implementedInterface, owner);
+		this.executorServiceIndex = executorServiceIndex;
+	}
+	
 	/**
 	 * Crée et initialise le port entrant avec le composant propriétaire.
 	 * 
@@ -70,7 +82,7 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 	 * @param owner Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
-	public AsynchronousMapReduceInboundPort( String uri, int executorServiceIndex, ComponentI owner) throws Exception {
+	public AsynchronousMapReduceInboundPort(String uri, int executorServiceIndex, ComponentI owner) throws Exception {
 		super(uri, MapReduceCI.class, owner);
 
 		assert uri != null && (owner instanceof MapReduceI);
@@ -79,18 +91,8 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 
 		this.executorServiceIndex = executorServiceIndex;
 	}
-
-	@Override
-	public <R extends Serializable, I extends MapReduceResultReceptionCI> void map(String computationURI,
-			SelectorI selector, ProcessorI<R> processor) throws Exception {
-		this.getOwner().runTask(executorServiceIndex, owner -> {
-			try {
-				((MapReduceI) owner).map(computationURI, selector, processor);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
-	}
+	
+	
 
 	@Override
 	public <A extends Serializable, R, I extends MapReduceResultReceptionCI> void reduce(String computationURI,
@@ -126,6 +128,19 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 				((MapReduceI) owner).clearMapReduceComputation(computationURI);
 			} catch (Exception e) {
 
+				e.printStackTrace();
+			}
+		});
+
+	}
+
+	@Override
+	public <R extends Serializable> void map(String computationURI, SelectorI selector, ProcessorI<R> processor)
+			throws Exception {
+		this.getOwner().runTask(executorServiceIndex, owner -> {
+			try {
+				((MapReduceI) owner).map(computationURI, selector, processor);
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		});
