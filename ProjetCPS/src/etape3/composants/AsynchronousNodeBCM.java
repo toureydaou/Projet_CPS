@@ -36,8 +36,7 @@ import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
  * The Class AsynchronousNodeBCM.
  */
 @OfferedInterfaces(offered = { MapReduceCI.class, ContentAccessCI.class })
-@RequiredInterfaces(required = { MapReduceCI.class, ContentAccessCI.class, ResultReceptionCI.class,
-		MapReduceResultReceptionCI.class })
+@RequiredInterfaces(required = { MapReduceCI.class, ContentAccessCI.class })
 public class AsynchronousNodeBCM extends AbstractComponent implements ContentAccessI, MapReduceI {
 
 	private static final int SCHEDULABLE_THREADS = 1;
@@ -69,7 +68,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	// Mémoire temporaire pour stocker les résultats intermédiaires des computations
 	/** The memory. */
 	// MapReduce
-	private ConcurrentHashMap<String, CompletableFuture<Stream<ContentDataI>>> memory = new ConcurrentHashMap<>();
+	protected ConcurrentHashMap<String, CompletableFuture<Stream<ContentDataI>>> memory = new ConcurrentHashMap<>();
 
 	/** The composite map content endpoint outbound async. */
 	protected AsynchronousCompositeMapContentEndPoint compositeMapContentEndpointOutboundAsync;
