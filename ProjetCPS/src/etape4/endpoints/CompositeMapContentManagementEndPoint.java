@@ -17,7 +17,7 @@ public class CompositeMapContentManagementEndPoint extends BCMCompositeEndPoint 
 	protected static final int NUMBER_OF_ENDPOINTS = 3;
 
 	private AsynchronousContentAccessEndPoint contentAccessEndPoint;
-	private AsynchronousMapReduceEndPoint mapReduceEndpoint;
+	private ParallelMapReduceEndPoint mapReduceEndpoint;
 	private DHTManagementEndPoint dhtManagementEndPoint;
 
 	/**
@@ -28,7 +28,7 @@ public class CompositeMapContentManagementEndPoint extends BCMCompositeEndPoint 
 		super(NUMBER_OF_ENDPOINTS);
 		this.contentAccessEndPoint = new AsynchronousContentAccessEndPoint();
 		this.addEndPoint(contentAccessEndPoint);
-		this.mapReduceEndpoint= new AsynchronousMapReduceEndPoint();
+		this.mapReduceEndpoint= new ParallelMapReduceEndPoint();
 		this.addEndPoint(mapReduceEndpoint);
 		this.dhtManagementEndPoint= new DHTManagementEndPoint();
 		this.addEndPoint(dhtManagementEndPoint);

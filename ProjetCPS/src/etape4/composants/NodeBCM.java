@@ -87,7 +87,7 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 
 	protected NodeBCM(String uri, AsynchronousCompositeMapContentEndPoint compositeMapEndpointInboundAsync,
 			AsynchronousCompositeMapContentEndPoint compositeMapEndpointOutboundAsync, IntInterval intervalle)
-			throws ConnectionException {
+					throws ConnectionException {
 		super(uri, compositeMapEndpointInboundAsync, compositeMapEndpointOutboundAsync, intervalle);
 
 	}
@@ -199,7 +199,7 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 	public <I extends ResultReceptionCI> void put(String computationURI, ContentKeyI key, ContentDataI value,
 			EndPointI<I> caller) throws Exception {
 		System.out.println("Reception de la requete 'PUT' le noeud " + this.intervalle.first()
-				+ " identifiant requete : " + computationURI);
+		+ " identifiant requete : " + computationURI);
 
 		if (!listeUriContentOperations.contains(computationURI)) {
 			listeUriContentOperations.addIfAbsent(computationURI);
@@ -246,7 +246,7 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 	public <I extends ResultReceptionCI> void remove(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
 		System.out.println("Reception de la requete 'REMOVE' le noeud " + this.intervalle.first()
-				+ " identifiant requete : " + computationURI);
+		+ " identifiant requete : " + computationURI);
 		if (!listeUriContentOperations.contains(computationURI)) {
 			listeUriContentOperations.addIfAbsent(computationURI);
 
@@ -281,7 +281,7 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 				caller.initialiseClientSide(this);
 			}
 			System.out
-					.println("Envoi du résultat du 'REMOVE' sur la facade depuis le noeud " + this.intervalle.first());
+			.println("Envoi du résultat du 'REMOVE' sur la facade depuis le noeud " + this.intervalle.first());
 			caller.getClientSideReference().acceptResult(computationURI, null);
 			caller.cleanUpClientSide();
 		}
@@ -289,20 +289,60 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
-		// TODO Auto-generated method stub
 		super.clearComputation(computationURI);
 	}
 
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
-		// TODO Auto-generated method stub
 		super.clearMapReduceComputation(computationURI);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <R extends Serializable> void parallelMap(String computationURI, SelectorI selector, ProcessorI<R> processor,
 			ParallelismPolicyI parallelismPolicy) throws Exception {
-		// TODO Auto-generated method stub
+
+		System.out.println("Reception de la requete 'MAP REDUCE' (MAP) sur le noeud " + this.intervalle.first()
+		+ " identifiant requete : " + computationURI);
+		if (!listeUriMapOperations.contains(computationURI)) {
+			listeUriMapOperations.addIfAbsent(computationURI);
+
+			// Vérification du type de politique
+			if (!(parallelismPolicy instanceof IgnoreChordsPolicy)) {
+				throw new IllegalArgumentException("Unsupported parallelism policy");
+			}
+			IgnoreChordsPolicy policy = (IgnoreChordsPolicy)parallelismPolicy;
+
+			int debut = Math.min(chords.size(), policy.getNbreChordsIgnores());
+
+			for(int i=debut; i<chords.size(); i++) {
+				// Envoie la tâche au chord
+				chords.get(i).first().getMapReduceEndpoint()
+				.getClientSideReference()
+				.parallelMap(
+						computationURI, 
+						selector, 
+						processor, 
+						// Réduit la profondeur max pour éviter les boucles infinies
+						new IgnoreChordsPolicy(policy.getNbreChordsIgnores()+1)
+						);
+
+			}
+
+			//Calcul dans le noeud
+			this.hashMapLock.readLock().lock();
+			try {
+
+				CompletableFuture<Stream<ContentDataI>> futureStream = new CompletableFuture<Stream<ContentDataI>>();
+				memory.putIfAbsent(computationURI, futureStream);
+				memory.get(computationURI)
+				.complete((Stream<ContentDataI>) content.values().stream().filter(selector).map(processor));
+
+			} finally {
+				this.hashMapLock.readLock().unlock();
+			}
+
+		}
 
 	}
 
@@ -310,8 +350,54 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 	public <A extends Serializable, R, I extends MapReduceResultReceptionCI> void parallelReduce(String computationURI,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A identityAcc, A currentAcc,
 			ParallelismPolicyI parallelismPolicy, EndPointI<I> caller) throws Exception {
-		// TODO Auto-generated method stub
 
+		System.out.println("Reception de la requete 'MAP REDUCE' (REDUCE) sur le noeud " + this.intervalle.first()
+		+ " identifiant requete : " + computationURI);
+		if (!listeUriReduceOperations.contains(computationURI)) {
+			listeUriReduceOperations.add(computationURI);
+			
+			CompletableFuture<Stream<ContentDataI>> futureStream = new CompletableFuture<Stream<ContentDataI>>();
+			memory.putIfAbsent(computationURI, futureStream);
+
+			Stream<ContentDataI> localStream = memory.get(computationURI).get();
+
+			@SuppressWarnings("unchecked")
+			A localReduce = localStream.reduce(identityAcc, (u, d) -> reductor.apply(u, (R) d), combinator);
+			localReduce = combinator.apply(currentAcc, localReduce);
+
+			if (!(parallelismPolicy instanceof IgnoreChordsPolicy)) {
+				throw new IllegalArgumentException("Unsupported parallelism policy");
+			}
+			IgnoreChordsPolicy policy = (IgnoreChordsPolicy)parallelismPolicy;
+
+			int debut = Math.min(chords.size(), policy.getNbreChordsIgnores());
+			
+			A resTemporaire = localReduce;
+			for(int i=debut; i<chords.size(); i++) {
+				// Envoie la tâche au chord
+				chords.get(i).first().getMapReduceEndpoint()
+						.getClientSideReference()
+						.parallelReduce(computationURI,
+								reductor,
+								combinator,
+								identityAcc,
+								resTemporaire, 
+								parallelismPolicy,
+								caller);
+				resTemporaire = identityAcc;
+			}
+
+			
+		} else {
+			if (!caller.clientSideInitialised()) {
+				caller.initialiseClientSide(this);
+			}
+			System.out.println(
+					"Envoi du résultat du 'MAP REDUCE' sur la facade depuis le noeud " + this.intervalle.first());
+			//
+			caller.getClientSideReference().acceptResult(computationURI, "nom du noeud qui envoie", currentAcc);
+			caller.cleanUpClientSide();
+		}
 	}
 
 }
