@@ -111,6 +111,14 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		this.compositeMapContentEndpointInboundAsync.initialiseServerSide(this);
 
 	}
+	
+	protected AsynchronousNodeBCM(String uri, IntInterval intervalle)
+			throws ConnectionException {
+		super(THREADS_NUMBER, SCHEDULABLE_THREADS);
+		this.content = new ConcurrentHashMap<>();
+		this.intervalle = intervalle;
+		this.hashMapLock = new ReentrantReadWriteLock();
+	}
 
 	/**
 	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessI#get(java.lang.String,
@@ -349,6 +357,10 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 			throw new ComponentStartException(e);
 		}
 	}
+	
+	public void startOrigin() throws ComponentStartException {
+		super.start();
+	}
 
 	/**
 	 * @see fr.sorbonne_u.components.AbstractComponent#finalise()
@@ -358,6 +370,10 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		this.logMessage("stopping node component.");
 		this.printExecutionLogOnFile("node");
 		this.compositeMapContentEndpointOutboundAsync.cleanUpClientSide();
+		super.finalise();
+	}
+	
+	public void finaliseOrigin() throws Exception {
 		super.finalise();
 	}
 
@@ -373,6 +389,10 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		}
 		super.shutdown();
 	}
+	
+	public void shutdownOrigin() throws ComponentShutdownException {
+		super.shutdown();
+	}
 
 	/**
 	 * @see fr.sorbonne_u.components.AbstractComponent#shutdownNow()
@@ -384,6 +404,10 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e);
 		}
+		super.shutdownNow();
+	}
+	
+	public void shutdownNowOrigin() throws ComponentShutdownException {
 		super.shutdownNow();
 	}
 

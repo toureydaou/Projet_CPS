@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Stream;
 
 import etape3.composants.AsynchronousNodeBCM;
@@ -13,7 +14,9 @@ import etape4.endpoints.CompositeMapContentManagementEndPoint;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;
 import fr.sorbonne_u.components.endpoints.EndPointI;
+import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.components.exceptions.ConnectionException;
+import fr.sorbonne_u.components.pre.dcc.ports.DynamicComponentCreationOutboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
@@ -37,9 +40,26 @@ import fr.sorbonne_u.cps.mapreduce.utils.SerializablePair;
 @OfferedInterfaces(offered = { DHTManagementCI.class, ParallelMapReduceCI.class, ContentAccessCI.class })
 public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, ParallelMapReduceI {
 
-	protected CompositeMapContentManagementEndPoint compositeMapContentManagementEndPoint;
+	protected CompositeMapContentManagementEndPoint compositeMapContentManagementEndPointOutbound;
+	
+	protected CompositeMapContentManagementEndPoint compositeMapContentManagementEndPointInbound;
 
 	protected ArrayList<SerializablePair<ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI>, Integer>> chords;
+	
+	protected DynamicComponentCreationOutboundPort porttoNewNode;
+	
+	String jvmUri;
+
+	public NodeBCM(String jvmUri, String uri, IntInterval intervalle,
+			CompositeMapContentManagementEndPoint compositeMapContentManagementEndPointOutbound,
+			CompositeMapContentManagementEndPoint compositeMapContentManagementEndPointInbound) throws ConnectionException {
+		super(uri,intervalle);
+		this.jvmUri = jvmUri;
+		this.compositeMapContentManagementEndPointOutbound = compositeMapContentManagementEndPointOutbound;
+		this.compositeMapContentManagementEndPointInbound = compositeMapContentManagementEndPointInbound;
+		
+		this.compositeMapContentManagementEndPointInbound.initialiseServerSide(this);
+	}
 
 	protected static class NodeContent implements NodeContentI {
 
@@ -56,6 +76,7 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 		public CopyOnWriteArrayList<String> listeUriReduceOperations;
 
 		public ConcurrentHashMap<String, CompletableFuture<Stream<ContentDataI>>> memory;
+		
 
 		protected NodeContent(ConcurrentHashMap<Integer, ContentDataI> content, IntInterval intervalle,
 				CopyOnWriteArrayList<String> listeUriContentOperations,
@@ -141,11 +162,11 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 	public SerializablePair<ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI>, Integer> getChordInfo(
 			int offset) throws Exception {
 		if (offset > 0) {
-			return this.compositeMapContentManagementEndPoint.getDHTManagementEndpoint().getClientSideReference()
+			return this.compositeMapContentManagementEndPointOutbound.getDHTManagementEndpoint().getClientSideReference()
 					.getChordInfo(offset - 1);
 		}
 		return new SerializablePair<ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI>, Integer>(
-				this.compositeMapContentManagementEndPoint, this.intervalle.first());
+				this.compositeMapContentManagementEndPointOutbound, this.intervalle.first());
 	}
 
 	@Override
@@ -398,6 +419,20 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 			caller.getClientSideReference().acceptResult(computationURI, "nom du noeud qui envoie", currentAcc);
 			caller.cleanUpClientSide();
 		}
+	}
+	
+	@Override
+	public void start() throws ComponentStartException {
+		this.logMessage("starting node component.");
+		super.startOrigin();
+		try {
+			if (!this.compositeMapContentManagementEndPointOutbound.clientSideInitialised()) {
+				this.compositeMapContentManagementEndPointOutbound.initialiseClientSide(this);
+			}
+		} catch (ConnectionException e) {
+			throw new ComponentStartException(e);
+		}
+	
 	}
 
 }
