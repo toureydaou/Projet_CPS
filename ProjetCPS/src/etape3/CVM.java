@@ -16,8 +16,6 @@ import etape3.composants.MapReduceVideClient;
 import etape3.composants.PutClient;
 import etape3.composants.RemoveClient;
 import etape3.endpoints.AsynchronousCompositeMapContentEndPoint;
-import etape3.endpoints.MapReduceResultReceptionEndPoint;
-import etape3.endpoints.ResultReceptionEndPoint;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
@@ -75,19 +73,15 @@ public class CVM extends AbstractCVM {
 		// endpoint 2eme noeud - 3eme noeud
 		AsynchronousCompositeMapContentEndPoint asynchronousCompositeMapContentEndpointTwotoThree = new AsynchronousCompositeMapContentEndPoint();
 
-		// endpoint de retour de resultat vers la facade
 
-		ResultReceptionEndPoint rrep = new ResultReceptionEndPoint();
 
-		MapReduceResultReceptionEndPoint mapReduceResultReceptionEndPoint = new MapReduceResultReceptionEndPoint();
 
 		// creation composant facade
 		String facadeURI = AbstractComponent.createComponent(FacadeBCM.class.getCanonicalName(), new Object[] {
 				FACADE_COMPONENT_URI,
 				((AsynchronousCompositeMapContentEndPoint) asynchronousCompositeMapContentEndpointFacadeToFirstNode)
 						.copyWithSharable(),
-				((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable(), rrep.copyWithSharable(),
-				mapReduceResultReceptionEndPoint.copyWithSharable() });
+				((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
 		assert this.isDeployedComponent(facadeURI);
 
 		

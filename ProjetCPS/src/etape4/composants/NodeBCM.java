@@ -2,6 +2,7 @@ package etape4.composants;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -10,6 +11,7 @@ import java.util.stream.Stream;
 
 import etape3.composants.AsynchronousNodeBCM;
 import etape3.endpoints.AsynchronousCompositeMapContentEndPoint;
+import etape3.endpoints.MapReduceResultReceptionEndPoint;
 import etape4.endpoints.CompositeMapContentManagementEndPoint;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;
@@ -27,6 +29,7 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.LoadPolicyI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ParallelMapReduceCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ParallelMapReduceI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
@@ -36,19 +39,24 @@ import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 import fr.sorbonne_u.cps.mapreduce.utils.SerializablePair;
 
 @RequiredInterfaces(required = { DHTManagementCI.class, ParallelMapReduceCI.class, ContentAccessCI.class,
-		ResultReceptionCI.class })
-@OfferedInterfaces(offered = { DHTManagementCI.class, ParallelMapReduceCI.class, ContentAccessCI.class })
-public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, ParallelMapReduceI {
+		ResultReceptionCI.class, MapReduceResultReceptionCI.class })
+@OfferedInterfaces(offered = { DHTManagementCI.class, ParallelMapReduceCI.class, ContentAccessCI.class,
+ 		MapReduceResultReceptionCI.class})
+public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, ParallelMapReduceI, MapReduceResultReceptionI {
 
 	protected CompositeMapContentManagementEndPoint compositeMapContentManagementEndPointOutbound;
 	
 	protected CompositeMapContentManagementEndPoint compositeMapContentManagementEndPointInbound;
+	
+	protected MapReduceResultReceptionEndPoint mapReduceResultReceptionEndPoint;
 
 	protected ArrayList<SerializablePair<ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI>, Integer>> chords;
 	
 	protected DynamicComponentCreationOutboundPort porttoNewNode;
 	
 	String jvmUri;
+	
+	private HashMap<String, ArrayList<CompletableFuture<Serializable>>> resultsMapReduce;
 
 	public NodeBCM(String jvmUri, String uri, IntInterval intervalle,
 			CompositeMapContentManagementEndPoint compositeMapContentManagementEndPointOutbound,
@@ -57,7 +65,10 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 		this.jvmUri = jvmUri;
 		this.compositeMapContentManagementEndPointOutbound = compositeMapContentManagementEndPointOutbound;
 		this.compositeMapContentManagementEndPointInbound = compositeMapContentManagementEndPointInbound;
+		this.mapReduceResultReceptionEndPoint = new MapReduceResultReceptionEndPoint();
+		this.resultsMapReduce = new HashMap<String, ArrayList<CompletableFuture<Serializable>>>();
 		
+		this.mapReduceResultReceptionEndPoint.initialiseServerSide(this);
 		this.compositeMapContentManagementEndPointInbound.initialiseServerSide(this);
 	}
 
@@ -142,6 +153,93 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 
 	}
 
+//	@Override
+//	public <CI extends ResultReceptionCI> void split(
+//	        String computationURI,
+//	        LoadPolicyI loadPolicy,
+//	        EndPointI<CI> caller
+//	) throws Exception {
+//	    // 1. Vérifier que la charge justifie un split
+//	    int currentSize = this.content.size();
+//	    final int THRESHOLD = 30;  // ton seuil
+//	    if (currentSize <= THRESHOLD) {
+//	        // rien à faire, on renvoie juste un OK (ou null)
+//	        caller.getClientSideReference()
+//	              .acceptResult(computationURI, null);
+//	        return;
+//	    }
+//
+//	    // 2. Calculer la nouvelle intervalle
+//	    int start = this.intervalle.first();
+//	    int end   = this.intervalle.last();
+//	    int mid   = (start + end) / 2;
+//	    IntInterval oldInterval = this.intervalle;
+//	    IntInterval leftInterval  = new IntInterval(start, mid);
+//	    IntInterval rightInterval = new IntInterval(mid + 1, end);
+//
+//	    // 3. Mettre à jour l'intervalle de ce noeud (moitié gauche)
+//	    this.intervalle = leftInterval;
+//
+//	    // 4. Créer dynamiquement le nouveau noeud pour la moitié droite
+//	    // ----------------------------------------------------------------
+//	    // TODO #1 : tu dois disposer d’un DynamicComponentCreationOutboundPort (dccOutPort)
+//	    //           initialisé et connecté dans start(), et d’une liste deployedComponentsURIs.
+//	    //           Il faut donc :
+//	    //             - ajouter un champ `protected DynamicComponentCreationOutboundPort dccOutPort;`
+//	    //             - dans start(), faire `dccOutPort = new ...; publish(); doPortConnection(...);`
+//	    //
+//	    // Exemple de création :
+//	    String newNodeURI = this.dccOutPort.createComponent(
+//	        NodeBCM.class.getCanonicalName(),
+//	        new Object[]{
+//	            /* URI du port réflexif du nouveau noeud, 
+//	               AsynchronousCompositeMapContentEndPoint inbound, 
+//	               AsynchronousCompositeMapContentEndPoint outbound, 
+//	               rightInterval */
+//	        }
+//	    );
+//	    this.deployedComponentsURIs.add(newNodeURI);
+//	    this.dccOutPort.startComponent(newNodeURI);
+//
+//	    // 5. Récupérer le port DHTManagement du nouveau noeud via ReflectionCI
+//	    // --------------------------------------------------------------------
+//	    // TODO #2 : instancier et connecter un ReflectionOutboundPort ici,
+//	    //           pour faire rop.findInboundPortURIsFromInterface(DHTManagementCI.class)
+//	    String reflectionPortURI = /* URI du port réflexif du nouveau noeud */;
+//	    ReflectionOutboundPort rop = new ReflectionOutboundPort(this);
+//	    rop.publishPort();
+//	    this.doPortConnection(
+//	        rop.getPortURI(),
+//	        reflectionPortURI,
+//	        ReflectionConnector.class.getCanonicalName()
+//	    );
+//	    String[] inbound = rop.findInboundPortURIsFromInterface(DHTManagementCI.class);
+//	    String newNodeDHTInURI = inbound[0];
+//	    rop.doPortDisconnection(rop.getPortURI());
+//	    rop.unpublishPort();
+//
+//	    // 6. Transférer les données de l’intervalle droite
+//	    // ------------------------------------------------
+//	    // on crée un NodeContent encapsulant le sous-ensemble à migrer
+//	    NodeContentI toTransfer = this.suppressNode();     // récupère tout
+//	    // TODO #3 : filtrer `toTransfer.content` pour ne garder que les clés ∈ rightInterval
+//	    //           et mettre à jour `this.content` pour supprimer ces clés locales
+//	    // ensuite, on appelle initialiseContent du nouveau noeud
+//	    DHTManagementCI newNode = this.createManagementStub(newNodeDHTInURI);
+//	    newNode.initialiseContent(toTransfer);
+//
+//	    // 7. Mettre à jour les chords sur les deux noeuds
+//	    // ------------------------------------------------
+//	    // TODO #4 : appeler computeChords(...) sur ce noeud et sur newNode
+//	    this.computeChords(computationURI, this.chords.size());
+//	    newNode.computeChords(computationURI, this.chords.size());
+//
+//	    // 8. Retourner un résultat au caller (optionnel)
+//	    caller.getClientSideReference()
+//	          .acceptResult(computationURI, null);
+//	
+//	}
+//	
 	@Override
 	public <CI extends ResultReceptionCI> void merge(String computationURI, LoadPolicyI loadPolicy,
 			EndPointI<CI> caller) throws Exception {
@@ -152,8 +250,10 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 	public void computeChords(String computationURI, int numberOfChords) throws Exception {
 		this.chords.clear();
 		int offset = 1;
-		for (int i = 0; i < numberOfChords; i++) {
-			this.chords.add(this.getChordInfo(offset));
+		for (int i = 0; i < numberOfChords +1; i++) {
+			if (this.getChordInfo(offset).second() >= this.intervalle.first()) {
+				this.chords.add(this.getChordInfo(offset));
+			}
 			offset = offset * 2;
 		}
 	}
@@ -345,7 +445,7 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 						selector, 
 						processor, 
 						// Réduit la profondeur max pour éviter les boucles infinies
-						new IgnoreChordsPolicy(policy.getNbreChordsIgnores()+1)
+						new IgnoreChordsPolicy(policy.getNbreChordsIgnores()+i)
 						);
 
 			}
@@ -404,7 +504,7 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 								identityAcc,
 								resTemporaire, 
 								parallelismPolicy,
-								caller);
+								this.mapReduceResultReceptionEndPoint);
 				resTemporaire = identityAcc;
 			}
 
@@ -422,6 +522,36 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 	}
 	
 	@Override
+	public void acceptResult(String computationURI, String emitterId, Serializable acc) throws Exception {
+		
+		
+	}
+	
+	
+	public void start2() throws ComponentStartException {
+	    super.start();
+	    try {
+	        // 1. Création et publication du port DCC
+	        this.dccOutPort = new DynamicComponentCreationOutboundPort(this);
+	        this.dccOutPort.publishPort();
+
+	        // 2. Connexion de ce port à la DCC inbound port de la JVM
+	        //    Remplace `this.jvmURI` par la façon dont tu stockes l'URI de ta JVM
+	        this.doPortConnection(
+	            this.dccOutPort.getPortURI(),
+	            this.jvmURI + AbstractCVM.DCC_INBOUNDPORT_URI_SUFFIX,
+	            DynamicComponentCreationConnector.class.getCanonicalName()
+	        );
+
+	        // 3. Initialisation de la table de chords vide
+	        this.chords = new ArrayList<>();
+
+	    } catch (Exception e) {
+	        throw new ComponentStartException(e);
+	    }
+	}
+	
+	@Override
 	public void start() throws ComponentStartException {
 		this.logMessage("starting node component.");
 		super.startOrigin();
@@ -434,5 +564,7 @@ public class NodeBCM extends AsynchronousNodeBCM implements DHTManagementI, Para
 		}
 	
 	}
+
+
 
 }

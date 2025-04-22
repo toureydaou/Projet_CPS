@@ -36,7 +36,8 @@ import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
  * The Class AsynchronousNodeBCM.
  */
 @OfferedInterfaces(offered = { MapReduceCI.class, ContentAccessCI.class })
-@RequiredInterfaces(required = { MapReduceCI.class, ContentAccessCI.class })
+@RequiredInterfaces(required = { MapReduceCI.class, ContentAccessCI.class, ResultReceptionCI.class,
+ 		MapReduceResultReceptionCI.class  })
 public class AsynchronousNodeBCM extends AbstractComponent implements ContentAccessI, MapReduceI {
 
 	private static final int SCHEDULABLE_THREADS = 1;

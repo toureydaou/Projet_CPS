@@ -68,13 +68,12 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	 * @param endPointClientFacade L'endpoint DHTServicesEndPoint pour la gestion des services DHT.
 	 * @throws ConnectionException Si une erreur de connexion se produit.
 	 */
-	protected FacadeBCM(String uri, AsynchronousCompositeMapContentEndPoint endPointFacadeNoeud, DHTServicesEndPoint endPointClientFacade,
-			ResultReceptionEndPoint resultatReceptionEndPoint, MapReduceResultReceptionEndPoint mapReduceResultReceptionEndPoint) throws ConnectionException {
+	protected FacadeBCM(String uri, AsynchronousCompositeMapContentEndPoint endPointFacadeNoeud, DHTServicesEndPoint endPointClientFacade) throws ConnectionException {
 		super(uri, THREADS_NUMBER, SCHEDULABLE_THREADS);
 		this.endPointFacadeNoeud = endPointFacadeNoeud;
 		this.endPointClientFacade = endPointClientFacade;
-		this.resultatReceptionEndPoint = resultatReceptionEndPoint;
-		this.mapReduceResultatReceptionEndPoint = mapReduceResultReceptionEndPoint;
+		this.resultatReceptionEndPoint =  new ResultReceptionEndPoint();
+		this.mapReduceResultatReceptionEndPoint = new MapReduceResultReceptionEndPoint();
 		this.resultsContentAccess = new HashMap<String, CompletableFuture<Serializable>>();
 		this.resultsMapReduce = new HashMap<String, CompletableFuture<Serializable>>();
 		
