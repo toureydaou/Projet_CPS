@@ -1,14 +1,13 @@
-package etape3.composants;
+package etape4.composants;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 
 import etape2.endpoints.DHTServicesEndPoint;
-import etape3.endpoints.AsynchronousCompositeMapContentEndPoint;
 import etape3.endpoints.MapReduceResultReceptionEndPoint;
 import etape3.endpoints.ResultReceptionEndPoint;
-import etape3.utils.ThreadsPolicy;
+import etape4.endpoints.CompositeMapContentManagementEndPoint;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;
@@ -22,17 +21,18 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ParallelMapReduceCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 
 @OfferedInterfaces(offered = { DHTServicesCI.class, ResultReceptionCI.class, MapReduceResultReceptionCI.class })
-@RequiredInterfaces(required = { ContentAccessCI.class, MapReduceCI.class })
+@RequiredInterfaces(required = { ContentAccessCI.class, ParallelMapReduceCI.class, ContentAccessCI.class, DHTManagementCI.class })
 public class FacadeBCM extends AbstractComponent implements ResultReceptionI, MapReduceResultReceptionI, DHTServicesI {
 
 	// URI constants pour l'accès aux services
@@ -40,15 +40,13 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	private static final String PUT_URI_PREFIX = "PUT";
 	private static final String REMOVE_URI_PREFIX = "REMOVE";
 	private static final String MAPREDUCE_URI_PREFIX = "MAPREDUCE";
-	
-	private static final String RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Content-Access-Pool-Threads";
-	private static final String MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Map-Reduce-Pool-Threads";
 
 	private static final int SCHEDULABLE_THREADS = 0;
 	private static final int THREADS_NUMBER = 4;
-
-	// Endpoints pour accéder aux services
-	protected AsynchronousCompositeMapContentEndPoint endPointFacadeNoeud;
+	
+	private static final int START_POLICY = 0;
+	
+	protected CompositeMapContentManagementEndPoint endPointFacadeNoeud;
 	protected DHTServicesEndPoint endPointClientFacade;
 	protected ResultReceptionEndPoint resultatReceptionEndPoint;
 	protected MapReduceResultReceptionEndPoint mapReduceResultatReceptionEndPoint;
@@ -56,19 +54,7 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	private HashMap<String, CompletableFuture<Serializable>> resultsContentAccess;
 	private HashMap<String, CompletableFuture<Serializable>> resultsMapReduce;
 	
-
-
-
-	/**
-	 * Constructeur pour initialiser le composant FacadeBCM.
-	 * 
-	 * @param uri  L'URI du composant FacadeBCM.
-	 * @param endPointFacadeNoeud L'endpoint CompositeMapContentEndpoint utilisé pour accéder aux
-	 *             services DHT.
-	 * @param endPointClientFacade L'endpoint DHTServicesEndPoint pour la gestion des services DHT.
-	 * @throws ConnectionException Si une erreur de connexion se produit.
-	 */
-	protected FacadeBCM(String uri, AsynchronousCompositeMapContentEndPoint endPointFacadeNoeud, DHTServicesEndPoint endPointClientFacade) throws ConnectionException {
+	protected FacadeBCM(String uri, CompositeMapContentManagementEndPoint endPointFacadeNoeud, DHTServicesEndPoint endPointClientFacade) throws ConnectionException {
 		super(uri, THREADS_NUMBER, SCHEDULABLE_THREADS);
 		this.endPointFacadeNoeud = endPointFacadeNoeud;
 		this.endPointClientFacade = endPointClientFacade;
@@ -77,22 +63,11 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		this.resultsContentAccess = new HashMap<String, CompletableFuture<Serializable>>();
 		this.resultsMapReduce = new HashMap<String, CompletableFuture<Serializable>>();
 		
-		
-		
-		this.resultatReceptionEndPoint.setExecutorIndex(
-				this.createNewExecutorService(URIGenerator.generateURI(RESULT_RECEPTION_HANDLER_URI),
-						ThreadsPolicy.NUMBER_ACCEPT_RESULT_CONTENT_ACCESS_THREADS, true));
-
-		this.mapReduceResultatReceptionEndPoint.setExecutorIndex(
-				this.createNewExecutorService(URIGenerator.generateURI(MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI),
-						ThreadsPolicy.NUMBER_ACCEPT_RESULT_MAP_REDUCE_THREADS, true));
-		
 		this.endPointClientFacade.initialiseServerSide(this);
 		this.resultatReceptionEndPoint.initialiseServerSide(this);
 		this.mapReduceResultatReceptionEndPoint.initialiseServerSide(this);
 		
 	}
-
 	
 	@Override
 	public ContentDataI get(ContentKeyI key) throws Exception {
@@ -105,7 +80,6 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		this.resultsContentAccess.remove(request_uri);
 		this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
 		return value;
-
 	}
 
 	
@@ -145,9 +119,10 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		System.out.println("Reception de la requête 'MAP REDUCE' sur la facade identifiant requete : " + request_uri);
 		CompletableFuture<Serializable> reduceResult = new CompletableFuture<Serializable>();
 		resultsMapReduce.put(request_uri, reduceResult);
-		this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().map(request_uri, selector, processor);
-		this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().reduce(request_uri, reductor, combinator, initialAcc, initialAcc, this.mapReduceResultatReceptionEndPoint);
-		A result = (A) reduceResult.get();
+		
+		this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().parallelMap(request_uri, selector, processor, new IgnoreChordsPolicy(START_POLICY));
+		this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().parallelReduce(request_uri, reductor, combinator, initialAcc, initialAcc, new IgnoreChordsPolicy(START_POLICY), this.mapReduceResultatReceptionEndPoint);
+		A result = (A) resultsMapReduce.get(request_uri).get();
 		
 		this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().clearMapReduceComputation(request_uri);
 		this.resultsMapReduce.remove(request_uri);
@@ -160,9 +135,7 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	
 	public void clearMapReduceComputation(String computationURI) throws Exception {
 		this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().clearMapReduceComputation(computationURI);
-
 	}
-
 	
 	@Override
 	public void acceptResult(String computationURI, Serializable result) throws Exception {
@@ -173,8 +146,7 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	public void acceptResult(String computationURI, String emitterId, Serializable acc) {
 		this.resultsMapReduce.get(computationURI).complete(acc);
 	}
-
-
+	
 	@Override
 	public  void start() throws ComponentStartException {
 		this.logMessage("starting facade component.");
