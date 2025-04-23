@@ -79,6 +79,8 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 
 	/** The hash map lock. */
 	protected final ReentrantReadWriteLock hashMapLock;
+	
+	protected String uri;
 
 	/**
 	 * Instantiates a new asynchronous node BCM.
@@ -116,6 +118,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	protected AsynchronousNodeBCM(String uri, IntInterval intervalle)
 			throws ConnectionException {
 		super(THREADS_NUMBER, SCHEDULABLE_THREADS);
+		this.uri= uri; 
 		this.content = new ConcurrentHashMap<>();
 		this.intervalle = intervalle;
 		this.hashMapLock = new ReentrantReadWriteLock();
