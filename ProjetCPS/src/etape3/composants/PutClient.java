@@ -49,7 +49,6 @@ public class PutClient extends ClientBCM {
 		EntierKey k100 = new EntierKey(100);
 		EntierKey k120 = new EntierKey(120);
 		EntierKey k130 = new EntierKey(130);
-
 		EntierKey k600 = new EntierKey(600);
 
 		Livre livreHP_10 = new Livre("Harry Potter1", 100);
@@ -183,8 +182,9 @@ public class PutClient extends ClientBCM {
 
 		System.out.println("Résultat attendu: Livre[Harry Potter2, 400]");
 		System.out.println("Résultat obtenu: " + previousValue_130);
-
+		
 		System.out.println("");
+
 
 		System.out.println("Insertion de la clé 600 avec valeur: " + livreHP_20);
 		this.put(k600, livreHP_20);

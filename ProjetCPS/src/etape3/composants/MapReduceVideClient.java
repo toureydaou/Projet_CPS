@@ -25,7 +25,7 @@ public class MapReduceVideClient extends ClientBCM {
 		super(uri, endpointClientFacade);
 	}
 	
-	private static final int STARTING_DELAY = 30;
+	private static final int STARTING_DELAY = 40;
 
 	// --------------------------------------------------------
 	// Méthodes de test

@@ -65,7 +65,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 
 	private HashMap<String, ArrayList<CompletableFuture<Serializable>>> resultsMapReduce;
 
-	int indice = 0;
+	int indice;
 
 	protected DynamicNodeBCM(String jvmUri, String uri,
 			CompositeMapContentManagementEndPoint compositeMapContentManagementEndPointInbound,
@@ -257,7 +257,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 					.getClientSideReference().getChordInfo(offset - 1);
 		}
 		return new SerializablePair<ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI>, Integer>(
-				(CompositeMapContentManagementEndPoint) this.compositeMapContentManagementEndPointOutbound
+				(CompositeMapContentManagementEndPoint) this.compositeMapContentManagementEndPointInbound
 						.copyWithSharable(),
 				this.intervalle.first());
 	}
@@ -305,8 +305,14 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 							next_endpoint = (ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI>) chord.first().copyWithSharable();
 						}
 					}
-					System.out.println("appel au noeud suivant");
+					
+					if (!next_endpoint.clientSideInitialised()) {
+						next_endpoint.initialiseClientSide(this);
+					}
+										
 					next_endpoint.getContentAccessEndpoint().getClientSideReference().get(computationURI, key, caller);
+					
+					next_endpoint.cleanUpClientSide();
 				}
 			}
 		} else {
@@ -351,7 +357,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 						caller.initialiseClientSide(this);
 					}
 					System.out.println(
-							"Envoi du résultat du 'GET' sur la facade depuis le noeud " +  this.uri);
+							"Envoi du résultat du 'PUT' sur la facade depuis le noeud " +  this.uri);
 					// la valeur de hachage de la clé se situe en dehors de l'intervalle de clés de
 					// la DHT
 					caller.getClientSideReference().acceptResult(computationURI, null);
@@ -367,8 +373,15 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 							next_endpoint = chord.first();
 						}
 					}
+					
+					if (!next_endpoint.clientSideInitialised()) {
+						next_endpoint.initialiseClientSide(this);
+					}
+					
 					next_endpoint.getContentAccessEndpoint().getClientSideReference().put(computationURI, key, value,
 							caller);
+					next_endpoint.cleanUpClientSide();
+
 				}
 			}
 		} else {
@@ -387,7 +400,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 	@Override
 	public <I extends ResultReceptionCI> void remove(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
-		System.out.println("Reception de la requete 'REMOVE' le noeud " + this.intervalle.first()
+		System.out.println("Reception de la requete 'REMOVE' le noeud " + this.uri
 				+ " identifiant requete : " + computationURI);
 		if (!listeUriContentOperations.contains(computationURI)) {
 			listeUriContentOperations.addIfAbsent(computationURI);
@@ -411,7 +424,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 						caller.initialiseClientSide(this);
 					}
 					System.out.println(
-							"Envoi du résultat du 'GET' sur la facade depuis le noeud " + this.intervalle.first());
+							"Envoi du résultat du 'REMOVE' sur la facade depuis le noeud " + this.uri);
 					// la valeur de hachage de la clé se situe en dehors de l'intervalle de clés de
 					// la DHT
 					caller.getClientSideReference().acceptResult(computationURI, null);
@@ -427,8 +440,16 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 							next_endpoint = chord.first();
 						}
 					}
+					
+					if (!next_endpoint.clientSideInitialised()) {
+						next_endpoint.initialiseClientSide(this);
+					}	
+					
 					next_endpoint.getContentAccessEndpoint().getClientSideReference().remove(computationURI, key,
 							caller);
+					
+					next_endpoint.cleanUpClientSide();
+
 				}
 			}
 		} else {
@@ -436,7 +457,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 			if (!caller.clientSideInitialised()) {
 				caller.initialiseClientSide(this);
 			}
-			System.out.println("Envoi du résultat du 'GET' sur la facade depuis le noeud " + this.intervalle.first());
+			System.out.println("Envoi du résultat du 'REMOVE' sur la facade depuis le noeud " + this.uri);
 			// la valeur de hachage de la clé se situe en dehors de l'intervalle de clés de
 			// la DHT
 			caller.getClientSideReference().acceptResult(computationURI, null);
@@ -446,12 +467,24 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
-		super.clearComputation(computationURI);
+		if (listeUriContentOperations.contains(computationURI)) {
+			listeUriContentOperations.remove(computationURI);
+		} else {
+			this.compositeMapContentManagementEndPointOutbound.getContentAccessEndpoint().getClientSideReference()
+					.clearComputation(computationURI);
+		}
 	}
 
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
-		super.clearMapReduceComputation(computationURI);
+		if (listeUriMapOperations.contains(computationURI) && listeUriReduceOperations.contains(computationURI)) {
+			this.listeUriMapOperations.remove(computationURI);
+			this.listeUriReduceOperations.remove(computationURI);
+			this.memory.remove(computationURI);
+		} else {
+			this.compositeMapContentManagementEndPointOutbound.getMapReduceEndpoint().getClientSideReference()
+					.clearMapReduceComputation(computationURI);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -459,7 +492,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 	public <R extends Serializable> void parallelMap(String computationURI, SelectorI selector, ProcessorI<R> processor,
 			ParallelismPolicyI parallelismPolicy) throws Exception {
 
-		System.out.println("Reception de la requete 'MAP REDUCE' (MAP) sur le noeud " + this.intervalle.first()
+		System.out.println("Reception de la requete 'MAP REDUCE' (MAP) sur le noeud " + this.uri
 				+ " identifiant requete : " + computationURI);
 		if (!listeUriMapOperations.contains(computationURI)) {
 			listeUriMapOperations.addIfAbsent(computationURI);
@@ -471,13 +504,28 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 			IgnoreChordsPolicy policy = (IgnoreChordsPolicy) parallelismPolicy;
 
 			int debut = Math.min(chords.size(), policy.getNbreChordsIgnores());
-
+			
+			ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI> next_endpoint;
+			
+			indice = 0;
+			
+			int increment = 1;
+			
 			for (int i = debut; i < chords.size(); i++) {
+				next_endpoint = chords.get(i).first();
 				// Envoie la tâche au chord
-				chords.get(i).first().getMapReduceEndpoint().getClientSideReference().parallelMap(computationURI,
+
+				if (!next_endpoint.clientSideInitialised()) {
+					next_endpoint.initialiseClientSide(this);
+				}	
+				
+				next_endpoint.getMapReduceEndpoint().getClientSideReference().parallelMap(computationURI,
 						selector, processor,
 						// Réduit la profondeur max pour éviter les boucles infinies
-						new IgnoreChordsPolicy(policy.getNbreChordsIgnores() + i + 1));
+						new IgnoreChordsPolicy(policy.getNbreChordsIgnores() + increment));
+				
+				increment++;
+				next_endpoint.cleanUpClientSide();
 
 			}
 
@@ -503,7 +551,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A identityAcc, A currentAcc,
 			ParallelismPolicyI parallelismPolicy, EndPointI<I> caller) throws Exception {
 
-		System.out.println("Reception de la requete 'MAP REDUCE' (REDUCE) sur le noeud " + this.intervalle.first()
+		System.out.println("Reception de la requete 'MAP REDUCE' (REDUCE) sur le noeud " + this.uri
 				+ " identifiant requete : " + computationURI);
 		if (!listeUriReduceOperations.contains(computationURI)) {
 			listeUriReduceOperations.add(computationURI);
@@ -527,14 +575,28 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 			ArrayList<CompletableFuture<Serializable>> listeResults = new ArrayList<CompletableFuture<Serializable>>();
 
 			resultsMapReduce.put(computationURI, listeResults);
+			
+			ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI> next_endpoint;
+			
+			int increment = 1;
 
 			for (int i = debut; i < chords.size(); i++) {
-				// Envoie la tâche au chord
+				
 				resultsMapReduce.get(computationURI).add(new CompletableFuture<Serializable>());
-				chords.get(i).first().getMapReduceEndpoint().getClientSideReference().parallelReduce(computationURI,
+				next_endpoint = chords.get(i).first();
+				// Envoie la tâche au chord
+
+				if (!next_endpoint.clientSideInitialised()) {
+					next_endpoint.initialiseClientSide(this);
+				}	
+				
+				next_endpoint.getMapReduceEndpoint().getClientSideReference().parallelReduce(computationURI,
 						reductor, combinator, identityAcc, identityAcc,
-						new IgnoreChordsPolicy(policy.getNbreChordsIgnores() + i + 1),
+						new IgnoreChordsPolicy(policy.getNbreChordsIgnores() +increment),
 						this.mapReduceResultReceptionEndPoint);
+				increment ++;
+				next_endpoint.cleanUpClientSide();
+
 			}
 
 			for (CompletableFuture<Serializable> result : resultsMapReduce.get(computationURI)) {

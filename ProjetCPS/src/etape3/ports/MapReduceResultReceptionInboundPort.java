@@ -2,7 +2,6 @@ package etape3.ports;
 
 import java.io.Serializable;
 
-import etape3.composants.FacadeBCM;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionCI;
@@ -59,7 +58,7 @@ public class MapReduceResultReceptionInboundPort extends AbstractInboundPort imp
 	public void acceptResult(String computationURI, String emitterId, Serializable acc) throws Exception {
 		this.getOwner().runTask(executorIndex, owner -> {
 			try {
-				((FacadeBCM) owner).acceptResult(computationURI, emitterId, acc);
+				((MapReduceResultReceptionI) owner).acceptResult(computationURI, emitterId, acc);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

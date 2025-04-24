@@ -38,7 +38,7 @@ public class ClientBCM extends AbstractComponent {
 	protected DHTServicesEndPoint endPointClientFacade; // Point d'accès aux services DHT
 	protected AcceleratedClock dhtClock; // Référence à l'horloge
 
-	private static final int SCHEDULABLE_THREADS = 2;
+	private static final int SCHEDULABLE_THREADS = 1;
 	private static final int THREADS_NUMBER = 0;
 	ClocksServerOutboundPort p;
 
