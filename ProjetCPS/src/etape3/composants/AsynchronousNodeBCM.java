@@ -372,7 +372,6 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	@Override
 	public void finalise() throws Exception {
 		this.logMessage("stopping node component.");
-		this.printExecutionLogOnFile("node");
 		this.compositeMapContentEndpointOutboundAsync.cleanUpClientSide();
 		super.finalise();
 	}

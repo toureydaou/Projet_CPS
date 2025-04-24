@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Stream;
 
 import etape3.composants.AsynchronousNodeBCM;
@@ -15,12 +15,10 @@ import etape4.endpoints.CompositeMapContentManagementEndPoint;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;
-import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.components.exceptions.ConnectionException;
-import fr.sorbonne_u.components.pre.dcc.connectors.DynamicComponentCreationConnector;
 import fr.sorbonne_u.components.pre.dcc.interfaces.DynamicComponentCreationCI;
 import fr.sorbonne_u.components.pre.dcc.ports.DynamicComponentCreationOutboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
@@ -64,6 +62,8 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 	private static final String NOUVEAU_NOEUD_URI = "Noeud-créé-apès-un-split";
 
 	private HashMap<String, ArrayList<CompletableFuture<Serializable>>> resultsMapReduce;
+	
+	protected final ReentrantReadWriteLock mapReduceLock;
 
 	int indice;
 
@@ -77,6 +77,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		this.compositeMapContentManagementEndPointInbound = compositeMapContentManagementEndPointInbound;
 		this.mapReduceResultReceptionEndPoint = new MapReduceResultReceptionEndPoint();
 		this.resultsMapReduce = new HashMap<String, ArrayList<CompletableFuture<Serializable>>>();
+		this.mapReduceLock = new ReentrantReadWriteLock();
 
 		this.mapReduceResultReceptionEndPoint.initialiseServerSide(this);
 		this.compositeMapContentManagementEndPointInbound.initialiseServerSide(this);
@@ -299,7 +300,6 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 							.get(0).first();
 					for (SerializablePair<ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI>, Integer> chord : chords) {
 						int min_gap = key.hashCode() - chord.second();
-						System.out.println("Gap :" + gap + " min gap :"  + min_gap);
 						if (min_gap < gap && min_gap >= 0) {
 							gap = min_gap;
 							next_endpoint = (ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI>) chord.first().copyWithSharable();
@@ -515,6 +515,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 				next_endpoint = chords.get(i).first();
 				// Envoie la tâche au chord
 
+				this.mapReduceLock.writeLock().lock();
 				if (!next_endpoint.clientSideInitialised()) {
 					next_endpoint.initialiseClientSide(this);
 				}	
@@ -526,6 +527,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 				
 				increment++;
 				next_endpoint.cleanUpClientSide();
+				this.mapReduceLock.writeLock().unlock();
 
 			}
 
@@ -579,13 +581,17 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 			ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI> next_endpoint;
 			
 			int increment = 1;
+			
 
+			this.mapReduceLock.writeLock().lock();
+			indice = 0;
 			for (int i = debut; i < chords.size(); i++) {
 				
 				resultsMapReduce.get(computationURI).add(new CompletableFuture<Serializable>());
 				next_endpoint = chords.get(i).first();
 				// Envoie la tâche au chord
-
+				
+				
 				if (!next_endpoint.clientSideInitialised()) {
 					next_endpoint.initialiseClientSide(this);
 				}	
@@ -596,8 +602,10 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 						this.mapReduceResultReceptionEndPoint);
 				increment ++;
 				next_endpoint.cleanUpClientSide();
+				
 
 			}
+			this.mapReduceLock.writeLock().unlock();
 
 			for (CompletableFuture<Serializable> result : resultsMapReduce.get(computationURI)) {
 				@SuppressWarnings("unchecked")
@@ -649,7 +657,6 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 	@Override
 	public void finalise() throws Exception {
 		this.logMessage("stopping node component.");
-		this.printExecutionLogOnFile("node");
 		this.compositeMapContentManagementEndPointOutbound.cleanUpClientSide();
 		if (this.porttoNewNode.connected()) {
 			this.doPortDisconnection(this.porttoNewNode.getPortURI());

@@ -27,7 +27,7 @@ public class ConcurrentPutClient3 extends ClientBCM {
 		
 		System.out.println("");
 
-		System.out.println("============= Insertion concurrente des clés 55, 65, 75, 85, 95, 105, 115 (PUT 2)  ==============");
+		System.out.println("============= Insertion concurrente des clés 55, 65, 75, 85, 95, 105, 115 (PUT 3)  ==============");
 
 		System.out.println("");
 

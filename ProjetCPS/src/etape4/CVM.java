@@ -147,7 +147,7 @@ public class CVM extends AbstractCVM {
 				);
 				assert this.isDeployedComponent(nodeURI);
 			} else  {
-				System.out.println("Else " + i);
+				
 				String lastNodeURI = AbstractComponent.createComponent(
 						DynamicNodeBCM.class.getCanonicalName(),
 					new Object[]{
@@ -160,8 +160,7 @@ public class CVM extends AbstractCVM {
 				);
 				assert this.isDeployedComponent(lastNodeURI);
 			}
-			System.out.println("NODE_" + i + "_URI");
-			System.out.println(i + "-"+ (i+1));
+			
 			
 		}
 		
