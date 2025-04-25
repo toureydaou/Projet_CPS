@@ -1,4 +1,4 @@
-package etape4.composants;
+package etape4.policies;
 
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ParallelMapReduceI.ParallelismPolicyI;
 

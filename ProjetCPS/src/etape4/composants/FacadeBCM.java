@@ -1,13 +1,19 @@
 package etape4.composants;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
+import etape1.EntierKey;
 import etape2.endpoints.DHTServicesEndPoint;
+import etape3.CVM;
 import etape3.endpoints.MapReduceResultReceptionEndPoint;
 import etape3.endpoints.ResultReceptionEndPoint;
 import etape4.endpoints.CompositeMapContentManagementEndPoint;
+import etape4.policies.IgnoreChordsPolicy;
+import etape4.policies.LoadPolicy;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;
@@ -30,10 +36,21 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
+import fr.sorbonne_u.utils.aclocks.AcceleratedClock;
+import fr.sorbonne_u.utils.aclocks.ClocksServer;
+import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
+import fr.sorbonne_u.utils.aclocks.ClocksServerConnector;
+import fr.sorbonne_u.utils.aclocks.ClocksServerOutboundPort;
 
 @OfferedInterfaces(offered = { DHTServicesCI.class, ResultReceptionCI.class, MapReduceResultReceptionCI.class })
-@RequiredInterfaces(required = { ContentAccessCI.class, ParallelMapReduceCI.class, DHTManagementCI.class })
+@RequiredInterfaces(required = { ContentAccessCI.class, ParallelMapReduceCI.class, DHTManagementCI.class,
+		ClocksServerCI.class })
 public class FacadeBCM extends AbstractComponent implements ResultReceptionI, MapReduceResultReceptionI, DHTServicesI {
+
+	private static final int STARTING_DELAY = 360;
+
+	protected AcceleratedClock dhtClock; // Référence à l'horloge
+	ClocksServerOutboundPort p;
 
 	// URI constants pour l'accès aux services
 	private static final String GET_URI_PREFIX = "GET";
@@ -41,6 +58,8 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	private static final String REMOVE_URI_PREFIX = "REMOVE";
 	private static final String MAPREDUCE_URI_PREFIX = "MAPREDUCE";
 	private static final String COMPUTE_CHORDS_URI_PREFIX = "COMPUTE-CHORDS";
+	private static final String SPLIT_URI_PREFIX = "SPLIT";
+	private static final String MERGE_URI_PREFIX = "MERGE";
 	private static final int NUMBER_OF_CHORDS = 4;
 
 	private static final int SCHEDULABLE_THREADS = 0;
@@ -55,6 +74,22 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 
 	private HashMap<String, CompletableFuture<Serializable>> resultsContentAccess;
 	private HashMap<String, CompletableFuture<Serializable>> resultsMapReduce;
+
+	protected void connectToClockServer() throws Exception {
+		p = new ClocksServerOutboundPort(this);
+		p.publishPort();
+
+		this.doPortConnection(p.getPortURI(), ClocksServer.STANDARD_INBOUNDPORT_URI,
+				ClocksServerConnector.class.getCanonicalName());
+
+		this.dhtClock = p.getClock(CVM.TEST_CLOCK_URI);
+
+		this.logMessage("En attente du démarrage de l'horloge...");
+		if (dhtClock.startTimeNotReached()) {
+			dhtClock.waitUntilStart();
+		}
+		this.logMessage("Horloge démarrée : " + dhtClock.getStartInstant());
+	}
 
 	protected FacadeBCM(String uri, CompositeMapContentManagementEndPoint endPointFacadeNoeud,
 			DHTServicesEndPoint endPointClientFacade) throws ConnectionException {
@@ -155,11 +190,40 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		this.resultsMapReduce.get(computationURI).complete(acc);
 	}
 
+	public void split() throws Exception {
+		CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
+		String split_uri = URIGenerator.generateURI(SPLIT_URI_PREFIX);
+		this.resultsContentAccess.put(split_uri, f);
+		this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference().split(split_uri, new LoadPolicy(),
+				this.resultatReceptionEndPoint);
+		ContentDataI split_response = (ContentDataI) this.resultsContentAccess.get(split_uri).get();
+		this.resultsContentAccess.remove(split_uri);
+		this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference()
+		.computeChords(URIGenerator.generateURI(COMPUTE_CHORDS_URI_PREFIX), NUMBER_OF_CHORDS);
+	}
+
+	
+	public void merge() throws Exception {
+		CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
+		String merge_uri = URIGenerator.generateURI(SPLIT_URI_PREFIX);
+		this.resultsContentAccess.put(merge_uri, f);
+		this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference().merge(merge_uri, new LoadPolicy(),
+				this.resultatReceptionEndPoint);
+		ContentDataI split_response = (ContentDataI) this.resultsContentAccess.get(merge_uri).get();
+		this.resultsContentAccess.remove(merge_uri);
+		this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference()
+		.computeChords(URIGenerator.generateURI(COMPUTE_CHORDS_URI_PREFIX), NUMBER_OF_CHORDS);
+	}
+	
+	
+	
+	
 	@Override
 	public void start() throws ComponentStartException {
 		this.logMessage("starting facade component.");
 		super.start();
 		try {
+			this.connectToClockServer();
 			if (!this.endPointFacadeNoeud.clientSideInitialised()) {
 				this.endPointFacadeNoeud.initialiseClientSide(this);
 			}
@@ -172,11 +236,28 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	@Override
 	public void execute() throws Exception {
 		super.execute();
+
 		this.runTask(new AbstractComponent.AbstractTask() {
 			@Override
 			public void run() {
 				try {
-					((FacadeBCM)this.taskOwner).endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference().computeChords(COMPUTE_CHORDS_URI_PREFIX, NUMBER_OF_CHORDS);
+					((FacadeBCM) this.taskOwner).endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference()
+							.computeChords(COMPUTE_CHORDS_URI_PREFIX, NUMBER_OF_CHORDS);
+
+					Thread.sleep(7000);
+
+					System.out.println("Merge");
+
+					System.out.println("Lancement du merge");
+					((FacadeBCM) this.getTaskOwner()).merge();
+				
+					System.out.println("Fin merge");
+					
+//					
+//					ContentDataI livre = ((FacadeBCM) this.getTaskOwner()).get(new EntierKey(30));
+//					System.out.println(livre);
+					
+
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
@@ -184,7 +265,7 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 				}
 			}
 		});
-		
+
 	}
 
 	@Override

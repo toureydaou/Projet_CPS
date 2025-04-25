@@ -1,14 +1,11 @@
 package etape4.endpoints;
 
 import etape3.endpoints.AsynchronousContentAccessEndPoint;
-import etape3.endpoints.AsynchronousMapReduceEndPoint;
 import fr.sorbonne_u.components.endpoints.BCMCompositeEndPoint;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.endpoints.ContentNodeBaseCompositeEndPointI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.endpoints.ContentNodeCompositeEndPointI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementCI;
-import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ParallelMapReduceCI;
 
 public class CompositeMapContentManagementEndPoint extends BCMCompositeEndPoint implements ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI>{
