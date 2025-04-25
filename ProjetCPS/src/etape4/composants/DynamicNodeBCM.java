@@ -87,6 +87,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		this.resultsMapReduce = new HashMap<String, ArrayList<CompletableFuture<Serializable>>>();
 		this.mapReduceLock = new ReentrantReadWriteLock();
 		this.splitLock = new ReentrantReadWriteLock();
+		
 
 		this.mapReduceResultReceptionEndPoint.initialiseServerSide(this);
 		this.compositeMapContentManagementEndPointInbound.initialiseServerSide(this);
@@ -142,7 +143,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 
 		this.content.clear();
 		this.finalise();
-		this.shutdownNow();
+		// this.shutdownNow();
 		return nodeContent;
 	}
 
@@ -150,6 +151,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 	public <CI extends ResultReceptionCI> void split(String computationURI, LoadPolicyI loadPolicy,
 			EndPointI<CI> caller) throws Exception {
 
+		
 		if (!listeSplitOperations.contains(computationURI)) {
 			listeSplitOperations.add(computationURI);
 			System.out.println("Reception de la requete 'SPLIT' sur le noeud " + this.intervalle.first());
@@ -205,36 +207,42 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 			if (!caller.clientSideInitialised()) {
 				caller.initialiseClientSide(this);
 			}
+			
 			caller.getClientSideReference().acceptResult(computationURI, null);
 			caller.cleanUpClientSide();
 		}
 	}
 
 	@Override
-	public <CI extends ResultReceptionCI> void merge(String computationURI, LoadPolicyI loadPolicy,
+	public  <CI extends ResultReceptionCI> void merge(String computationURI, LoadPolicyI loadPolicy,
 			EndPointI<CI> caller) throws Exception {
 
+		
 		System.out.println("Reception de la requete 'MERGE' sur le noeud " + this.intervalle.first());
 		if (!listeUriContentOperations.contains(computationURI)) {
 			listeUriContentOperations.add(computationURI);
+			
+			
+			if (!(this.getChordInfo(1).second() < this.intervalle.first())) {
+				NodeState stateSuivant = (NodeState) this.compositeMapContentManagementEndPointOutbound
+						.getDHTManagementEndpoint().getClientSideReference().getCurrentState();
 
-			NodeState stateSuivant = (NodeState) this.compositeMapContentManagementEndPointOutbound
-					.getDHTManagementEndpoint().getClientSideReference().getCurrentState();
+				if (loadPolicy.shouldMergeWithNextNode(content.size(), stateSuivant.contentDataSize)) {
 
-			if (loadPolicy.shouldMergeWithNextNode(content.size(), stateSuivant.contentDataSize)) {
+					NodeContent contentSuivant = (NodeContent) this.compositeMapContentManagementEndPointOutbound
+							.getDHTManagementEndpoint().getClientSideReference().suppressNode();
 
-				NodeContent contentSuivant = (NodeContent) this.compositeMapContentManagementEndPointOutbound
-						.getDHTManagementEndpoint().getClientSideReference().suppressNode();
+					this.content.putAll(contentSuivant.content);
+					this.intervalle.merge(contentSuivant.intervalle);
 
-				this.content.putAll(contentSuivant.content);
-				this.intervalle.merge(contentSuivant.intervalle);
+					this.compositeMapContentManagementEndPointOutbound = (CompositeMapContentManagementEndPoint) contentSuivant.compositeMapContentManagementEndPointOutbound
+							.copyWithSharable();
 
-				this.compositeMapContentManagementEndPointOutbound = (CompositeMapContentManagementEndPoint) contentSuivant.compositeMapContentManagementEndPointOutbound
-						.copyWithSharable();
-				
-				this.compositeMapContentManagementEndPointOutbound.initialiseClientSide(this);
+					this.compositeMapContentManagementEndPointOutbound.initialiseClientSide(this);
 
+				}
 			}
+			
 			this.compositeMapContentManagementEndPointOutbound.getDHTManagementEndpoint().getClientSideReference()
 					.merge(computationURI, loadPolicy, caller);
 
@@ -249,9 +257,6 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 
 	@Override
 	public void computeChords(String computationURI, int numberOfChords) throws Exception {
-		System.out.println("");
-		System.out.println("Création  des cordes sur le noeud " + this.uri);
-		System.out.println("");
 		if (!listeUriContentOperations.contains(computationURI)) {
 			listeUriContentOperations.add(computationURI);
 			this.chords.clear();
@@ -272,7 +277,6 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 	@Override
 	public SerializablePair<ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI>, Integer> getChordInfo(
 			int offset) throws Exception {
-		System.out.println("Chord info dans le noeud : " + this.uri);
 		if (offset > 0) {
 			return this.compositeMapContentManagementEndPointOutbound.getDHTManagementEndpoint()
 					.getClientSideReference().getChordInfo(offset - 1);
@@ -635,6 +639,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 			System.out.println("Envoi du résultat du 'MAP REDUCE' sur la facade depuis le noeud " + this.uri);
 
 			caller.getClientSideReference().acceptResult(computationURI, "nom du noeud qui envoie", localReduce);
+			
 			caller.cleanUpClientSide();
 
 		}
@@ -669,21 +674,34 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 
 	@Override
 	public void finalise() throws Exception {
-		this.logMessage("stopping node component.");
-		this.compositeMapContentManagementEndPointOutbound.cleanUpClientSide();
-		if (this.porttoNewNode.connected()) {
-			this.doPortDisconnection(this.porttoNewNode.getPortURI());
+		if (!this.isFinalised()) {
+			this.logMessage("stopping node component.");
+			
+			if (!this.compositeMapContentManagementEndPointOutbound.clientSideClean()) {
+				this.compositeMapContentManagementEndPointOutbound.cleanUpClientSide();
+			}
+
+			if (this.porttoNewNode.connected()) {
+				this.doPortDisconnection(this.porttoNewNode.getPortURI());
+			}
+
+			super.finaliseOrigin();
 		}
-		super.finaliseOrigin();
 	}
 
 	@Override
 	public void shutdown() throws ComponentShutdownException {
+
 		try {
+		
 			this.compositeMapContentManagementEndPointInbound.cleanUpServerSide();
+			
+		
 			this.mapReduceResultReceptionEndPoint.cleanUpServerSide();
 			if (this.porttoNewNode.isPublished()) {
+				
 				this.porttoNewNode.unpublishPort();
+				
 			}
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e);

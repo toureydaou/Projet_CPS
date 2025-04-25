@@ -13,12 +13,12 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
 import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
 
 @RequiredInterfaces(required = { DHTServicesCI.class, ClocksServerCI.class })
-public class ForceSplitClient extends ClientBCM {
+public class ForceMergeClient extends ClientBCM {
 
 	
-	private static final int STARTING_DELAY = 420;
+	private static final int STARTING_DELAY = 480;
 	
-	protected ForceSplitClient(String uri, DHTServicesEndPoint endpointClientFacade) {
+	protected ForceMergeClient(String uri, DHTServicesEndPoint endpointClientFacade) {
 		super(uri, endpointClientFacade);
 	}
 
@@ -27,17 +27,26 @@ public class ForceSplitClient extends ClientBCM {
 		
 		System.out.println("");
 
-		System.out.println("============= Forçage du split sur noeud  ==============");
+		System.out.println("============= Forçage du merge sur les noeuds  ==============");
 
 		System.out.println("");
 
-		for (int i = 0; i < 1000; i++ ) {
+		for (int i = 20; i < 60; i++ ) {
 			System.out.println("");
 
-			System.out.println("============= Insertion de la clée " + i +  "  ==============");
+			System.out.println("============= Suppression de la clée " + i +  "  ==============");
 
 			System.out.println("");
-			this.put(new EntierKey(i), new Livre("Nouveau Harry Potter5", 700));
+			this.remove(new EntierKey(i));
+		}
+		
+		for (int i = 92; i < 189; i+=3 ) {
+			System.out.println("");
+
+			System.out.println("============= Suppression de la clée " + i +  "  ==============");
+
+			System.out.println("");
+			this.remove(new EntierKey(i));
 		}
 
 	}

@@ -28,6 +28,7 @@ public class CVM extends AbstractCVM {
 	public static final Instant START_INSTANT = Instant.now();
 	protected static final long START_DELAY = 3000L;
 	public static final double ACCELERATION_FACTOR = 60.0;
+	public static final long CVM_TIME_LIFE_CYCLE = 40000L;
 
 	protected static final String FACADE_COMPONENT_URI = "facade-URI";
 	protected static final String MAP_REDUCE_VIDE_CLIENT_COMPONENT_URI = "map-reduce-vide-client-URI";
@@ -42,6 +43,7 @@ public class CVM extends AbstractCVM {
 	protected static final String MAP_REDUCE_1_CLIENT_COMPONENT_URI = "map-reduce-1-client-URI";
 	protected static final String MAP_REDUCE_2_CLIENT_COMPONENT_URI = "map-reduce-2-client-URI";
 	protected static final String FORCE_SPLIT_CLIENT_COMPONENT_URI = "force-split-client-URI";
+	protected static final String FORCE_MERGE_CLIENT_COMPONENT_URI = "force-merge-client-URI";
 	
 	
 	protected static final int NUMBER_OF_NODES = 12;
@@ -109,56 +111,56 @@ public class CVM extends AbstractCVM {
 		}
 		
 
-//		String mapReduceVideClientURI = AbstractComponent.createComponent(MapReduceVideClient.class.getCanonicalName(),
-//				new Object[] { MAP_REDUCE_VIDE_CLIENT_COMPONENT_URI,
-//						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
-//		assert this.isDeployedComponent(mapReduceVideClientURI);
-//
-//		String getClientURI_1 = AbstractComponent.createComponent(GetClient.class.getCanonicalName(), new Object[] {
-//				GET_1_CLIENT_COMPONENT_URI, ((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
-//		assert this.isDeployedComponent(getClientURI_1);
-//
-//		String putClientURI = AbstractComponent.createComponent(PutClient.class.getCanonicalName(), new Object[] {
-//				PUT_CLIENT_COMPONENT_URI, ((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
-//		assert this.isDeployedComponent(putClientURI);
-////
-//		String mapReduce1ClientURI = AbstractComponent.createComponent(MapReduceClient.class.getCanonicalName(),
-//				new Object[] { MAP_REDUCE_1_CLIENT_COMPONENT_URI,
-//						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
-//		assert this.isDeployedComponent(mapReduce1ClientURI);
-//
-//		String mapReduce2ClientURI = AbstractComponent.createComponent(MapReduceClient.class.getCanonicalName(),
-//				new Object[] { MAP_REDUCE_2_CLIENT_COMPONENT_URI,
-//						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
-//		assert this.isDeployedComponent(mapReduce2ClientURI);
-//
-//		String removeClientURI = AbstractComponent.createComponent(RemoveClient.class.getCanonicalName(), new Object[] {
-//				REMOVE_CLIENT_COMPONENT_URI, ((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
-//		assert this.isDeployedComponent(removeClientURI);
-//
-//		String concurrentGetClientURI = AbstractComponent.createComponent(ConcurrentGetClient1.class.getCanonicalName(),
-//				new Object[] { CONCURRENT_GET_1_CLIENT_COMPONENT_URI,
-//						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
-//
-//		assert this.isDeployedComponent(concurrentGetClientURI);
-//
-//		String concurentPutClientURI_1 = AbstractComponent.createComponent(
-//				ConcurrentPutClient1.class.getCanonicalName(), new Object[] { CONCURRENT_PUT_1_CLIENT_COMPONENT_URI,
-//						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
-//
-//		assert this.isDeployedComponent(concurentPutClientURI_1);
-//
-//		String concurentPutClientURI_2 = AbstractComponent.createComponent(
-//				ConcurrentPutClient2.class.getCanonicalName(), new Object[] { CONCURRENT_PUT_2_CLIENT_COMPONENT_URI,
-//						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
-//
-//		assert this.isDeployedComponent(concurentPutClientURI_2);
-//
-//		String concurentPutClientURI_3 = AbstractComponent.createComponent(
-//				ConcurrentPutClient3.class.getCanonicalName(), new Object[] { CONCURRENT_PUT_3_CLIENT_COMPONENT_URI,
-//						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
-//
-//		assert this.isDeployedComponent(concurentPutClientURI_3);
+		String mapReduceVideClientURI = AbstractComponent.createComponent(MapReduceVideClient.class.getCanonicalName(),
+				new Object[] { MAP_REDUCE_VIDE_CLIENT_COMPONENT_URI,
+						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
+		assert this.isDeployedComponent(mapReduceVideClientURI);
+
+		String getClientURI_1 = AbstractComponent.createComponent(GetClient.class.getCanonicalName(), new Object[] {
+				GET_1_CLIENT_COMPONENT_URI, ((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
+		assert this.isDeployedComponent(getClientURI_1);
+
+		String putClientURI = AbstractComponent.createComponent(PutClient.class.getCanonicalName(), new Object[] {
+				PUT_CLIENT_COMPONENT_URI, ((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
+		assert this.isDeployedComponent(putClientURI);
+
+		String mapReduce1ClientURI = AbstractComponent.createComponent(MapReduceClient.class.getCanonicalName(),
+				new Object[] { MAP_REDUCE_1_CLIENT_COMPONENT_URI,
+						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
+		assert this.isDeployedComponent(mapReduce1ClientURI);
+
+		String mapReduce2ClientURI = AbstractComponent.createComponent(MapReduceClient.class.getCanonicalName(),
+				new Object[] { MAP_REDUCE_2_CLIENT_COMPONENT_URI,
+						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
+		assert this.isDeployedComponent(mapReduce2ClientURI);
+
+		String removeClientURI = AbstractComponent.createComponent(RemoveClient.class.getCanonicalName(), new Object[] {
+				REMOVE_CLIENT_COMPONENT_URI, ((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
+		assert this.isDeployedComponent(removeClientURI);
+
+		String concurrentGetClientURI = AbstractComponent.createComponent(ConcurrentGetClient1.class.getCanonicalName(),
+				new Object[] { CONCURRENT_GET_1_CLIENT_COMPONENT_URI,
+						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
+
+		assert this.isDeployedComponent(concurrentGetClientURI);
+
+		String concurentPutClientURI_1 = AbstractComponent.createComponent(
+				ConcurrentPutClient1.class.getCanonicalName(), new Object[] { CONCURRENT_PUT_1_CLIENT_COMPONENT_URI,
+						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
+
+		assert this.isDeployedComponent(concurentPutClientURI_1);
+
+		String concurentPutClientURI_2 = AbstractComponent.createComponent(
+				ConcurrentPutClient2.class.getCanonicalName(), new Object[] { CONCURRENT_PUT_2_CLIENT_COMPONENT_URI,
+						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
+
+		assert this.isDeployedComponent(concurentPutClientURI_2);
+
+		String concurentPutClientURI_3 = AbstractComponent.createComponent(
+				ConcurrentPutClient3.class.getCanonicalName(), new Object[] { CONCURRENT_PUT_3_CLIENT_COMPONENT_URI,
+						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
+
+		assert this.isDeployedComponent(concurentPutClientURI_3);
 
 		
 		String forceSplitClientURI = AbstractComponent.createComponent(
@@ -166,6 +168,13 @@ public class CVM extends AbstractCVM {
 						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
 
 		assert this.isDeployedComponent(forceSplitClientURI);
+		
+		
+		String forceMergeClientURI = AbstractComponent.createComponent(
+				ForceSplitClient.class.getCanonicalName(), new Object[] { FORCE_MERGE_CLIENT_COMPONENT_URI,
+						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
+
+		assert this.isDeployedComponent(forceMergeClientURI);
 		
 
 		super.deploy();
@@ -177,7 +186,7 @@ public class CVM extends AbstractCVM {
 			// Create an instance of the defined component virtual machine.
 			CVM a = new CVM();
 			// Execute the application.
-			a.startStandardLifeCycle(20000L);
+			a.startStandardLifeCycle(CVM_TIME_LIFE_CYCLE);
 			// Give some time to see the traces (convenience).
 			Thread.sleep(5000L);
 			// Simplifies the termination (termination has yet to be treated
