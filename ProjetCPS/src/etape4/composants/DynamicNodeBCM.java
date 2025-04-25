@@ -15,10 +15,12 @@ import etape4.endpoints.CompositeMapContentManagementEndPoint;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;
+import fr.sorbonne_u.components.cvm.AbstractCVM;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.components.exceptions.ConnectionException;
+import fr.sorbonne_u.components.pre.dcc.connectors.DynamicComponentCreationConnector;
 import fr.sorbonne_u.components.pre.dcc.interfaces.DynamicComponentCreationCI;
 import fr.sorbonne_u.components.pre.dcc.ports.DynamicComponentCreationOutboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
@@ -640,11 +642,11 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 				this.compositeMapContentManagementEndPointOutbound.initialiseClientSide(this);
 			}
 			this.porttoNewNode = new DynamicComponentCreationOutboundPort(this);
-//			this.porttoNewNode.publishPort();
-//			this.doPortConnection(
-//					this.porttoNewNode.getPortURI(),
-//					this.jvmUri + AbstractCVM.DCC_INBOUNDPORT_URI_SUFFIX,
-//					DynamicComponentCreationConnector.class.getCanonicalName());
+			this.porttoNewNode.localPublishPort();
+			this.doPortConnection(
+					this.porttoNewNode.getPortURI(),
+					this.jvmUri + AbstractCVM.DCC_INBOUNDPORT_URI_SUFFIX,
+					DynamicComponentCreationConnector.class.getCanonicalName());
 			this.chords = new ArrayList<SerializablePair<ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI>, Integer>>();
 
 			AbstractComponent.checkImplementationInvariant(this);

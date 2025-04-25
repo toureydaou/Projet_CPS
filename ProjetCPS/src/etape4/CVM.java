@@ -19,6 +19,7 @@ import etape3.composants.RemoveClient;
 import etape4.endpoints.CompositeMapContentManagementEndPoint;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.cvm.AbstractCVM;
+import fr.sorbonne_u.components.pre.dcc.ports.DynamicComponentCreationInboundPort;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 import fr.sorbonne_u.utils.aclocks.ClocksServer;
 
@@ -55,7 +56,6 @@ public class CVM extends AbstractCVM {
 	protected static final String TWELFTH_CLIENT_COMPONENT_URI = "twelfth-node-URI";
 	protected static final int NUMBER_OF_NODES = 12;
 	protected static final int INTERVAL_SIZE = 50;
-	protected static final String JVM_URI = "jvm-1";
 
 	public CVM() throws Exception {
 		super();
@@ -138,7 +138,7 @@ public class CVM extends AbstractCVM {
 				String nodeURI = AbstractComponent.createComponent(
 						DynamicNodeBCM.class.getCanonicalName(),
 					new Object[]{
-							JVM_URI,
+							AbstractCVM.getThisJVMURI(),
 						 "NODE_" + i + "_URI",
 						endpoints[i].copyWithSharable(),
 						endpoints[i + 1].copyWithSharable(),
@@ -151,7 +151,7 @@ public class CVM extends AbstractCVM {
 				String lastNodeURI = AbstractComponent.createComponent(
 						DynamicNodeBCM.class.getCanonicalName(),
 					new Object[]{
-							JVM_URI,
+							AbstractCVM.getThisJVMURI(),
 						 "NODE_" + i + "_URI",
 						endpoints[i].copyWithSharable(),
 						endpoints[0].copyWithSharable(),
