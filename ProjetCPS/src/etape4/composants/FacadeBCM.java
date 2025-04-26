@@ -58,12 +58,12 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	private static final String MERGE_URI_PREFIX = "MERGE";
 	private static final int NUMBER_OF_CHORDS = 4;
 
-	private static final int SCHEDULABLE_THREADS = 50;
-	private static final int THREADS_NUMBER = 50;
+	private static final int SCHEDULABLE_THREADS = 500;
+	private static final int THREADS_NUMBER = 500;
 
 	private static final int START_POLICY = 0;
 
-	private static final int LIMIT_NUMBER_WRITE_OPERATIONS = 50;
+	private static final int LIMIT_NUMBER_WRITE_OPERATIONS = 30;
 
 	private boolean LIMIT_REACHED = false;
 

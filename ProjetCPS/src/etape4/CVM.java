@@ -168,13 +168,13 @@ public class CVM extends AbstractCVM {
 						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
 
 		assert this.isDeployedComponent(forceSplitClientURI);
-		
-		
-		String forceMergeClientURI = AbstractComponent.createComponent(
-				ForceSplitClient.class.getCanonicalName(), new Object[] { FORCE_MERGE_CLIENT_COMPONENT_URI,
-						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
-
-		assert this.isDeployedComponent(forceMergeClientURI);
+//		
+//		
+//		String forceMergeClientURI = AbstractComponent.createComponent(
+//				ForceSplitClient.class.getCanonicalName(), new Object[] { FORCE_MERGE_CLIENT_COMPONENT_URI,
+//						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
+//
+//		assert this.isDeployedComponent(forceMergeClientURI);
 		
 
 		super.deploy();

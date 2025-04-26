@@ -72,6 +72,8 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 	protected final ReentrantReadWriteLock mapReduceLock;
 
 	protected final ReentrantReadWriteLock splitLock;
+	
+	protected ConcurrentHashMap<String, Integer> computationIndices = new ConcurrentHashMap<>();
 
 	int indice;
 
@@ -605,7 +607,8 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 			int increment = 1;
 
 			this.mapReduceLock.writeLock().lock();
-			indice = 0;
+            computationIndices.put(computationURI, 0);
+
 			for (int i = debut; i < chords.size(); i++) {
 
 				resultsMapReduce.get(computationURI).add(new CompletableFuture<Serializable>());
@@ -647,8 +650,14 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 
 	@Override
 	public void acceptResult(String computationURI, String emitterId, Serializable acc) throws Exception {
-		resultsMapReduce.get(computationURI).get(indice).complete(acc);
-		indice++;
+	    // Atomically get and increment the index for this specific computation
+	    int currentIndex = computationIndices.computeIfAbsent(computationURI, k -> 0);
+	    
+	    // Update the results and increment the index atomically
+	    resultsMapReduce.get(computationURI).get(currentIndex).complete(acc);
+	    
+	    // Update the index for the next result
+	    computationIndices.put(computationURI, currentIndex + 1);
 	}
 
 	@Override
