@@ -3,6 +3,7 @@ package etape4.composants;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import etape2.endpoints.DHTServicesEndPoint;
@@ -67,7 +68,7 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 
 	private boolean LIMIT_REACHED = false;
 
-	private int number_write_operation = 0;
+	private AtomicInteger number_write_operation = new AtomicInteger(0);
 
 	protected CompositeMapContentManagementEndPoint endPointFacadeNoeud;
 	protected DHTServicesEndPoint endPointClientFacade;
@@ -99,49 +100,67 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	@Override
 	public ContentDataI get(ContentKeyI key) throws Exception {
 		this.splitMergeLock.readLock().lock();
-		String request_uri = URIGenerator.generateURI(GET_URI_PREFIX);
-		System.out.println("Reception de la requête 'GET' sur la facade, identifiant de la requete : " + request_uri);
-		CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
-		this.resultsContentAccess.put(request_uri, f);
-		this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().get(request_uri, key,
-				resultatReceptionEndPoint);
-		ContentDataI value = (ContentDataI) this.resultsContentAccess.get(request_uri).get();
-		this.resultsContentAccess.remove(request_uri);
-		this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
-		this.splitMergeLock.readLock().unlock();
+		ContentDataI value;
+		try {
+			String request_uri = URIGenerator.generateURI(GET_URI_PREFIX);
+			System.out.println("Reception de la requête 'GET' sur la facade, identifiant de la requete : " + request_uri);
+			CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
+			this.resultsContentAccess.put(request_uri, f);
+			this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().get(request_uri, key,
+					resultatReceptionEndPoint);
+			value = (ContentDataI) this.resultsContentAccess.get(request_uri).get();
+			this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
+			
+		}finally{
+			this.splitMergeLock.readLock().unlock();
+		}
 		return value;
 	}
 
 	@Override
 	public ContentDataI put(ContentKeyI key, ContentDataI value) throws Exception {
+
 		this.splitMergeLock.readLock().lock();
-		this.countNumberOfOperations();
-		String request_uri = URIGenerator.generateURI(PUT_URI_PREFIX);
-		System.out.println("Reception de la requête 'PUT' sur la facade identifiant requete : " + request_uri);
-		CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
-		this.resultsContentAccess.put(request_uri, f);
-		this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().put(request_uri, key, value,
-				resultatReceptionEndPoint);
-		ContentDataI oldValue = (ContentDataI) this.resultsContentAccess.get(request_uri).get();
-		this.resultsContentAccess.remove(request_uri);
-		this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
-		this.splitMergeLock.readLock().unlock();
+		ContentDataI oldValue;
+		try {
+			this.countNumberOfOperations();
+			String request_uri = URIGenerator.generateURI(PUT_URI_PREFIX);
+			System.out.println("Reception de la requête 'PUT' sur la facade identifiant requete : " + request_uri);
+			CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
+			this.resultsContentAccess.put(request_uri, f);
+			this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().put(request_uri, key, value,
+					resultatReceptionEndPoint);
+			oldValue = (ContentDataI) this.resultsContentAccess.get(request_uri).get();
+			this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
+			this.resultsContentAccess.remove(request_uri);
+
+		}finally{
+			this.splitMergeLock.readLock().unlock();
+		}
+
 		return oldValue;
 	}
 
 	@Override
 	public ContentDataI remove(ContentKeyI key) throws Exception {
+
 		this.splitMergeLock.readLock().lock();
-		this.countNumberOfOperations();
-		String request_uri = URIGenerator.generateURI(REMOVE_URI_PREFIX);
-		System.out.println("Reception de la requête 'REMOVE' sur la facade identifiant requete : " + request_uri);
-		CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
-		this.resultsContentAccess.put(request_uri, f);
-		this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().remove(request_uri, key,
-				resultatReceptionEndPoint);
-		ContentDataI oldValue = (ContentDataI) this.resultsContentAccess.get(request_uri).get();
-		this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
-		this.splitMergeLock.readLock().unlock();
+		ContentDataI oldValue;
+		try {
+			this.countNumberOfOperations();
+			String request_uri = URIGenerator.generateURI(REMOVE_URI_PREFIX);
+			System.out.println("Reception de la requête 'REMOVE' sur la facade identifiant requete : " + request_uri);
+			CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
+			this.resultsContentAccess.put(request_uri, f);
+			this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().remove(request_uri, key,
+					resultatReceptionEndPoint);
+			oldValue = (ContentDataI) this.resultsContentAccess.get(request_uri).get();
+			this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
+			this.resultsContentAccess.remove(request_uri);
+
+		}finally{
+			this.splitMergeLock.readLock().unlock();
+		}
 		return oldValue;
 	}
 
@@ -149,22 +168,27 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	@SuppressWarnings("unchecked")
 	public <R extends Serializable, A extends Serializable> A mapReduce(SelectorI selector, ProcessorI<R> processor,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A initialAcc) throws Exception {
+
 		this.splitMergeLock.readLock().lock();
-		String request_uri = URIGenerator.generateURI(MAPREDUCE_URI_PREFIX);
-		System.out.println("Reception de la requête 'MAP REDUCE' sur la facade identifiant requete : " + request_uri);
-		CompletableFuture<Serializable> reduceResult = new CompletableFuture<Serializable>();
-		resultsMapReduce.put(request_uri, reduceResult);
+		A result;
+		try {
+			String request_uri = URIGenerator.generateURI(MAPREDUCE_URI_PREFIX);
+			System.out.println("Reception de la requête 'MAP REDUCE' sur la facade identifiant requete : " + request_uri);
+			CompletableFuture<Serializable> reduceResult = new CompletableFuture<Serializable>();
+			resultsMapReduce.put(request_uri, reduceResult);
 
-		this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().parallelMap(request_uri, selector,
-				processor, new IgnoreChordsPolicy(START_POLICY));
-		this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().parallelReduce(request_uri, reductor,
-				combinator, initialAcc, initialAcc, new IgnoreChordsPolicy(START_POLICY),
-				this.mapReduceResultatReceptionEndPoint);
-		A result = (A) resultsMapReduce.get(request_uri).get();
+			this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().parallelMap(request_uri, selector,
+					processor, new IgnoreChordsPolicy(START_POLICY));
+			this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().parallelReduce(request_uri, reductor,
+					combinator, initialAcc, initialAcc, new IgnoreChordsPolicy(START_POLICY),
+					this.mapReduceResultatReceptionEndPoint);
+			result = (A) resultsMapReduce.get(request_uri).get();
 
-		this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().clearMapReduceComputation(request_uri);
-		this.resultsMapReduce.remove(request_uri);
-		this.splitMergeLock.readLock().unlock();
+			this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().clearMapReduceComputation(request_uri);
+			this.resultsMapReduce.remove(request_uri);
+		}finally{
+			this.splitMergeLock.readLock().unlock();
+		}
 		return result;
 	}
 
@@ -177,7 +201,7 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	public void clearMapReduceComputation(String computationURI) throws Exception {
 
 		this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference()
-				.clearMapReduceComputation(computationURI);
+		.clearMapReduceComputation(computationURI);
 
 	}
 
@@ -195,42 +219,53 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 
 	public void split() throws Exception {
 		this.splitMergeLock.writeLock().lock();
-		CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
-		String split_uri = URIGenerator.generateURI(SPLIT_URI_PREFIX);
-		this.resultsContentAccess.put(split_uri, f);
-		this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference().split(split_uri, new LoadPolicy(),
-				this.resultatReceptionEndPoint);
+		try {
+			CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
+			String split_uri = URIGenerator.generateURI(SPLIT_URI_PREFIX);
+			this.resultsContentAccess.put(split_uri, f);
+			this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference().split(split_uri, new LoadPolicy(),
+					this.resultatReceptionEndPoint);
 
-		ContentDataI split_response = (ContentDataI) this.resultsContentAccess.get(split_uri).get();
-		System.out.println("Fin split");
-		this.resultsContentAccess.remove(split_uri);
-		this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference()
-				.computeChords(URIGenerator.generateURI(COMPUTE_CHORDS_URI_PREFIX), NUMBER_OF_CHORDS);
-		this.splitMergeLock.writeLock().unlock();
+			ContentDataI split_response = (ContentDataI) this.resultsContentAccess.get(split_uri).get();
+			System.out.println("Fin split");
+			this.resultsContentAccess.remove(split_uri);
+			this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference()
+			.computeChords(URIGenerator.generateURI(COMPUTE_CHORDS_URI_PREFIX), NUMBER_OF_CHORDS);
+		}finally {
+			this.splitMergeLock.writeLock().unlock();
+		}
+
+
 	}
 
 	public void merge() throws Exception {
 		this.splitMergeLock.writeLock().lock();
-		CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
-		String merge_uri = URIGenerator.generateURI(MERGE_URI_PREFIX);
-		this.resultsContentAccess.put(merge_uri, f);
-		this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference().merge(merge_uri, new LoadPolicy(),
-				this.resultatReceptionEndPoint);
-		ContentDataI merge_response = (ContentDataI) this.resultsContentAccess.get(merge_uri).get();
-		this.resultsContentAccess.remove(merge_uri);
-		this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference()
-				.computeChords(URIGenerator.generateURI(COMPUTE_CHORDS_URI_PREFIX), NUMBER_OF_CHORDS);
-		this.splitMergeLock.writeLock().unlock();
-	}
-
-	public synchronized void countNumberOfOperations() {
-		number_write_operation++;
-		System.out.println("Number op : " + number_write_operation);
-		System.out.println(LIMIT_REACHED);
-		if ((number_write_operation != 0) && (number_write_operation % LIMIT_NUMBER_WRITE_OPERATIONS) == 0) {
-			LIMIT_REACHED = true;
+		try {
+			CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
+			String merge_uri = URIGenerator.generateURI(MERGE_URI_PREFIX);
+			this.resultsContentAccess.put(merge_uri, f);
+			this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference().merge(merge_uri, new LoadPolicy(),
+					this.resultatReceptionEndPoint);
+			ContentDataI merge_response = (ContentDataI) this.resultsContentAccess.get(merge_uri).get();
+			this.resultsContentAccess.remove(merge_uri);
+			this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference()
+			.computeChords(URIGenerator.generateURI(COMPUTE_CHORDS_URI_PREFIX), NUMBER_OF_CHORDS);
+		}finally {
+			this.splitMergeLock.writeLock().unlock();
 		}
 
+	}
+
+	public void countNumberOfOperations() {
+		int count = number_write_operation.incrementAndGet();
+		System.out.println("Number op : " + count);
+		if ((count != 0) && (count % LIMIT_NUMBER_WRITE_OPERATIONS) == 0) {
+			LIMIT_REACHED = true;
+		}
+	}
+
+	private boolean operationsInProgress() {
+		return !this.resultsContentAccess.isEmpty() || !this.resultsMapReduce.isEmpty();
 	}
 
 	@Override
@@ -256,19 +291,23 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 			public void run() {
 				try {
 					((FacadeBCM) this.taskOwner).endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference()
-							.computeChords(COMPUTE_CHORDS_URI_PREFIX, NUMBER_OF_CHORDS);
+					.computeChords(COMPUTE_CHORDS_URI_PREFIX, NUMBER_OF_CHORDS);
 
 					while (true) {
 						Thread.sleep(1000); // pause de 1 seconde
 
 						if (LIMIT_REACHED) {
-							System.out.println(">> Déclenchement Split/Merge après " + LIMIT_NUMBER_WRITE_OPERATIONS
-									+ " opérations");
-							((FacadeBCM) this.getTaskOwner()).split();
-							((FacadeBCM) this.getTaskOwner()).merge();
-							LIMIT_REACHED = false; // seulement après split/merge
+							if (!((FacadeBCM) this.getTaskOwner()).operationsInProgress()) {
+								System.out.println(">> Déclenchement Split/Merge après " + LIMIT_NUMBER_WRITE_OPERATIONS
+										+ " opérations");
+								((FacadeBCM) this.getTaskOwner()).split();
+								((FacadeBCM) this.getTaskOwner()).merge();
+								LIMIT_REACHED = false; // seulement après split/merge
+							} else {
+								System.out.println("Des opérations sont en cours, report du Split/Merge...");
+								// On laisse LIMIT_REACHED à true pour réessayer lors de la prochaine itération
+							}
 						}
-
 					}
 
 				} catch (Exception e) {
