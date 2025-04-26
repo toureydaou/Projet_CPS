@@ -102,13 +102,16 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		public ConcurrentHashMap<Integer, ContentDataI> content;
 
 		public IntInterval intervalle;
+		
+		public String nodeUri;
 
 		protected CompositeMapContentManagementEndPoint compositeMapContentManagementEndPointOutbound;
 
 		protected NodeContent(ConcurrentHashMap<Integer, ContentDataI> content, IntInterval intervalle,
-				CompositeMapContentManagementEndPoint compositeMapContentManagementEndPointOutbound) {
+				CompositeMapContentManagementEndPoint compositeMapContentManagementEndPointOutbound, String nodeUri) {
 			this.content = content;
 			this.intervalle = intervalle;
+			this.nodeUri = nodeUri;
 			this.compositeMapContentManagementEndPointOutbound = compositeMapContentManagementEndPointOutbound;
 
 		}
@@ -141,7 +144,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 	public NodeContentI suppressNode() throws Exception {
 		NodeContent nodeContent = new NodeContent(this.content, this.intervalle,
 				(CompositeMapContentManagementEndPoint) this.compositeMapContentManagementEndPointOutbound
-						.copyWithSharable());
+						.copyWithSharable(), this.uri);
 
 		this.content.clear();
 		this.finalise();
@@ -156,7 +159,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		
 		if (!listeSplitOperations.contains(computationURI)) {
 			listeSplitOperations.add(computationURI);
-			System.out.println("Reception de la requete 'SPLIT' sur le noeud " + this.intervalle.first());
+			System.out.println("Reception de la requete 'SPLIT' sur le noeud " + this.uri);
 
 			if (loadPolicy.shouldSplitInTwoAdjacentNodes(content.size())) {
 
@@ -173,6 +176,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 								(CompositeMapContentManagementEndPoint) this.compositeMapContentManagementEndPointOutbound
 										.copyWithSharable(),
 								new IntInterval(-1, 0) });
+				this.compositeMapContentManagementEndPointOutbound.cleanUpClientSide();
 				this.compositeMapContentManagementEndPointOutbound = (CompositeMapContentManagementEndPoint) nouvelEndpointEntreNoeuds
 						.copyWithSharable();
 
@@ -194,7 +198,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 				}
 
 				this.content = firstPart;
-				NodeContent contenuSplit = new NodeContent(secondPart, intervalle.split(), null);
+				NodeContent contenuSplit = new NodeContent(secondPart, intervalle.split(), null, this.uri);
 
 				this.porttoNewNode.startComponent(nouveauNoeudURI);
 
@@ -220,7 +224,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 			EndPointI<CI> caller) throws Exception {
 
 		
-		System.out.println("Reception de la requete 'MERGE' sur le noeud " + this.intervalle.first());
+		System.out.println("Reception de la requete 'MERGE' sur le noeud " + this.uri);
 		if (!listeUriContentOperations.contains(computationURI)) {
 			listeUriContentOperations.add(computationURI);
 			
@@ -234,8 +238,12 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 					NodeContent contentSuivant = (NodeContent) this.compositeMapContentManagementEndPointOutbound
 							.getDHTManagementEndpoint().getClientSideReference().suppressNode();
 
+					System.out.println("Fusion du noeud: " + this.uri + " et du noeud: " + contentSuivant.nodeUri );
+					
 					this.content.putAll(contentSuivant.content);
 					this.intervalle.merge(contentSuivant.intervalle);
+					
+					this.compositeMapContentManagementEndPointOutbound.cleanUpClientSide();
 
 					this.compositeMapContentManagementEndPointOutbound = (CompositeMapContentManagementEndPoint) contentSuivant.compositeMapContentManagementEndPointOutbound
 							.copyWithSharable();

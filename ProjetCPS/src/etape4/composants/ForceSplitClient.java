@@ -31,7 +31,7 @@ public class ForceSplitClient extends ClientBCM {
 
 		System.out.println("");
 
-		for (int i = 0; i < 1000; i++ ) {
+		for (int i = 20; i < 100; i++ ) {
 			System.out.println("");
 
 			System.out.println("============= Insertion de la clée " + i +  "  ==============");

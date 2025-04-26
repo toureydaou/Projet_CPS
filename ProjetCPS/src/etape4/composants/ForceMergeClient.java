@@ -31,22 +31,22 @@ public class ForceMergeClient extends ClientBCM {
 
 		System.out.println("");
 
-		for (int i = 20; i < 60; i++ ) {
+		for (int i = 500; i < 510; i++ ) {
 			System.out.println("");
 
-			System.out.println("============= Suppression de la clée " + i +  "  ==============");
+			System.out.println("============= Insertion de la clée " + i +  "  ==============");
 
 			System.out.println("");
-			this.remove(new EntierKey(i));
+			this.put(new EntierKey(i), new Livre("Nouveau Harry Potter5", 700));
 		}
 		
-		for (int i = 92; i < 189; i+=3 ) {
+		for (int i = 550; i < 555; i++ ) {
 			System.out.println("");
 
-			System.out.println("============= Suppression de la clée " + i +  "  ==============");
+			System.out.println("============= Insertion de la clée " + i +  "  ==============");
 
 			System.out.println("");
-			this.remove(new EntierKey(i));
+			this.put(new EntierKey(i), new Livre("Nouveau Harry Potter5", 700));
 		}
 
 	}

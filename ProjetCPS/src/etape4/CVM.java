@@ -15,6 +15,7 @@ import etape3.composants.PutClient;
 import etape3.composants.RemoveClient;
 import etape4.composants.DynamicNodeBCM;
 import etape4.composants.FacadeBCM;
+import etape4.composants.ForceMergeClient;
 import etape4.composants.ForceSplitClient;
 import etape4.endpoints.CompositeMapContentManagementEndPoint;
 import fr.sorbonne_u.components.AbstractComponent;
@@ -168,13 +169,13 @@ public class CVM extends AbstractCVM {
 						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
 
 		assert this.isDeployedComponent(forceSplitClientURI);
-//		
-//		
-//		String forceMergeClientURI = AbstractComponent.createComponent(
-//				ForceSplitClient.class.getCanonicalName(), new Object[] { FORCE_MERGE_CLIENT_COMPONENT_URI,
-//						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
-//
-//		assert this.isDeployedComponent(forceMergeClientURI);
+		
+		
+		String forceMergeClientURI = AbstractComponent.createComponent(
+				ForceMergeClient.class.getCanonicalName(), new Object[] { FORCE_MERGE_CLIENT_COMPONENT_URI,
+						((DHTServicesEndPoint) dhtServicesEndPoint).copyWithSharable() });
+
+		assert this.isDeployedComponent(forceMergeClientURI);
 		
 
 		super.deploy();
