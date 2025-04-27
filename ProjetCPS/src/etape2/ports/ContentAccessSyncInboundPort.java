@@ -69,9 +69,9 @@ public class ContentAccessSyncInboundPort extends AbstractInboundPort implements
 	/**
 	 * Crée et initialise un port entrant
 	 * 
-	 * @param implementedInterface
-	 * @param owner
-	 * @throws Exception
+	 * @param implementedInterface interface implémentée
+	 * @param owner     propriétaire
+	 * @throws Exception exception
 	 */
 	public ContentAccessSyncInboundPort(Class<? extends OfferedCI> implementedInterface, ComponentI owner) throws Exception {
 		super(implementedInterface, owner);	

@@ -15,6 +15,7 @@ import fr.sorbonne_u.exceptions.PreconditionException;
 
 //-----------------------------------------------------------------------------
 /**
+ * <p>
  * La classe <code>ContentAccessEndPoint</code> implémente un endpoint
  * permettant de connecteur un composant client et serveur. En connectant le
  * port sortant <code>ContentAccessSyncOutboundPort</code> du client et le port

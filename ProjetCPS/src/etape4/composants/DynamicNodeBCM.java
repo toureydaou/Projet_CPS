@@ -52,7 +52,6 @@ import fr.sorbonne_u.cps.mapreduce.utils.SerializablePair;
  * Ce composant implémente également la gestion du noeud via l'interface
  * <code>DHTManagementI</code>.
  * 
- * <p>
  * Elle gère quatre types principaux d'opérations :
  * <ul>
  * <li>Accès au contenu (GET, PUT, REMOVE) pour stocker et récupérer des données
@@ -64,7 +63,6 @@ import fr.sorbonne_u.cps.mapreduce.utils.SerializablePair;
  * <li> Opérations SPLIT, MERGE et computeChords pour calculer les cordes du noeud
  * </li>
  * </ul>
- * </p>
  * 
  * @author Touré-Ydaou TEOURI
  * @author Awwal FAGBEHOURO

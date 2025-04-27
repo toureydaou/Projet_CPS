@@ -38,7 +38,6 @@ import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
  * la communication asynchrone et gère les données dans une table de hachage
  * distribuée (DHT).
  * 
- * <p>
  * Elle gère trois types principaux d'opérations :
  * <ul>
  * <li>Accès au contenu (GET, PUT, REMOVE) pour stocker et récupérer des données
@@ -48,7 +47,6 @@ import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
  * <li>Nettoyage des calculs pour effacer les données précédemment
  * stockées.</li>
  * </ul>
- * </p>
  * 
  * @author Touré-Ydaou TEOURI
  * @author Awwal FAGBEHOURO

@@ -43,10 +43,6 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
  * cascade)</li>
  * </ul>
  * 
- * @see fr.sorbonne_u.components.ports.AbstractOutboundPort;
- * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI
- * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceI
- *
  * @author Touré-Ydaou TEOURI
  * @author Awwal FAGBEHOURO
  */

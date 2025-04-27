@@ -56,9 +56,6 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
  * @author Touré-Ydaou TEOURI
  * @author Awwal FAGBEHOURO
  * 
- * @see fr.sorbonne_u.components.ports.AbstractInboundPort;
- * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI
- * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceI
  */
 //-----------------------------------------------------------------------------
 

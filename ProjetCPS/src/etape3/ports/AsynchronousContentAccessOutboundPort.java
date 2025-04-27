@@ -22,13 +22,10 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
  * <p>
  * Dans le cadre de ce projet, les composants propriétaires de ce port sont la
  * {@code Facade} ainsi que les {@code Noeuds} du réseau.
- * </p>
+ * </p> 
  * 
- * @see fr.sorbonne_u.components.ports.AbstractOutboundPort;
- * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
- * 
- * @Author Touré-Ydaou TEOURI
- * @Author Awwal FAGBEHOURO
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
  */
 
 public class AsynchronousContentAccessOutboundPort extends ContentAccessSyncOutboundPort implements ContentAccessCI {

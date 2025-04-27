@@ -41,7 +41,6 @@ import fr.sorbonne_u.utils.aclocks.ClocksServer;
  * merge afin de vérifier que l'opération se passe bien </li>
  * 
  * </ul>
- * </p> 
  * @author Touré-Ydaou TEOURI
  * @author Awwal FAGBEHOURO
  */

@@ -11,7 +11,6 @@ package etape4.policies;
  * d'opérations MapReduce.
  * </p>
  * 
- * <p>
  * Constantes :
  * <ul>
  *   <li>{@link #NUMBER_CONTENT_ACCESS_THREADS} : nombre de threads pour accéder aux contenus</li>
@@ -20,7 +19,6 @@ package etape4.policies;
  *   <li>{@link #NUMBER_ACCEPT_RESULT_CONTENT_ACCESS_THREADS} : nombre de threads pour accepter les résultats d'accès au contenu</li>
  *   <li>{@link #NUMBER_ACCEPT_RESULT_MAP_REDUCE_THREADS} : nombre de threads pour accepter les résultats des opérations MapReduce</li>
  * </ul>
- * </p>
  * 
  * @author Touré-Ydaou TEOURI
  * @author Awwal FAGBEHOURO

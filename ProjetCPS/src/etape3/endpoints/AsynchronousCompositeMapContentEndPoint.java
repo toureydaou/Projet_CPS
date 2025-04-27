@@ -12,7 +12,6 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
  * (Distributed Hash Table) intégrant des services d'accès aux contenus et de
  * MapReduce.
  *
- * <p>
  * Cette classe regroupe deux points d'accès indépendants :
  * <ul>
  * <li>Un point d'accès pour accéder aux contenus (ContentAccessCI).</li>
@@ -21,7 +20,6 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
  * </ul>
  * Elle permet ainsi à un composant de gérer les deux types de service via une
  * seule structure composite.
- * </p>
  *
  * <p>
  * Chaque point d'accès peut être associé à un service d'exécution distinct pour

@@ -34,9 +34,6 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
  * implémentées ici (retourne {@code null}).
  * </p>
  * 
- * @see fr.sorbonne_u.components.ports.AbstractInboundPort;
- * 
- * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
  * 
  * @author Touré-Ydaou TEOURI
  * @author Awwal FAGBEHOURO
