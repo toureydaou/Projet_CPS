@@ -54,8 +54,8 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	
 	private static final int NUMBER_OF_CHORDS = 4;
 
-	private static final int SCHEDULABLE_THREADS = 500;
-	private static final int THREADS_NUMBER = 500;
+	private static final int SCHEDULABLE_THREADS = 2;
+	private static final int THREADS_NUMBER = 2;
 
 	private static final int START_POLICY = 0;
 	

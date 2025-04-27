@@ -60,10 +60,10 @@ import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 public class AsynchronousNodeBCM extends AbstractComponent implements ContentAccessI, MapReduceI {
 
 	/** The Constant SCHEDULABLE_THREADS. */
-	private static final int SCHEDULABLE_THREADS = 300;
+	private static final int SCHEDULABLE_THREADS = 3;
 
 	/** The Constant THREADS_NUMBER. */
-	private static final int THREADS_NUMBER = 300;
+	private static final int THREADS_NUMBER = 3;
 
 	/** The Constant CONTENT_ACCESS_HANDLER_URI. */
 	private static final String CONTENT_ACCESS_HANDLER_URI = "Content-Access-Pool-Threads";

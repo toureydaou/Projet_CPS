@@ -177,9 +177,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 				(CompositeMapContentManagementEndPoint) this.compositeMapContentManagementEndPointOutbound
 						.copyWithSharable(), this.uri);
 
-		this.content.clear();
 		this.finalise();
-		// this.shutdownNow();
 		return nodeContent;
 	}
 
@@ -276,8 +274,8 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 							.getDHTManagementEndpoint().getClientSideReference().suppressNode();
 
 					System.out.println("Fusion du noeud: " + this.uri + " et du noeud: " + contentSuivant.nodeUri );
-					
 					this.content.putAll(contentSuivant.content);
+
 					this.intervalle.merge(contentSuivant.intervalle);
 					
 					this.compositeMapContentManagementEndPointOutbound.cleanUpClientSide();
@@ -711,7 +709,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 				caller.initialiseClientSide(this);
 			}
 
-			System.out.println("Envoi du résultat du 'MAP REDUCE' sur la facade depuis le noeud " + this.uri);
+			System.out.println("Envoi du résultat du 'MAP REDUCE' depuis le noeud " + this.uri);
 
 			caller.getClientSideReference().acceptResult(computationURI, "nom du noeud qui envoie", localReduce);
 			
