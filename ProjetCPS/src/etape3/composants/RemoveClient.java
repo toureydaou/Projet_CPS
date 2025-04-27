@@ -11,17 +11,30 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
 import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class RemoveClient.
+ */
 @RequiredInterfaces(required = { DHTServicesCI.class, ClocksServerCI.class })
 public class RemoveClient extends ClientBCM {
 
+	/** The Constant STARTING_DELAY. */
 	private static final int STARTING_DELAY = 240;
 
+	/**
+	 * Instantiates a new removes the client.
+	 *
+	 * @param uri                  the uri
+	 * @param endpointClientFacade the endpoint client facade
+	 */
 	protected RemoveClient(String uri, DHTServicesEndPoint endpointClientFacade) {
 		super(uri, endpointClientFacade);
 	}
 
 	/**
 	 * Teste la suppression de données dans le DHT.
+	 *
+	 * @throws Exception the exception
 	 */
 	protected void testSuppression() throws Exception {
 		System.out.println("\n=== TEST SUPPRESSION ===");
@@ -91,6 +104,10 @@ public class RemoveClient extends ClientBCM {
 
 	}
 
+	/**
+	 * 
+	 * @see etape3.composants.ClientBCM#execute()
+	 */
 	@Override
 	public void execute() throws Exception {
 		this.logMessage("executing client component." + isStarted());
@@ -99,7 +116,6 @@ public class RemoveClient extends ClientBCM {
 		Instant i1 = i0.plusSeconds(STARTING_DELAY);
 
 		long delay = dhtClock.nanoDelayUntilInstant(i1);
-
 
 		this.scheduleTask(new AbstractComponent.AbstractTask() {
 			@Override

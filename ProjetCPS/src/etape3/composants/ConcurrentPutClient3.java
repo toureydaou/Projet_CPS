@@ -12,22 +12,37 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
 import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ConcurrentPutClient3.
+ */
 @RequiredInterfaces(required = { DHTServicesCI.class, ClocksServerCI.class })
 public class ConcurrentPutClient3 extends ClientBCM {
 
-	
+	/** The Constant STARTING_DELAY. */
 	private static final int STARTING_DELAY = 360;
-	
+
+	/**
+	 * Instantiates a new concurrent put client 3.
+	 *
+	 * @param uri                  the uri
+	 * @param endpointClientFacade the endpoint client facade
+	 */
 	protected ConcurrentPutClient3(String uri, DHTServicesEndPoint endpointClientFacade) {
 		super(uri, endpointClientFacade);
 	}
 
-	
+	/**
+	 * Ecriture concurrente.
+	 *
+	 * @throws Exception the exception
+	 */
 	private void ecritureConcurrente() throws Exception {
-		
+
 		System.out.println("");
 
-		System.out.println("============= Insertion concurrente des clés 55, 65, 75, 85, 95, 105, 115 (PUT 3)  ==============");
+		System.out.println(
+				"============= Insertion concurrente des clés 55, 65, 75, 85, 95, 105, 115 (PUT 3)  ==============");
 
 		System.out.println("");
 
@@ -90,7 +105,6 @@ public class ConcurrentPutClient3 extends ClientBCM {
 
 		System.out.println("");
 
-
 		ContentDataI value_105 = this.put(new EntierKey(105), new Livre("Nouveau Harry Potter105 put 2", 700));
 		System.out.println("Résultat attendu (PUT-3-105) : null");
 		System.out.println("Résultat obtenu (PUT-3-105) : " + value_105);
@@ -101,27 +115,26 @@ public class ConcurrentPutClient3 extends ClientBCM {
 
 		System.out.println("");
 
-
 		ContentDataI value_115 = this.put(new EntierKey(115), new Livre("Nouveau Harry Potter115 put 2", 700));
 		System.out.println("Résultat attendu (PUT-3-115) : null");
 		System.out.println("Résultat obtenu (PUT-3-115) : " + value_115);
 
 		System.out.println("");
 	}
-	
-	
-	
+
+	/**
+	 * 
+	 * @see etape3.composants.ClientBCM#execute()
+	 */
 	@Override
 	public void execute() throws Exception {
 		this.logMessage("executing client component." + isStarted());
-		
+
 		Instant i0 = dhtClock.getStartInstant();
 		Instant i1 = i0.plusSeconds(STARTING_DELAY);
-		
+
 		long delay = dhtClock.nanoDelayUntilInstant(i1);
-		
-		
-		
+
 		this.scheduleTask(new AbstractComponent.AbstractTask() {
 			@Override
 			public void run() {
@@ -129,11 +142,10 @@ public class ConcurrentPutClient3 extends ClientBCM {
 					ecritureConcurrente();
 				} catch (Exception e) {
 					e.printStackTrace();
-				} 
+				}
 			}
 		}, delay, TimeUnit.NANOSECONDS);
 
 	}
-	
-	
+
 }

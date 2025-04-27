@@ -31,16 +31,38 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class AsynchronousNodeBCM.
+ * La classe <code>AsynchronousNodeBCM</code> représente un composant de nœud
+ * dans un système distribué qui gère l'accès au contenu et les opérations
+ * MapReduce de manière asynchrone. Elle implémente les interfaces
+ * <code>ContentAccessI</code> et <code>MapReduceI</code>. Ce composant utilise
+ * la communication asynchrone et gère les données dans une table de hachage
+ * distribuée (DHT).
+ * 
+ * <p>
+ * Elle gère trois types principaux d'opérations :
+ * <ul>
+ * <li>Accès au contenu (GET, PUT, REMOVE) pour stocker et récupérer des données
+ * depuis la DHT.</li>
+ * <li>Opérations MapReduce (MAP, REDUCE) pour traiter des données en utilisant
+ * le paradigme MapReduce.</li>
+ * <li>Nettoyage des calculs pour effacer les données précédemment
+ * stockées.</li>
+ * </ul>
+ * </p>
+ * 
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
  */
 @OfferedInterfaces(offered = { MapReduceCI.class, ContentAccessCI.class })
 @RequiredInterfaces(required = { MapReduceCI.class, ContentAccessCI.class, ResultReceptionCI.class,
- 		MapReduceResultReceptionCI.class  })
+		MapReduceResultReceptionCI.class })
 public class AsynchronousNodeBCM extends AbstractComponent implements ContentAccessI, MapReduceI {
 
+	/** The Constant SCHEDULABLE_THREADS. */
 	private static final int SCHEDULABLE_THREADS = 300;
+
+	/** The Constant THREADS_NUMBER. */
 	private static final int THREADS_NUMBER = 300;
 
 	/** The Constant CONTENT_ACCESS_HANDLER_URI. */
@@ -79,7 +101,8 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 
 	/** The hash map lock. */
 	protected final ReentrantReadWriteLock hashMapLock;
-	
+
+	/** The uri. */
 	protected String uri;
 
 	/**
@@ -114,11 +137,17 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		this.compositeMapContentEndpointInboundAsync.initialiseServerSide(this);
 
 	}
-	
-	protected AsynchronousNodeBCM(String uri, IntInterval intervalle)
-			throws ConnectionException {
+
+	/**
+	 * Instantiates a new asynchronous node BCM.
+	 *
+	 * @param uri        the uri
+	 * @param intervalle the intervalle
+	 * @throws ConnectionException the connection exception
+	 */
+	protected AsynchronousNodeBCM(String uri, IntInterval intervalle) throws ConnectionException {
 		super(THREADS_NUMBER, SCHEDULABLE_THREADS);
-		this.uri= uri; 
+		this.uri = uri;
 		this.content = new ConcurrentHashMap<>();
 		this.intervalle = intervalle;
 		this.hashMapLock = new ReentrantReadWriteLock();
@@ -251,6 +280,12 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		}
 	}
 
+	/**
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceI#map(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <R extends Serializable> void map(String computationURI, SelectorI selector, ProcessorI<R> processor)
@@ -361,7 +396,12 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 			throw new ComponentStartException(e);
 		}
 	}
-	
+
+	/**
+	 * Start origin.
+	 *
+	 * @throws ComponentStartException the component start exception
+	 */
 	public void startOrigin() throws ComponentStartException {
 		super.start();
 	}
@@ -375,7 +415,12 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		this.compositeMapContentEndpointOutboundAsync.cleanUpClientSide();
 		super.finalise();
 	}
-	
+
+	/**
+	 * Finalise origin.
+	 *
+	 * @throws Exception the exception
+	 */
 	public void finaliseOrigin() throws Exception {
 		super.finalise();
 	}
@@ -392,7 +437,12 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		}
 		super.shutdown();
 	}
-	
+
+	/**
+	 * Shutdown origin.
+	 *
+	 * @throws ComponentShutdownException the component shutdown exception
+	 */
 	public void shutdownOrigin() throws ComponentShutdownException {
 		super.shutdown();
 	}
@@ -409,7 +459,12 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		}
 		super.shutdownNow();
 	}
-	
+
+	/**
+	 * Shutdown now origin.
+	 *
+	 * @throws ComponentShutdownException the component shutdown exception
+	 */
 	public void shutdownNowOrigin() throws ComponentShutdownException {
 		super.shutdownNow();
 	}

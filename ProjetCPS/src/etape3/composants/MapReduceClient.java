@@ -10,13 +10,24 @@ import fr.sorbonne_u.components.annotations.RequiredInterfaces;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
 import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class MapReduceClient.
+ */
 @RequiredInterfaces(required = { DHTServicesCI.class, ClocksServerCI.class })
 public class MapReduceClient extends ClientBCM {
 
+	/**
+	 * Instantiates a new map reduce client.
+	 *
+	 * @param uri                  the uri
+	 * @param endpointClientFacade the endpoint client facade
+	 */
 	protected MapReduceClient(String uri, DHTServicesEndPoint endpointClientFacade) {
 		super(uri, endpointClientFacade);
 	}
-	
+
+	/** The Constant STARTING_DELAY. */
 	private static final int STARTING_DELAY = 180;
 
 	// --------------------------------------------------------
@@ -25,12 +36,14 @@ public class MapReduceClient extends ClientBCM {
 
 	/**
 	 * Teste l'opération MapReduce.
+	 *
+	 * @throws Exception the exception
 	 */
 	protected void testMapReduce() throws Exception {
 		System.out.println("\n=== TEST MAPREDUCE ===");
 
-		System.out.println("Client URI :" + this.reflectionInboundPortURI + ", delay :" + MapReduceClient.STARTING_DELAY);
-
+		System.out
+				.println("Client URI :" + this.reflectionInboundPortURI + ", delay :" + MapReduceClient.STARTING_DELAY);
 
 		System.out.println("Calcul du total des pages de tous les livres ayant plus de 700 pages");
 		int totalPages = this.mapReduce(i -> ((int) i.getValue(Livre.NB_PAGES)) > 700,
@@ -40,13 +53,16 @@ public class MapReduceClient extends ClientBCM {
 		System.out.println("Client URI : " + this.reflectionInboundPortURI + " Résultat attendu: 6300");
 		System.out.println("Client URI : " + this.reflectionInboundPortURI + " Résultat obtenu: " + totalPages);
 
-		
 		if (totalPages != 6300) {
 			System.err.println("ERREUR: Le calcul MapReduce est incorrect");
 		}
 		System.out.println("");
 	}
 
+	/**
+	 * 
+	 * @see etape3.composants.ClientBCM#execute()
+	 */
 	@Override
 	public void execute() throws Exception {
 		this.logMessage("executing client component." + isStarted());
@@ -60,7 +76,7 @@ public class MapReduceClient extends ClientBCM {
 			@Override
 			public void run() {
 				try {
-				
+
 					testMapReduce();
 				} catch (Exception e) {
 					e.printStackTrace();

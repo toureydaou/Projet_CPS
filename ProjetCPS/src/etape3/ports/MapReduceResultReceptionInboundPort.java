@@ -7,9 +7,18 @@ import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionI;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class MapReduceResultReceptionInboundPort.
+ * La classe <code>MapReduceResultReceptionInboundPort</code> représente un port
+ * entrant pour recevoir les résultats intermédiaires ou finaux d'une
+ * computation MapReduce.
+ *
+ * <p>
+ * Ce port invoque la méthode {@code acceptResult} du composant propriétaire
+ * (qui doit implémenter {@link MapReduceResultReceptionI}).
+ * </p>
+ * 
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
  */
 public class MapReduceResultReceptionInboundPort extends AbstractInboundPort implements MapReduceResultReceptionCI {
 
@@ -19,7 +28,7 @@ public class MapReduceResultReceptionInboundPort extends AbstractInboundPort imp
 
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
-	
+
 	/** The executor index. */
 	protected final int executorIndex;
 
@@ -27,12 +36,11 @@ public class MapReduceResultReceptionInboundPort extends AbstractInboundPort imp
 	// Constructeurs
 	// -------------------------------------------------------------------------
 
-	
 	/**
 	 * Instancie un nouveau port entrant de réception des résultats de MapReduce.
 	 *
 	 * @param executorIndex l'indice de l'exécuteur
-	 * @param owner le propriétaire
+	 * @param owner         le propriétaire
 	 * @throws Exception l'exception
 	 */
 	public MapReduceResultReceptionInboundPort(int executorIndex, ComponentI owner) throws Exception {
@@ -40,7 +48,7 @@ public class MapReduceResultReceptionInboundPort extends AbstractInboundPort imp
 
 		// le propriétaire de ce port est un noeud jouant le role de serveur
 		assert (owner instanceof MapReduceResultReceptionI);
-		
+
 		assert owner.validExecutorServiceIndex(executorIndex);
 
 		this.executorIndex = executorIndex;
@@ -50,9 +58,9 @@ public class MapReduceResultReceptionInboundPort extends AbstractInboundPort imp
 	 * Crée et initialise un port entrant avec le composant propriétaire et une URI
 	 * donnée.
 	 *
-	 * @param uri the uri
+	 * @param uri           the uri
 	 * @param executorIndex the executor index
-	 * @param owner Composant propriétaire du port.
+	 * @param owner         Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
 	public MapReduceResultReceptionInboundPort(String uri, int executorIndex, ComponentI owner) throws Exception {
@@ -64,17 +72,10 @@ public class MapReduceResultReceptionInboundPort extends AbstractInboundPort imp
 		this.executorIndex = executorIndex;
 	}
 
-
 	/**
-	 * Accepte le résultat d'une opération MapReduce.
 	 * 
-	 * Cette méthode permet de recevoir un résultat intermédiaire ou final d'un 
-	 * calcul MapReduce effectué sur un autre nœud. 
-	 * 
-	 * @param computationURI L'URI de la computation MapReduce.
-	 * @param emitterId L'ID de l'émetteur du résultat.
-	 * @param acc L'accumulateur contenant le résultat du calcul.
-	 * @throws Exception Si une erreur se produit lors du traitement.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionCI#acceptResult(java.lang.String,
+	 *      java.lang.String, java.io.Serializable)
 	 */
 	@Override
 	public void acceptResult(String computationURI, String emitterId, Serializable acc) throws Exception {

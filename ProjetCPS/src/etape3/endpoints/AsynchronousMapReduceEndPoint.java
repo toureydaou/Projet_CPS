@@ -13,17 +13,46 @@ import fr.sorbonne_u.exceptions.InvariantException;
 import fr.sorbonne_u.exceptions.PostconditionException;
 import fr.sorbonne_u.exceptions.PreconditionException;
 
+/**
+ * La classe {@code AsynchronousMapReduceEndPoint} implémente un point
+ * d'extrémité BCM spécialement conçu pour les calculs asynchrones de type
+ * MapReduce.
+ * 
+ * <p>
+ * Elle facilite la création des ports entrants et sortants nécessaires aux
+ * communications MapReduce, et les connecte automatiquement via un connecteur
+ * pour permettre une exécution asynchrone à travers un service d'exécution
+ * dédié.
+ * </p>
+ * 
+ * <p>
+ * Cet end-point est destiné aux communications client-serveur dans un contexte
+ * MapReduce, où l'exécution asynchrone des tâches est essentielle pour les
+ * performances.
+ * </p>
+ * 
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
+ * 
+ */
 public class AsynchronousMapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 
 	// -------------------------------------------------------------------------
 	// Constants and variables
 	// -------------------------------------------------------------------------
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
+
+	/** The executor service index. */
 	private int executorServiceIndex;
 
-	
-
+	/**
+	 * Implementation invariants.
+	 *
+	 * @param instance the instance
+	 * @return true, if successful
+	 */
 	protected static boolean implementationInvariants(AsynchronousMapReduceEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 
@@ -31,6 +60,12 @@ public class AsynchronousMapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 		return ret;
 	}
 
+	/**
+	 * Invariants.
+	 *
+	 * @param instance the instance
+	 * @return true, if successful
+	 */
 	protected static boolean invariants(AsynchronousMapReduceEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 
@@ -41,10 +76,10 @@ public class AsynchronousMapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 	/**
 	 * crée un endpoint BCM avec URI donnée.
 	 *
-	 * 
+	 * @param executorIndex  the executor index
 	 * @param inboundPortURI URI du port entrant auquel cet endpoint se connecte.
 	 */
-	public AsynchronousMapReduceEndPoint( int executorIndex, String inboundPortURI) {
+	public AsynchronousMapReduceEndPoint(int executorIndex, String inboundPortURI) {
 		super(MapReduceCI.class, MapReduceCI.class, inboundPortURI);
 		this.executorServiceIndex = executorIndex;
 	}
@@ -54,17 +89,13 @@ public class AsynchronousMapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 	 *
 	 */
 	public AsynchronousMapReduceEndPoint() {
-		super(MapReduceCI.class, MapReduceCI.class);	
+		super(MapReduceCI.class, MapReduceCI.class);
 	}
 
 	/**
-	 * crée, publie et retourne le port entrant sur le composant serveur {@code c}
-	 * avec l'URI du port entrant
-	 *
-	 * @param c              composant qui sera propriétaire du port entrant.
-	 * @param inboundPortURI URI du port entrant à créer.
-	 * @return le port entrant créé destiné à être publié.
-	 * @throws Exception <i>to do</i>.
+	 * 
+	 * @see fr.sorbonne_u.components.endpoints.BCMEndPoint#makeInboundPort(fr.sorbonne_u.components.AbstractComponent,
+	 *      java.lang.String)
 	 */
 	@Override
 	protected AbstractInboundPort makeInboundPort(AbstractComponent c, String inboundPortURI) throws Exception {
@@ -73,7 +104,8 @@ public class AsynchronousMapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 		assert inboundPortURI != null && !inboundPortURI.isEmpty()
 				: new PreconditionException("inboundPortURI != null && !inboundPortURI.isEmpty()");
 
-		AsynchronousMapReduceInboundPort p = new AsynchronousMapReduceInboundPort(this.inboundPortURI, this.executorServiceIndex, c);
+		AsynchronousMapReduceInboundPort p = new AsynchronousMapReduceInboundPort(this.inboundPortURI,
+				this.executorServiceIndex, c);
 		p.publishPort();
 
 		// Postconditions checking
@@ -91,17 +123,9 @@ public class AsynchronousMapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 	}
 
 	/**
-	 * crée, publie, connecte et retourne le port sortant du composant client
-	 * {@code c}. on the client side component only, create, publish, connect and
-	 * return the outbound port requiring the component interface {@code CI} on the
-	 * client side component {@code c}.
 	 * 
-	 *
-	 * @param c              composant qui sera propriétaire du port entrant.
-	 * @param inboundPortURI URI du port entrant auquel le port sortant sera
-	 *                       connecté.
-	 * @return le port sortant qui sera connecté et publié.
-	 * @throws Exception <i>to do</i>.
+	 * @see fr.sorbonne_u.components.endpoints.BCMEndPoint#makeOutboundPort(fr.sorbonne_u.components.AbstractComponent,
+	 *      java.lang.String)
 	 */
 	@Override
 	protected MapReduceCI makeOutboundPort(AbstractComponent c, String inboundPortURI) throws Exception {
@@ -126,7 +150,12 @@ public class AsynchronousMapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 
 		return p;
 	}
-	
+
+	/**
+	 * Sets the executor index.
+	 *
+	 * @param executorIndex the new executor index
+	 */
 	public void setExecutorIndex(int executorIndex) {
 		this.executorServiceIndex = executorIndex;
 	}

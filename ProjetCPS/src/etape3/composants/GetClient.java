@@ -11,17 +11,30 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
 import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class GetClient.
+ */
 @RequiredInterfaces(required = { DHTServicesCI.class, ClocksServerCI.class })
 public class GetClient extends ClientBCM {
 
+	/** The Constant STARTING_DELAY. */
 	private static final int STARTING_DELAY = 120;
-	
+
+	/**
+	 * Instantiates a new gets the client.
+	 *
+	 * @param uri                  the uri
+	 * @param endpointClientFacade the endpoint client facade
+	 */
 	protected GetClient(String uri, DHTServicesEndPoint endpointClientFacade) {
 		super(uri, endpointClientFacade);
 	}
 
 	/**
 	 * Teste la récupération de données depuis le DHT.
+	 *
+	 * @throws Exception the exception
 	 */
 	private void testRecuperation() throws Exception {
 
@@ -151,6 +164,10 @@ public class GetClient extends ClientBCM {
 
 	}
 
+	/**
+	 * 
+	 * @see etape3.composants.ClientBCM#execute()
+	 */
 	@Override
 	public void execute() throws Exception {
 		this.logMessage("executing client component." + isStarted());

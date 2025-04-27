@@ -23,6 +23,7 @@ import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
 import fr.sorbonne_u.utils.aclocks.ClocksServerConnector;
 import fr.sorbonne_u.utils.aclocks.ClocksServerOutboundPort;
 
+// TODO: Auto-generated Javadoc
 /**
  * ClientBCM est un composant client qui interagit avec le service DHT pour
  * effectuer des opérations de type MapReduce, ainsi que des opérations CRUD sur
@@ -35,11 +36,19 @@ import fr.sorbonne_u.utils.aclocks.ClocksServerOutboundPort;
 @RequiredInterfaces(required = { DHTServicesCI.class, ClocksServerCI.class })
 public class ClientBCM extends AbstractComponent {
 
+	/** The end point client facade. */
 	protected DHTServicesEndPoint endPointClientFacade; // Point d'accès aux services DHT
+
+	/** The dht clock. */
 	protected AcceleratedClock dhtClock; // Référence à l'horloge
 
+	/** The Constant SCHEDULABLE_THREADS. */
 	private static final int SCHEDULABLE_THREADS = 1;
+
+	/** The Constant THREADS_NUMBER. */
 	private static final int THREADS_NUMBER = 0;
+
+	/** The p. */
 	ClocksServerOutboundPort p;
 
 	/**
@@ -54,6 +63,11 @@ public class ClientBCM extends AbstractComponent {
 
 	}
 
+	/**
+	 * Connect to clock server.
+	 *
+	 * @throws Exception the exception
+	 */
 	protected void connectToClockServer() throws Exception {
 		p = new ClocksServerOutboundPort(this);
 		p.publishPort();
@@ -110,7 +124,9 @@ public class ClientBCM extends AbstractComponent {
 
 	/**
 	 * Effectue une opération MapReduce sur les données stockées dans le DHT.
-	 * 
+	 *
+	 * @param <R>        the generic type
+	 * @param <A>        the generic type
 	 * @param selector   Un sélecteur pour filtrer les données.
 	 * @param processor  Un processeur pour transformer les données.
 	 * @param reductor   Un réducteur pour agréger les résultats.
@@ -126,6 +142,10 @@ public class ClientBCM extends AbstractComponent {
 				initialAcc);
 	}
 
+	/**
+	 * 
+	 * @see fr.sorbonne_u.components.AbstractComponent#start()
+	 */
 	@Override
 	public void start() throws ComponentStartException {
 		this.logMessage("starting client component.");
@@ -147,6 +167,10 @@ public class ClientBCM extends AbstractComponent {
 		}
 	}
 
+	/**
+	 * 
+	 * @see fr.sorbonne_u.components.AbstractComponent#execute()
+	 */
 	@Override
 	public void execute() throws Exception {
 		this.logMessage("executing client component." + isStarted());
@@ -161,7 +185,6 @@ public class ClientBCM extends AbstractComponent {
 			public void run() {
 				try {
 
-
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
@@ -172,7 +195,12 @@ public class ClientBCM extends AbstractComponent {
 
 	}
 
-
+	/**
+	 * 
+	 *
+	 * @throws Exception the exception
+	 * @see fr.sorbonne_u.components.AbstractComponent#finalise()
+	 */
 	@Override
 	public void finalise() throws Exception {
 		this.logMessage("stopping client component.");

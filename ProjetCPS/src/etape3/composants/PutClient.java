@@ -12,13 +12,24 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
 import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class PutClient.
+ */
 @RequiredInterfaces(required = { DHTServicesCI.class, ClocksServerCI.class })
 public class PutClient extends ClientBCM {
 
+	/**
+	 * Instantiates a new put client.
+	 *
+	 * @param uri                  the uri
+	 * @param endpointClientFacade the endpoint client facade
+	 */
 	protected PutClient(String uri, DHTServicesEndPoint endpointClientFacade) {
 		super(uri, endpointClientFacade);
 	}
 
+	/** The Constant STARTING_DELAY. */
 	private static final int STARTING_DELAY = 60;
 
 	// --------------------------------------------------------
@@ -27,6 +38,8 @@ public class PutClient extends ClientBCM {
 
 	/**
 	 * Teste l'insertion de données dans le DHT.
+	 *
+	 * @throws Exception the exception
 	 */
 	private void testInsertion() throws Exception {
 		System.out.println("");
@@ -106,7 +119,6 @@ public class PutClient extends ClientBCM {
 		System.out.println("Insertion de la clé 40 avec valeur: " + livreHP_20);
 		this.put(k40, livreHP_20);
 		ContentDataI previousValue_40 = this.put(k40, livreHP_new_40);
-		
 
 		System.out.println("Résultat attendu: Livre[Harry Potter2, 400]");
 		System.out.println("Résultat obtenu: " + previousValue_40);
@@ -182,9 +194,8 @@ public class PutClient extends ClientBCM {
 
 		System.out.println("Résultat attendu: Livre[Harry Potter2, 400]");
 		System.out.println("Résultat obtenu: " + previousValue_130);
-		
-		System.out.println("");
 
+		System.out.println("");
 
 		System.out.println("Insertion de la clé 600 avec valeur: " + livreHP_20);
 		this.put(k600, livreHP_20);
@@ -195,6 +206,10 @@ public class PutClient extends ClientBCM {
 
 	}
 
+	/**
+	 * 
+	 * @see etape3.composants.ClientBCM#execute()
+	 */
 	@Override
 	public void execute() throws Exception {
 		this.logMessage("executing client component." + isStarted());

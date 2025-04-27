@@ -13,6 +13,7 @@ import fr.sorbonne_u.exceptions.InvariantException;
 import fr.sorbonne_u.exceptions.PostconditionException;
 import fr.sorbonne_u.exceptions.PreconditionException;
 
+// TODO: Auto-generated Javadoc
 /**
  * La classe <code>AsynchronousContentAccessEndPoint</code> représente un point
  * d'accès pour les services de <code>ContentAccessCI</code>, permettant la
@@ -33,7 +34,6 @@ import fr.sorbonne_u.exceptions.PreconditionException;
  * </p>
  * 
  * @author Touré-Ydaou TEOURI
- * 
  * @author Awwal FAGBEHOURO
  */
 
@@ -42,9 +42,18 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 	// Constants and variables
 	// -------------------------------------------------------------------------
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
+
+	/** The executor service index. */
 	protected int executorServiceIndex;
 
+	/**
+	 * Implementation invariants.
+	 *
+	 * @param instance the instance
+	 * @return true, if successful
+	 */
 	protected static boolean implementationInvariants(AsynchronousContentAccessEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 
@@ -52,6 +61,12 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 		return ret;
 	}
 
+	/**
+	 * Invariants.
+	 *
+	 * @param instance the instance
+	 * @return true, if successful
+	 */
 	protected static boolean invariants(AsynchronousContentAccessEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 
@@ -80,14 +95,9 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 	}
 
 	/**
-	 * Crée, publie et retourne le port entrant pour le composant serveur {@code c}
-	 * avec l'URI du port entrant.
 	 * 
-	 * @param c              Composant propriétaire du port entrant.
-	 * @param inboundPortURI URI du port entrant à créer.
-	 * @return Le port entrant créé et publié.
-	 * @throws Exception Si une erreur survient lors de la création ou publication
-	 *                   du port.
+	 * @see fr.sorbonne_u.components.endpoints.BCMEndPoint#makeInboundPort(fr.sorbonne_u.components.AbstractComponent,
+	 *      java.lang.String)
 	 */
 	@Override
 	protected AbstractInboundPort makeInboundPort(AbstractComponent c, String inboundPortURI) throws Exception {
@@ -115,15 +125,9 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 	}
 
 	/**
-	 * Crée, publie, connecte et retourne le port sortant pour le composant client
-	 * {@code c}. Ce port sera connecté au port entrant spécifié.
 	 * 
-	 * @param c              Composant propriétaire du port sortant.
-	 * @param inboundPortURI URI du port entrant auquel le port sortant sera
-	 *                       connecté.
-	 * @return Le port sortant créé, publié et connecté.
-	 * @throws Exception Si une erreur survient lors de la création ou connexion du
-	 *                   port.
+	 * @see fr.sorbonne_u.components.endpoints.BCMEndPoint#makeOutboundPort(fr.sorbonne_u.components.AbstractComponent,
+	 *      java.lang.String)
 	 */
 	@Override
 	protected ContentAccessCI makeOutboundPort(AbstractComponent c, String inboundPortURI) throws Exception {

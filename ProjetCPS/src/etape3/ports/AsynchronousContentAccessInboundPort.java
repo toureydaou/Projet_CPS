@@ -9,6 +9,7 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
 
+// TODO: Auto-generated Javadoc
 //-----------------------------------------------------------------------------
 /**
  * La classe {@code AsynchronousContentAccessInboundPort} implémente un port
@@ -33,6 +34,10 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
  * implémentées ici (retourne {@code null}).
  * </p>
  * 
+ * @see fr.sorbonne_u.components.ports.AbstractInboundPort;
+ * 
+ * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
+ * 
  * @author Touré-Ydaou TEOURI
  * @author Awwal FAGBEHOURO
  */
@@ -42,7 +47,10 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 	// Constantes et variables
 	// -------------------------------------------------------------------------
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
+
+	/** The executor index. */
 	protected final int executorIndex;
 
 	// -------------------------------------------------------------------------
@@ -86,13 +94,10 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 	}
 
 	/**
-	 * Lance une requête asynchrone pour obtenir la valeur associée à une clé dans
-	 * la DHT.
-	 *
-	 * @param computationURI URI de la computation MapReduce
-	 * @param key            clé du contenu recherché
-	 * @param caller         endpoint pour réceptionner le résultat
-	 * @throws Exception si une erreur survient pendant le traitement
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI#get(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI,
+	 *      fr.sorbonne_u.components.endpoints.EndPointI)
 	 */
 	@Override
 	public <I extends ResultReceptionCI> void get(String computationURI, ContentKeyI key, EndPointI<I> caller)
@@ -109,13 +114,11 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 	}
 
 	/**
-	 * Lance une requête asynchrone pour insérer une paire clé-valeur dans la DHT.
-	 *
-	 * @param computationURI URI de la computation MapReduce
-	 * @param key            clé du contenu à insérer
-	 * @param value          valeur du contenu à insérer
-	 * @param caller         endpoint pour réceptionner la confirmation
-	 * @throws Exception si une erreur survient pendant le traitement
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI#put(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI,
+	 *      fr.sorbonne_u.components.endpoints.EndPointI)
 	 */
 	@Override
 	public <I extends ResultReceptionCI> void put(String computationURI, ContentKeyI key, ContentDataI value,
@@ -131,12 +134,10 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 	}
 
 	/**
-	 * Lance une requête asynchrone pour retirer une entrée (clé-valeur) de la DHT.
-	 *
-	 * @param computationURI URI de la computation MapReduce
-	 * @param key            clé du contenu à supprimer
-	 * @param caller         endpoint pour réceptionner la confirmation
-	 * @throws Exception si une erreur survient pendant le traitement
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI#remove(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI,
+	 *      fr.sorbonne_u.components.endpoints.EndPointI)
 	 */
 	@Override
 	public <I extends ResultReceptionCI> void remove(String computationURI, ContentKeyI key, EndPointI<I> caller)
@@ -151,18 +152,34 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 
 	}
 
+	/**
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#getSync(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
+	 */
 	@Override
 	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
 
 		return null;
 	}
 
+	/**
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#putSync(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
+	 */
 	@Override
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
 
 		return null;
 	}
 
+	/**
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#removeSync(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
+	 */
 	@Override
 	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
 
@@ -170,11 +187,8 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 	}
 
 	/**
-	 * Lance une requête asynchrone pour supprimer tous les contenus associés à une
-	 * computation donnée.
-	 *
-	 * @param computationURI URI de la computation MapReduce
-	 * @throws Exception si une erreur survient pendant le traitement
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#clearComputation(java.lang.String)
 	 */
 	@Override
 	public void clearComputation(String computationURI) throws Exception {

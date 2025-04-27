@@ -6,6 +6,7 @@ import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionCI;
 
+
 /**
  * La classe <code>MapReduceResultReceptionOutboundPort</code> implémente un
  * port sortant permettant à un composant client d'envoyer des résultats à un
@@ -32,6 +33,7 @@ public class MapReduceResultReceptionOutboundPort extends AbstractOutboundPort i
 	// Constantes et variables
 	// -------------------------------------------------------------------------
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 
 	// -------------------------------------------------------------------------
@@ -67,17 +69,9 @@ public class MapReduceResultReceptionOutboundPort extends AbstractOutboundPort i
 	}
 
 	/**
-	 * Accepte un résultat d'une opération MapReduce effectuée sur un autre nœud.
 	 * 
-	 * Cette méthode est appelée pour recevoir le résultat d'une opération
-	 * MapReduce. Le résultat peut être intermédiaire ou final, et il est transmis
-	 * via un connecteur à un autre composant du système.
-	 * 
-	 * @param computationURI L'URI de la computation MapReduce.
-	 * @param emitterId      L'ID de l'émetteur du résultat.
-	 * @param acc            L'accumulateur contenant le résultat du calcul.
-	 * @throws Exception Si une erreur se produit lors de la transmission du
-	 *                   résultat.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionCI#acceptResult(java.lang.String,
+	 *      java.lang.String, java.io.Serializable)
 	 */
 	@Override
 	public void acceptResult(String computationURI, String emitterId, Serializable acc) throws Exception {

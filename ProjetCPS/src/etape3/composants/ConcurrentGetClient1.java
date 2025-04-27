@@ -11,15 +11,31 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
 import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class ConcurrentGetClient1.
+ */
 @RequiredInterfaces(required = { DHTServicesCI.class, ClocksServerCI.class })
 public class ConcurrentGetClient1 extends ClientBCM {
 
+	/**
+	 * Instantiates a new concurrent get client 1.
+	 *
+	 * @param uri                  the uri
+	 * @param endpointClientFacade the endpoint client facade
+	 */
 	protected ConcurrentGetClient1(String uri, DHTServicesEndPoint endpointClientFacade) {
 		super(uri, endpointClientFacade);
 	}
 
+	/** The Constant STARTING_DELAY. */
 	private static final int STARTING_DELAY = 300;
 
+	/**
+	 * Test lecture concurrente.
+	 *
+	 * @throws Exception the exception
+	 */
 	private void testLectureConcurrente() throws Exception {
 		System.out.println("");
 
@@ -39,6 +55,10 @@ public class ConcurrentGetClient1 extends ClientBCM {
 		System.out.println("");
 	}
 
+	/**
+	 * 
+	 * @see etape3.composants.ClientBCM#execute()
+	 */
 	@Override
 	public void execute() throws Exception {
 		this.logMessage("executing client component." + isStarted());

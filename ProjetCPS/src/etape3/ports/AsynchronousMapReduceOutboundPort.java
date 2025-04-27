@@ -29,9 +29,9 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
  * MapReduce répartie sur un DHT.
  * 
  * <p>
- * <strong>Remarque :</strong> Les méthodes synchrones <code>mapSync</code> et
- * <code>reduceSync</code> ne sont pas supportées et doivent être utilisées
- * uniquement dans des ports synchrones.
+ * Les méthodes synchrones <code>mapSync</code> et <code>reduceSync</code> ne
+ * sont pas supportées et doivent être utilisées uniquement dans des ports
+ * synchrones.
  * </p>
  *
  * <p>
@@ -43,6 +43,10 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
  * <li>Les nœuds du DHT (dans les phases de réduction ou d'appel en
  * cascade)</li>
  * </ul>
+ * 
+ * @see fr.sorbonne_u.components.ports.AbstractOutboundPort;
+ * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI
+ * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceI
  *
  * @author Touré-Ydaou TEOURI
  * @author Awwal FAGBEHOURO
@@ -79,7 +83,7 @@ public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort impl
 	 * Crée un port sortant asynchrone pour l'interface {@link MapReduceCI}.
 	 *
 	 * @param implementedInterface the implemented interface
-	 * @param owner Composant propriétaire du port.
+	 * @param owner                Composant propriétaire du port.
 	 * @throws Exception si une erreur survient lors de la création du port.
 	 */
 	public AsynchronousMapReduceOutboundPort(Class<? extends RequiredCI> implementedInterface, ComponentI owner)
@@ -105,7 +109,7 @@ public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort impl
 	 * Crée et initialise un port sortant avec le composant propriétaire et une URI
 	 * donnée.
 	 *
-	 * @param uri the uri
+	 * @param uri   the uri
 	 * @param owner Composant propriétaire du port.
 	 * @throws Exception <i>to do</i>.
 	 */
@@ -115,20 +119,23 @@ public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort impl
 		assert uri != null && owner != null;
 	}
 
-
 	/**
 	 * Reduce.
 	 *
-	 * @param <A> the generic type
-	 * @param <R> the generic type
-	 * @param <I> the generic type
+	 * @param <A>            the generic type
+	 * @param <R>            the generic type
+	 * @param <I>            the generic type
 	 * @param computationURI the computation URI
-	 * @param reductor the reductor
-	 * @param combinator the combinator
-	 * @param identityAcc the identity acc
-	 * @param currentAcc the current acc
-	 * @param callerNode the caller node
+	 * @param reductor       the reductor
+	 * @param combinator     the combinator
+	 * @param identityAcc    the identity acc
+	 * @param currentAcc     the current acc
+	 * @param callerNode     the caller node
 	 * @throws Exception the exception
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI#reduce(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A, A,
+	 *      fr.sorbonne_u.components.endpoints.EndPointI)
 	 */
 	@Override
 	public <A extends Serializable, R, I extends MapReduceResultReceptionCI> void reduce(String computationURI,
@@ -139,7 +146,18 @@ public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort impl
 
 	}
 
-	
+	/**
+	 * Map sync.
+	 *
+	 * @param <R>            the generic type
+	 * @param computationURI the computation URI
+	 * @param selector       the selector
+	 * @param processor      the processor
+	 * @throws Exception the exception
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI#mapSync(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI)
+	 */
 	@Override
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
 			throws Exception {
@@ -147,7 +165,21 @@ public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort impl
 
 	}
 
-	
+	/**
+	 * Reduce sync.
+	 *
+	 * @param <A>            the generic type
+	 * @param <R>            the generic type
+	 * @param computationURI the computation URI
+	 * @param reductor       the reductor
+	 * @param combinator     the combinator
+	 * @param currentAcc     the current acc
+	 * @return the a
+	 * @throws Exception the exception
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI#reduceSync(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A)
+	 */
 	@Override
 	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
 			CombinatorI<A> combinator, A currentAcc) throws Exception {
@@ -155,12 +187,9 @@ public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort impl
 		return null;
 	}
 
-	
 	/**
-	 * Clear map reduce computation.
-	 *
-	 * @param computationURI the computation URI
-	 * @throws Exception the exception
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI#clearMapReduceComputation(java.lang.String)
 	 */
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
@@ -168,13 +197,10 @@ public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort impl
 	}
 
 	/**
-	 * Map.
-	 *
-	 * @param <R> the generic type
-	 * @param computationURI the computation URI
-	 * @param selector the selector
-	 * @param processor the processor
-	 * @throws Exception the exception
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI#map(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI)
 	 */
 	@Override
 	public <R extends Serializable> void map(String computationURI, SelectorI selector, ProcessorI<R> processor)

@@ -13,18 +13,24 @@ import fr.sorbonne_u.components.annotations.RequiredInterfaces;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
 import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
 
-
+// TODO: Auto-generated Javadoc
+/**
+ * The Class MapReduceVideClient.
+ */
 @RequiredInterfaces(required = { DHTServicesCI.class, ClocksServerCI.class })
 public class MapReduceVideClient extends ClientBCM {
 
 	/**
-	 * @param uri
-	 * @param endpointClientFacade
+	 * Instantiates a new map reduce vide client.
+	 *
+	 * @param uri                  the uri
+	 * @param endpointClientFacade the endpoint client facade
 	 */
 	protected MapReduceVideClient(String uri, DHTServicesEndPoint endpointClientFacade) {
 		super(uri, endpointClientFacade);
 	}
-	
+
+	/** The Constant STARTING_DELAY. */
 	private static final int STARTING_DELAY = 40;
 
 	// --------------------------------------------------------
@@ -33,12 +39,14 @@ public class MapReduceVideClient extends ClientBCM {
 
 	/**
 	 * Teste l'opération MapReduce sur la table vide.
+	 *
+	 * @throws Exception the exception
 	 */
 	protected void testMapReduce() throws Exception {
 		System.out.println("\n=== TEST MAPREDUCE SUR LA TABLE VIDE===");
 
-		System.out.println("Client URI :" + this.reflectionInboundPortURI + ", delay :" + MapReduceVideClient.STARTING_DELAY);
-
+		System.out.println(
+				"Client URI :" + this.reflectionInboundPortURI + ", delay :" + MapReduceVideClient.STARTING_DELAY);
 
 		System.out.println("Calcul du total des pages de tous les livres ayant plus de 700 pages");
 		int totalPages = this.mapReduce(i -> ((int) i.getValue(Livre.NB_PAGES)) > 700,
@@ -46,15 +54,19 @@ public class MapReduceVideClient extends ClientBCM {
 				(acc, i) -> acc + (int) i.getValue(Livre.NB_PAGES), (acc1, acc2) -> acc1 + acc2, 0);
 
 		System.out.println("Client URI : " + this.reflectionInboundPortURI + " Résultat attendu: 0");
-		System.out.println("Client URI                                                       : " + this.reflectionInboundPortURI + " Résultat obtenu: " + totalPages);
+		System.out.println("Client URI                                                       : "
+				+ this.reflectionInboundPortURI + " Résultat obtenu: " + totalPages);
 
-		
 		if (totalPages != 0) {
 			System.err.println("ERREUR: Le calcul MapReduce est incorrect");
 		}
 		System.out.println("");
 	}
 
+	/**
+	 * 
+	 * @see etape3.composants.ClientBCM#execute()
+	 */
 	@Override
 	public void execute() throws Exception {
 		this.logMessage("executing client component." + isStarted());
@@ -68,7 +80,7 @@ public class MapReduceVideClient extends ClientBCM {
 			@Override
 			public void run() {
 				try {
-				
+
 					testMapReduce();
 				} catch (Exception e) {
 					e.printStackTrace();

@@ -7,6 +7,7 @@ import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionI;
 
+// TODO: Auto-generated Javadoc
 /**
  * La classe <code>ResultReceptionInboundPort</code> implémente un port entrant
  * permettant à un composant serveur de recevoir des résultats d'opérations dans
@@ -20,7 +21,7 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionI;
  *
  * <p>
  * <strong>Propriétaire du port :</strong> Le propriétaire de ce port est un
- * composant serveur (par exemple un nœud ou un autre composant) qui accepte les
+ * composant serveur qui accepte les
  * résultats d'opérations.
  * </p>
  *
@@ -32,7 +33,10 @@ public class ResultReceptionInboundPort extends AbstractInboundPort implements R
 	// Constantes et variables
 	// -------------------------------------------------------------------------
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
+
+	/** The executor index. */
 	protected final int executorIndex;
 
 	// -------------------------------------------------------------------------
@@ -80,16 +84,9 @@ public class ResultReceptionInboundPort extends AbstractInboundPort implements R
 	}
 
 	/**
-	 * Accepte un résultat d'une opération et le transmet au composant propriétaire
-	 * pour traitement.
 	 * 
-	 * Cette méthode est appelée pour recevoir un résultat d'une tâche de calcul. Le
-	 * résultat est ensuite envoyé au composant propriétaire, qui le traite en
-	 * utilisant un exécuteur.
-	 * 
-	 * @param computationURI L'URI de la computation MapReduce.
-	 * @param result         Le résultat de la computation à accepter.
-	 * @throws Exception Si une erreur se produit lors de l'acceptation du résultat.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI#acceptResult(java.lang.String,
+	 *      java.io.Serializable)
 	 */
 	@Override
 	public void acceptResult(String computationURI, Serializable result) throws Exception {

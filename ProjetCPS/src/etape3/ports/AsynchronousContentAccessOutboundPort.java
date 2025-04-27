@@ -24,8 +24,8 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
  * {@code Facade} ainsi que les {@code Noeuds} du réseau.
  * </p>
  * 
- * @see ContentAccessCI
- * @see AbstractOutboundPort
+ * @see fr.sorbonne_u.components.ports.AbstractOutboundPort;
+ * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
  * 
  * @Author Touré-Ydaou TEOURI
  * @Author Awwal FAGBEHOURO
@@ -37,6 +37,7 @@ public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort 
 	// Constantes et variables
 	// -------------------------------------------------------------------------
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 
 	// -------------------------------------------------------------------------
@@ -72,12 +73,10 @@ public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort 
 	}
 
 	/**
-	 * Envoie une requête pour obtenir la valeur associée à une clé.
-	 *
-	 * @param computationURI URI de la computation MapReduce
-	 * @param key            clé du contenu recherché
-	 * @param caller         endpoint pour réceptionner le résultat
-	 * @throws Exception si une erreur survient lors de l'appel
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI#get(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI,
+	 *      fr.sorbonne_u.components.endpoints.EndPointI)
 	 */
 	@Override
 	public <I extends ResultReceptionCI> void get(String computationURI, ContentKeyI key, EndPointI<I> caller)
@@ -86,13 +85,11 @@ public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort 
 	}
 
 	/**
-	 * Envoie une requête pour insérer une paire clé-valeur.
-	 *
-	 * @param computationURI URI de la computation MapReduce
-	 * @param key            clé du contenu à insérer
-	 * @param value          valeur du contenu à insérer
-	 * @param caller         endpoint pour réceptionner la confirmation
-	 * @throws Exception si une erreur survient lors de l'appel
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI#put(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI,
+	 *      fr.sorbonne_u.components.endpoints.EndPointI)
 	 */
 	@Override
 	public <I extends ResultReceptionCI> void put(String computationURI, ContentKeyI key, ContentDataI value,
@@ -102,12 +99,10 @@ public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort 
 	}
 
 	/**
-	 * Envoie une requête pour retirer une paire clé-valeur.
-	 *
-	 * @param computationURI URI de la computation MapReduce
-	 * @param key            clé du contenu à retirer
-	 * @param caller         endpoint pour réceptionner la confirmation
-	 * @throws Exception si une erreur survient lors de l'appel
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI#remove(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI,
+	 *      fr.sorbonne_u.components.endpoints.EndPointI)
 	 */
 	@Override
 	public <I extends ResultReceptionCI> void remove(String computationURI, ContentKeyI key, EndPointI<I> caller)
@@ -116,18 +111,34 @@ public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort 
 
 	}
 
+	/**
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#getSync(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
+	 */
 	@Override
 	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/**
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#putSync(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
+	 */
 	@Override
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/**
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#removeSync(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
+	 */
 	@Override
 	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
 		// TODO Auto-generated method stub
@@ -135,10 +146,8 @@ public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort 
 	}
 
 	/**
-	 * Envoie une requête pour effacer tous les contenus associés à une computation.
-	 *
-	 * @param computationURI URI de la computation MapReduce
-	 * @throws Exception si une erreur survient lors de l'appel
+	 * 
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#clearComputation(java.lang.String)
 	 */
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
