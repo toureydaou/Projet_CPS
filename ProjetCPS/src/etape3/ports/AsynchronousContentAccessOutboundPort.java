@@ -10,22 +10,25 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
 
 //-----------------------------------------------------------------------------
 /**
- * La classe <code>ContentAccessSyncOutboundPort</code> implémente un port
- * sortant d'un composant client demandant les services de son interface offerte
- * <code>ContentAccessSyncCI</code> par le serveur. Il contacte donc celui-ci à
- * travers son port sortant en passant part le connecteur.
+ * La classe {@code AsynchronousContentAccessOutboundPort} implémente un port
+ * sortant pour un composant client demandant les services de l'interface
+ * {@code ContentAccessCI} auprès d'un composant serveur.
  * 
  * <p>
- * <strong>Description</strong>
+ * Ce port permet d'envoyer des requêtes d'accès au contenu de manière
+ * asynchrone via un connecteur.
  * </p>
  * 
  * <p>
- * Dans le cadre de ce projet les composants propriétaires de ce port sont la
- * Facade ainsi que les noeuds.
+ * Dans le cadre de ce projet, les composants propriétaires de ce port sont la
+ * {@code Facade} ainsi que les {@code Noeuds} du réseau.
  * </p>
  * 
- * @author Touré-Ydaou TEOURI
- * @author Awwal FAGBEHOURO
+ * @see ContentAccessCI
+ * @see AbstractOutboundPort
+ * 
+ * @Author Touré-Ydaou TEOURI
+ * @Author Awwal FAGBEHOURO
  */
 
 public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort implements ContentAccessCI {
@@ -42,9 +45,9 @@ public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort 
 
 	/**
 	 * Crée et initialise le port sortant avec le composant propriétaire.
-	 * 
-	 * @param owner Composant propriétaire du port.
-	 * @throws Exception <i>to do</i>.
+	 *
+	 * @param owner Composant propriétaire du port
+	 * @throws Exception si une erreur survient pendant l'initialisation
 	 */
 	public AsynchronousContentAccessOutboundPort(ComponentI owner) throws Exception {
 		super(ContentAccessCI.class, owner);
@@ -55,11 +58,12 @@ public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort 
 	}
 
 	/**
-	 * Crée et initialise un port sortant avec le composant propriétaire et une URI
-	 * donnée.
-	 * 
-	 * @param owner Composant propriétaire du port.
-	 * @throws Exception <i>to do</i>.
+	 * Crée et initialise un port sortant avec une URI spécifique et le composant
+	 * propriétaire.
+	 *
+	 * @param uri   URI unique du port
+	 * @param owner Composant propriétaire du port
+	 * @throws Exception si une erreur survient pendant l'initialisation
 	 */
 	public AsynchronousContentAccessOutboundPort(String uri, ComponentI owner) throws Exception {
 		super(uri, ContentAccessCI.class, owner);
@@ -67,24 +71,49 @@ public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort 
 		assert uri != null && owner != null;
 	}
 
+	/**
+	 * Envoie une requête pour obtenir la valeur associée à une clé.
+	 *
+	 * @param computationURI URI de la computation MapReduce
+	 * @param key            clé du contenu recherché
+	 * @param caller         endpoint pour réceptionner le résultat
+	 * @throws Exception si une erreur survient lors de l'appel
+	 */
 	@Override
 	public <I extends ResultReceptionCI> void get(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
-		((ContentAccessCI)this.getConnector()).get(computationURI, key, caller);
+		((ContentAccessCI) this.getConnector()).get(computationURI, key, caller);
 	}
 
+	/**
+	 * Envoie une requête pour insérer une paire clé-valeur.
+	 *
+	 * @param computationURI URI de la computation MapReduce
+	 * @param key            clé du contenu à insérer
+	 * @param value          valeur du contenu à insérer
+	 * @param caller         endpoint pour réceptionner la confirmation
+	 * @throws Exception si une erreur survient lors de l'appel
+	 */
 	@Override
 	public <I extends ResultReceptionCI> void put(String computationURI, ContentKeyI key, ContentDataI value,
 			EndPointI<I> caller) throws Exception {
-		((ContentAccessCI)this.getConnector()).put(computationURI, key, value, caller);
-		
+		((ContentAccessCI) this.getConnector()).put(computationURI, key, value, caller);
+
 	}
 
+	/**
+	 * Envoie une requête pour retirer une paire clé-valeur.
+	 *
+	 * @param computationURI URI de la computation MapReduce
+	 * @param key            clé du contenu à retirer
+	 * @param caller         endpoint pour réceptionner la confirmation
+	 * @throws Exception si une erreur survient lors de l'appel
+	 */
 	@Override
 	public <I extends ResultReceptionCI> void remove(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
-		((ContentAccessCI)this.getConnector()).remove(computationURI, key, caller);
-		
+		((ContentAccessCI) this.getConnector()).remove(computationURI, key, caller);
+
 	}
 
 	@Override
@@ -105,12 +134,16 @@ public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort 
 		return null;
 	}
 
+	/**
+	 * Envoie une requête pour effacer tous les contenus associés à une computation.
+	 *
+	 * @param computationURI URI de la computation MapReduce
+	 * @throws Exception si une erreur survient lors de l'appel
+	 */
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
-		((ContentAccessCI)this.getConnector()).clearComputation(computationURI);
-		
-	}
+		((ContentAccessCI) this.getConnector()).clearComputation(computationURI);
 
-	
+	}
 
 }

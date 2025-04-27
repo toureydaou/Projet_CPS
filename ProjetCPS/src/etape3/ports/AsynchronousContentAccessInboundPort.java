@@ -11,24 +11,31 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
 
 //-----------------------------------------------------------------------------
 /**
- * La classe <code>ContentAccessSyncInboundPort</code> implémente un port
- * entrant d'un composant serveur offrant les services de son interface offerte
- * <code>ContentAccessSyncCI</code> le serveur est donc contacté à travers son
- * port entrant.
- *
+ * La classe {@code AsynchronousContentAccessInboundPort} implémente un port
+ * entrant pour un composant serveur offrant les services de l'interface
+ * {@code ContentAccessCI}.
  * <p>
- * <strong>Description</strong>
+ * Ce port permet aux clients d'effectuer des opérations d'accès au contenu de
+ * manière asynchrone en envoyant leurs requêtes au travers d'un
+ * {@code EndPointI}.
  * </p>
  * 
  * <p>
- * Dans le cadre de ce projet les composants propriétaires de ce port sont les
- * noeuds.
+ * Le propriétaire de ce port est un composant jouant le rôle d'un nœud dans un
+ * système de table de hachage distribuée (DHT) intégrant des fonctionnalités de
+ * type MapReduce.
+ * </p>
+ * 
+ * <p>
+ * Les opérations {@code get}, {@code put} et {@code remove} sont exécutées de
+ * manière asynchrone via l'exécuteur spécifié, tandis que les méthodes
+ * synchrones ({@code getSync}, {@code putSync}, {@code removeSync}) ne sont pas
+ * implémentées ici (retourne {@code null}).
  * </p>
  * 
  * @author Touré-Ydaou TEOURI
  * @author Awwal FAGBEHOURO
  */
-
 public class AsynchronousContentAccessInboundPort extends AbstractInboundPort implements ContentAccessCI {
 
 	// -------------------------------------------------------------------------
@@ -43,11 +50,11 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Crée et initialise le port entrant avec le composant propriétaire.
-	 * 
-	 * @param owner         Composant propriétaire du port.
-	 * @param executorIndex
-	 * @throws Exception <i>to do</i>.
+	 * Crée et initialise un port entrant pour un composant propriétaire donné.
+	 *
+	 * @param executorIndex indice du service d'exécution pour traiter les requêtes
+	 * @param owner         composant propriétaire du port
+	 * @throws Exception si une erreur survient lors de l'initialisation
 	 */
 	public AsynchronousContentAccessInboundPort(int executorIndex, ComponentI owner) throws Exception {
 		super(ContentAccessCI.class, owner);
@@ -61,11 +68,13 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 	}
 
 	/**
-	 * Crée et initialise un port entrant avec le composant propriétaire et une URI
-	 * donnée.
-	 * 
-	 * @param owner Composant propriétaire du port.
-	 * @throws Exception <i>to do</i>.
+	 * Crée et initialise un port entrant avec une URI spécifique et un composant
+	 * propriétaire.
+	 *
+	 * @param uri           URI du port
+	 * @param executorIndex indice du service d'exécution pour traiter les requêtes
+	 * @param owner         composant propriétaire du port
+	 * @throws Exception si une erreur survient lors de l'initialisation
 	 */
 	public AsynchronousContentAccessInboundPort(String uri, int executorIndex, ComponentI owner) throws Exception {
 		super(uri, ContentAccessCI.class, owner);
@@ -76,6 +85,15 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 		this.executorIndex = executorIndex;
 	}
 
+	/**
+	 * Lance une requête asynchrone pour obtenir la valeur associée à une clé dans
+	 * la DHT.
+	 *
+	 * @param computationURI URI de la computation MapReduce
+	 * @param key            clé du contenu recherché
+	 * @param caller         endpoint pour réceptionner le résultat
+	 * @throws Exception si une erreur survient pendant le traitement
+	 */
 	@Override
 	public <I extends ResultReceptionCI> void get(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
@@ -90,6 +108,15 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 
 	}
 
+	/**
+	 * Lance une requête asynchrone pour insérer une paire clé-valeur dans la DHT.
+	 *
+	 * @param computationURI URI de la computation MapReduce
+	 * @param key            clé du contenu à insérer
+	 * @param value          valeur du contenu à insérer
+	 * @param caller         endpoint pour réceptionner la confirmation
+	 * @throws Exception si une erreur survient pendant le traitement
+	 */
 	@Override
 	public <I extends ResultReceptionCI> void put(String computationURI, ContentKeyI key, ContentDataI value,
 			EndPointI<I> caller) throws Exception {
@@ -103,6 +130,14 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 
 	}
 
+	/**
+	 * Lance une requête asynchrone pour retirer une entrée (clé-valeur) de la DHT.
+	 *
+	 * @param computationURI URI de la computation MapReduce
+	 * @param key            clé du contenu à supprimer
+	 * @param caller         endpoint pour réceptionner la confirmation
+	 * @throws Exception si une erreur survient pendant le traitement
+	 */
 	@Override
 	public <I extends ResultReceptionCI> void remove(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
@@ -134,6 +169,13 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 		return null;
 	}
 
+	/**
+	 * Lance une requête asynchrone pour supprimer tous les contenus associés à une
+	 * computation donnée.
+	 *
+	 * @param computationURI URI de la computation MapReduce
+	 * @throws Exception si une erreur survient pendant le traitement
+	 */
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
 		this.getOwner().runTask(executorIndex, owner -> {

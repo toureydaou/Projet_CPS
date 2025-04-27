@@ -7,6 +7,26 @@ import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionI;
 
+/**
+ * La classe <code>ResultReceptionInboundPort</code> implémente un port entrant
+ * permettant à un composant serveur de recevoir des résultats d'opérations dans
+ * un système distribué, comme un système MapReduce.
+ *
+ * <p>
+ * Ce port est utilisé par un composant serveur pour accepter et traiter les
+ * résultats envoyés par d'autres composants ou clients dans le cadre
+ * d'opérations distribuées.
+ * </p>
+ *
+ * <p>
+ * <strong>Propriétaire du port :</strong> Le propriétaire de ce port est un
+ * composant serveur (par exemple un nœud ou un autre composant) qui accepte les
+ * résultats d'opérations.
+ * </p>
+ *
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
+ */
 public class ResultReceptionInboundPort extends AbstractInboundPort implements ResultReceptionCI {
 	// -------------------------------------------------------------------------
 	// Constantes et variables
@@ -22,15 +42,18 @@ public class ResultReceptionInboundPort extends AbstractInboundPort implements R
 	/**
 	 * Crée et initialise le port entrant avec le composant propriétaire.
 	 * 
-	 * @param owner Composant propriétaire du port.
-	 * @throws Exception <i>to do</i>.
+	 * @param executorIndex L'index de l'exécuteur utilisé pour gérer les tâches
+	 *                      concurrentes.
+	 * @param owner         Le composant propriétaire du port, qui doit implémenter
+	 *                      <code>ResultReceptionI</code>.
+	 * @throws Exception Si une erreur se produit lors de la création du port.
 	 */
 	public ResultReceptionInboundPort(int executorIndex, ComponentI owner) throws Exception {
 		super(ResultReceptionCI.class, owner);
 
 		// le propriétaire de ce port est un noeud jouant le role de serveur
 		assert (owner instanceof ResultReceptionI);
-		
+
 		assert owner.validExecutorServiceIndex(executorIndex);
 
 		this.executorIndex = executorIndex;
@@ -40,8 +63,12 @@ public class ResultReceptionInboundPort extends AbstractInboundPort implements R
 	 * Crée et initialise un port entrant avec le composant propriétaire et une URI
 	 * donnée.
 	 * 
-	 * @param owner Composant propriétaire du port.
-	 * @throws Exception <i>to do</i>.
+	 * @param uri           L'URI du port entrant.
+	 * @param executorIndex L'index de l'exécuteur utilisé pour gérer les tâches
+	 *                      concurrentes.
+	 * @param owner         Le composant propriétaire du port, qui doit implémenter
+	 *                      <code>ResultReceptionI</code>.
+	 * @throws Exception Si une erreur se produit lors de la création du port.
 	 */
 	public ResultReceptionInboundPort(String uri, int executorIndex, ComponentI owner) throws Exception {
 		super(uri, ResultReceptionCI.class, owner);
@@ -52,6 +79,18 @@ public class ResultReceptionInboundPort extends AbstractInboundPort implements R
 		this.executorIndex = executorIndex;
 	}
 
+	/**
+	 * Accepte un résultat d'une opération et le transmet au composant propriétaire
+	 * pour traitement.
+	 * 
+	 * Cette méthode est appelée pour recevoir un résultat d'une tâche de calcul. Le
+	 * résultat est ensuite envoyé au composant propriétaire, qui le traite en
+	 * utilisant un exécuteur.
+	 * 
+	 * @param computationURI L'URI de la computation MapReduce.
+	 * @param result         Le résultat de la computation à accepter.
+	 * @throws Exception Si une erreur se produit lors de l'acceptation du résultat.
+	 */
 	@Override
 	public void acceptResult(String computationURI, Serializable result) throws Exception {
 		this.getOwner().runTask(executorIndex, owner -> {

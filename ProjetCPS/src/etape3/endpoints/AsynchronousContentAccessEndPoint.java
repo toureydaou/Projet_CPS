@@ -13,6 +13,30 @@ import fr.sorbonne_u.exceptions.InvariantException;
 import fr.sorbonne_u.exceptions.PostconditionException;
 import fr.sorbonne_u.exceptions.PreconditionException;
 
+/**
+ * La classe <code>AsynchronousContentAccessEndPoint</code> représente un point
+ * d'accès pour les services de <code>ContentAccessCI</code>, permettant la
+ * communication asynchrone entre les composants. Elle gère les connexions et la
+ * création des ports entrants et sortants nécessaires pour interagir avec les
+ * composants serveur et client.
+ *
+ * <p>
+ * Un <code>AsynchronousContentAccessEndPoint</code> permet à un composant de se
+ * connecter à d'autres composants via des ports sortants et entrants, en
+ * fournissant une interface pour l'accès au service de contenu.
+ * </p>
+ * 
+ * <p>
+ * Ce point d'accès est utilisé dans un contexte où la communication asynchrone
+ * est nécessaire, permettant ainsi de gérer les échanges de données de manière
+ * non bloquante.
+ * </p>
+ * 
+ * @author Touré-Ydaou TEOURI
+ * 
+ * @author Awwal FAGBEHOURO
+ */
+
 public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccessCI> {
 	// -------------------------------------------------------------------------
 	// Constants and variables
@@ -36,10 +60,11 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 	}
 
 	/**
-	 * crée un endpoint BCM avec URI donnée.
-	 *
+	 * Crée un point d'accès BCM avec une URI donnée.
 	 * 
-	 * @param inboundPortURI URI du port entrant auquel cet endpoint se connecte.
+	 * @param inboundPortURI       URI du port entrant auquel cet endpoint se
+	 *                             connecte.
+	 * @param executorServiceIndex Indice du service exécutant.
 	 */
 	public AsynchronousContentAccessEndPoint(String inboundPortURI, int executorServiceIndex) {
 		super(ContentAccessCI.class, ContentAccessCI.class, inboundPortURI);
@@ -47,22 +72,22 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 	}
 
 	/**
-	 * crée un endpoint BCM.
-	 *
+	 * Crée un point d'accès BCM sans URI spécifique.
 	 */
 	public AsynchronousContentAccessEndPoint() {
 		super(ContentAccessCI.class, ContentAccessCI.class);
-		
+
 	}
 
 	/**
-	 * crée, publie et retourne le port entrant sur le composant serveur {@code c}
-	 * avec l'URI du port entrant
-	 *
-	 * @param c              composant qui sera propriétaire du port entrant.
+	 * Crée, publie et retourne le port entrant pour le composant serveur {@code c}
+	 * avec l'URI du port entrant.
+	 * 
+	 * @param c              Composant propriétaire du port entrant.
 	 * @param inboundPortURI URI du port entrant à créer.
-	 * @return le port entrant créé destiné à être publié.
-	 * @throws Exception <i>to do</i>.
+	 * @return Le port entrant créé et publié.
+	 * @throws Exception Si une erreur survient lors de la création ou publication
+	 *                   du port.
 	 */
 	@Override
 	protected AbstractInboundPort makeInboundPort(AbstractComponent c, String inboundPortURI) throws Exception {
@@ -71,35 +96,34 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 		assert inboundPortURI != null && !inboundPortURI.isEmpty()
 				: new PreconditionException("inboundPortURI != null && !inboundPortURI.isEmpty()");
 
-		AsynchronousContentAccessInboundPort p = new AsynchronousContentAccessInboundPort(this.inboundPortURI, this.executorServiceIndex ,c);
+		AsynchronousContentAccessInboundPort p = new AsynchronousContentAccessInboundPort(this.inboundPortURI,
+				this.executorServiceIndex, c);
 		p.publishPort();
 
 		// Postconditions checking
 		assert p != null && p.isPublished() : new PostconditionException("return != null && return.isPublished()");
 		assert ((AbstractPort) p).getPortURI().equals(inboundPortURI)
-		: new PostconditionException("((AbstractPort)return).getPortURI().equals(inboundPortURI)");
+				: new PostconditionException("((AbstractPort)return).getPortURI().equals(inboundPortURI)");
 		assert getServerSideInterface().isAssignableFrom(p.getClass())
-		: new PostconditionException("getOfferedComponentInterface()." + "isAssignableFrom(return.getClass())");
+				: new PostconditionException("getOfferedComponentInterface()." + "isAssignableFrom(return.getClass())");
 		// Invariant checking
 		assert AsynchronousContentAccessEndPoint.implementationInvariants(this)
-		: new ImplementationInvariantException("implementationInvariants(this)");
+				: new ImplementationInvariantException("implementationInvariants(this)");
 		assert AsynchronousContentAccessEndPoint.invariants(this) : new InvariantException("invariants(this)");
 
 		return p;
 	}
 
 	/**
-	 * crée, publie, connecte et retourne le port sortant du composant client
-	 * {@code c}. on the client side component only, create, publish, connect and
-	 * return the outbound port requiring the component interface {@code CI} on the
-	 * client side component {@code c}.
+	 * Crée, publie, connecte et retourne le port sortant pour le composant client
+	 * {@code c}. Ce port sera connecté au port entrant spécifié.
 	 * 
-	 *
-	 * @param c              composant qui sera propriétaire du port entrant.
+	 * @param c              Composant propriétaire du port sortant.
 	 * @param inboundPortURI URI du port entrant auquel le port sortant sera
 	 *                       connecté.
-	 * @return le port sortant qui sera connecté et publié.
-	 * @throws Exception <i>to do</i>.
+	 * @return Le port sortant créé, publié et connecté.
+	 * @throws Exception Si une erreur survient lors de la création ou connexion du
+	 *                   port.
 	 */
 	@Override
 	protected ContentAccessCI makeOutboundPort(AbstractComponent c, String inboundPortURI) throws Exception {
@@ -116,7 +140,7 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 		assert ((AbstractPort) p).getServerPortURI().equals(getInboundPortURI()) : new PostconditionException(
 				"((AbstractPort)return).getServerPortURI()." + "equals(getInboundPortURI())");
 		assert getClientSideInterface().isAssignableFrom(p.getClass())
-		: new PostconditionException("getImplementedInterface().isAssignableFrom(" + "return.getClass())");
+				: new PostconditionException("getImplementedInterface().isAssignableFrom(" + "return.getClass())");
 
 		// Invariant checking
 		assert implementationInvariants(this) : new ImplementationInvariantException("implementationInvariants(this)");
@@ -124,7 +148,12 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 
 		return p;
 	}
-	
+
+	/**
+	 * Définit l'indice du service exécutant.
+	 * 
+	 * @param executorIndex L'indice du service exécutant.
+	 */
 	public void setExecutorIndex(int executorIndex) {
 		this.executorServiceIndex = executorIndex;
 	}
