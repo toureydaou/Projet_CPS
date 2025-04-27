@@ -6,12 +6,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Stream;
 
 import etape3.composants.AsynchronousNodeBCM;
 import etape3.endpoints.MapReduceResultReceptionEndPoint;
+import etape3.utils.ThreadsPolicy;
 import etape4.endpoints.CompositeMapContentManagementEndPoint;
 import etape4.policies.IgnoreChordsPolicy;
 import fr.sorbonne_u.components.AbstractComponent;
@@ -43,6 +43,7 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 import fr.sorbonne_u.cps.mapreduce.utils.SerializablePair;
+import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 
 @RequiredInterfaces(required = { DHTManagementCI.class, ParallelMapReduceCI.class, ContentAccessCI.class,
 		ResultReceptionCI.class, MapReduceResultReceptionCI.class, DynamicComponentCreationCI.class })
@@ -50,6 +51,14 @@ import fr.sorbonne_u.cps.mapreduce.utils.SerializablePair;
 		MapReduceResultReceptionCI.class })
 public class DynamicNodeBCM extends AsynchronousNodeBCM
 		implements DHTManagementI, ParallelMapReduceI, MapReduceResultReceptionI {
+	
+	private static final String CONTENT_ACCESS_HANDLER_URI = "Content-Access-Pool-Threads";
+	
+	private static final String MAP_REDUCE_HANDLER_URI = "Map-Reduce-Pool-Threads";
+	
+	private static final String DHT_MANAGEMENT_HANDLER_URI = "Dht-Management-Pool-Threads";
+	
+	private static final String MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Map-Reduce-Pool-Threads";
 
 	protected CompositeMapContentManagementEndPoint compositeMapContentManagementEndPointOutbound;
 
@@ -66,8 +75,6 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 	private static final String NOUVEAU_NOEUD_URI = "Noeud-créé-apès-un-split";
 
 	private HashMap<String, ArrayList<CompletableFuture<Serializable>>> resultsMapReduce;
-
-	protected CopyOnWriteArrayList<String> listeSplitOperations = new CopyOnWriteArrayList<>();
 
 	protected final ReentrantReadWriteLock mapReduceLock;
 
@@ -90,7 +97,22 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		this.mapReduceLock = new ReentrantReadWriteLock();
 		this.splitLock = new ReentrantReadWriteLock();
 		
-
+		this.compositeMapContentManagementEndPointInbound.setExecutorServiceIndexContentAccessService(
+				this.createNewExecutorService(URIGenerator.generateURI(CONTENT_ACCESS_HANDLER_URI),
+						ThreadsPolicy.NUMBER_CONTENT_ACCESS_THREADS, true));
+		
+		this.compositeMapContentManagementEndPointInbound.setExecutorServiceIndexMapReduceService(
+				this.createNewExecutorService(URIGenerator.generateURI(MAP_REDUCE_HANDLER_URI),
+						ThreadsPolicy.NUMBER_MAP_REDUCE_THREADS, true));
+		
+		this.compositeMapContentManagementEndPointInbound.setExecutorServiceIndexDHTManagementService(
+				this.createNewExecutorService(URIGenerator.generateURI(DHT_MANAGEMENT_HANDLER_URI),
+						ThreadsPolicy.NUMBER_DHT_MANAGEMEMENT_THREADS, true));
+		
+		this.mapReduceResultReceptionEndPoint.setExecutorIndex(
+				this.createNewExecutorService(URIGenerator.generateURI(MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI),
+						ThreadsPolicy.NUMBER_ACCEPT_RESULT_MAP_REDUCE_THREADS, true));
+		
 		this.mapReduceResultReceptionEndPoint.initialiseServerSide(this);
 		this.compositeMapContentManagementEndPointInbound.initialiseServerSide(this);
 	}
@@ -129,17 +151,26 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		}
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementI#initialiseContent(fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementI.NodeContentI)
+	 */
 	@Override
 	public void initialiseContent(NodeContentI content) throws Exception {
 		this.content.putAll(((NodeContent) content).content);
 		this.intervalle = ((NodeContent) content).intervalle.clone();
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementI#getCurrentState()
+	 */
 	@Override
 	public NodeStateI getCurrentState() throws Exception {
 		return new NodeState(this.content.size());
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementI#suppressNode()
+	 */
 	@Override
 	public NodeContentI suppressNode() throws Exception {
 		NodeContent nodeContent = new NodeContent(this.content, this.intervalle,
@@ -152,13 +183,16 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		return nodeContent;
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementI#split(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.LoadPolicyI, fr.sorbonne_u.components.endpoints.EndPointI)
+	 */
 	@Override
 	public <CI extends ResultReceptionCI> void split(String computationURI, LoadPolicyI loadPolicy,
 			EndPointI<CI> caller) throws Exception {
 
 		
-		if (!listeSplitOperations.contains(computationURI)) {
-			listeSplitOperations.add(computationURI);
+		if (!listeUriContentOperations.contains(computationURI)) {
+			listeUriContentOperations.add(computationURI);
 			System.out.println("Reception de la requete 'SPLIT' sur le noeud " + this.uri);
 
 			if (loadPolicy.shouldSplitInTwoAdjacentNodes(content.size())) {
@@ -219,6 +253,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		}
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementI#merge(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.LoadPolicyI, fr.sorbonne_u.components.endpoints.EndPointI)
+	 */
 	@Override
 	public  <CI extends ResultReceptionCI> void merge(String computationURI, LoadPolicyI loadPolicy,
 			EndPointI<CI> caller) throws Exception {
@@ -265,6 +302,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		}
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementI#computeChords(java.lang.String, int)
+	 */
 	@Override
 	public void computeChords(String computationURI, int numberOfChords) throws Exception {
 		if (!listeUriContentOperations.contains(computationURI)) {
@@ -284,6 +324,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		}
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementI#getChordInfo(int)
+	 */
 	@Override
 	public SerializablePair<ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI>, Integer> getChordInfo(
 			int offset) throws Exception {
@@ -297,6 +340,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 				this.intervalle.first());
 	}
 
+	/**
+	 * @see etape3.composants.AsynchronousNodeBCM#get(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.components.endpoints.EndPointI)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <I extends ResultReceptionCI> void get(String computationURI, ContentKeyI key, EndPointI<I> caller)
@@ -363,6 +409,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 
 	}
 
+	/**
+	 * @see etape3.composants.AsynchronousNodeBCM#put(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI, fr.sorbonne_u.components.endpoints.EndPointI)
+	 */
 	@Override
 	public <I extends ResultReceptionCI> void put(String computationURI, ContentKeyI key, ContentDataI value,
 			EndPointI<I> caller) throws Exception {
@@ -430,6 +479,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		}
 	}
 
+	/**
+	 * @see etape3.composants.AsynchronousNodeBCM#remove(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.components.endpoints.EndPointI)
+	 */
 	@Override
 	public <I extends ResultReceptionCI> void remove(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
@@ -497,6 +549,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		}
 	}
 
+	/**
+	 * @see etape3.composants.AsynchronousNodeBCM#clearComputation(java.lang.String)
+	 */
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
 		if (listeUriContentOperations.contains(computationURI)) {
@@ -507,6 +562,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		}
 	}
 
+	/**
+	 * @see etape3.composants.AsynchronousNodeBCM#clearMapReduceComputation(java.lang.String)
+	 */
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
 		if (listeUriMapOperations.contains(computationURI) && listeUriReduceOperations.contains(computationURI)) {
@@ -519,6 +577,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		}
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ParallelMapReduceI#parallelMap(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ParallelMapReduceI.ParallelismPolicyI)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <R extends Serializable> void parallelMap(String computationURI, SelectorI selector, ProcessorI<R> processor,
@@ -580,6 +641,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ParallelMapReduceI#parallelReduce(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A, A, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ParallelMapReduceI.ParallelismPolicyI, fr.sorbonne_u.components.endpoints.EndPointI)
+	 */
 	@Override
 	public <A extends Serializable, R, I extends MapReduceResultReceptionCI> void parallelReduce(String computationURI,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A identityAcc, A currentAcc,
@@ -656,6 +720,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		}
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionI#acceptResult(java.lang.String, java.lang.String, java.io.Serializable)
+	 */
 	@Override
 	public void acceptResult(String computationURI, String emitterId, Serializable acc) throws Exception {
 	    // Atomically get and increment the index for this specific computation
@@ -668,6 +735,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 	    computationIndices.put(computationURI, currentIndex + 1);
 	}
 
+	/**
+	 * @see etape3.composants.AsynchronousNodeBCM#start()
+	 */
 	@Override
 	public void start() throws ComponentStartException {
 		this.logMessage("starting node component.");
@@ -689,6 +759,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		}
 	}
 
+	/**
+	 * @see etape3.composants.AsynchronousNodeBCM#finalise()
+	 */
 	@Override
 	public void finalise() throws Exception {
 		if (!this.isFinalised()) {
@@ -706,6 +779,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		}
 	}
 
+	/**
+	 * @see etape3.composants.AsynchronousNodeBCM#shutdown()
+	 */
 	@Override
 	public void shutdown() throws ComponentShutdownException {
 
@@ -726,6 +802,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		super.shutdownOrigin();
 	}
 
+	/**
+	 * @see etape3.composants.AsynchronousNodeBCM#shutdownNow()
+	 */
 	@Override
 	public void shutdownNow() throws ComponentShutdownException {
 		try {

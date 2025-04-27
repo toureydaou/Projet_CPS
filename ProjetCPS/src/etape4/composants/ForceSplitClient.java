@@ -12,17 +12,26 @@ import fr.sorbonne_u.components.annotations.RequiredInterfaces;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
 import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
 
+/**
+ * Composant client permettant de forcer la fission (split) de nœuds 
+ * dans la DHT en insérant un certain nombre de livres.
+ */
 @RequiredInterfaces(required = { DHTServicesCI.class, ClocksServerCI.class })
 public class ForceSplitClient extends ClientBCM {
-
 	
 	private static final int STARTING_DELAY = 420;
 	
+	/** Crée un client qui permettra de forcer un split du noeud
+	 * @param uri
+	 * @param endpointClientFacade
+	 */
 	protected ForceSplitClient(String uri, DHTServicesEndPoint endpointClientFacade) {
 		super(uri, endpointClientFacade);
 	}
 
-	
+	/** Insère 50 livres dans un noeud pour déclencler un split du noeud 
+	 * @throws Exception
+	 */
 	private void forceSplit() throws Exception {
 		
 		System.out.println("");
@@ -37,13 +46,15 @@ public class ForceSplitClient extends ClientBCM {
 			System.out.println("============= Insertion de la clée " + i +  "  ==============");
 
 			System.out.println("");
-			this.put(new EntierKey(i), new Livre("Nouveau Harry Potter5", 700));
+			this.put(new EntierKey(i), new Livre("Nouveau Harry Potter" + i, 700 + (i*10)));
 		}
 
 	}
 	
 	
-	
+	/**
+	 * @see etape3.composants.ClientBCM#execute()
+	 */
 	@Override
 	public void execute() throws Exception {
 		this.logMessage("executing client component." + isStarted());

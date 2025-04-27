@@ -13,10 +13,18 @@ import fr.sorbonne_u.exceptions.InvariantException;
 import fr.sorbonne_u.exceptions.PostconditionException;
 import fr.sorbonne_u.exceptions.PreconditionException;
 
+/**
+ * Le point d'accès {@code DHTManagementEndPoint} fournit un accès
+ * aux opérations de gestion de la DHT (Distributed Hash Table) pour un composant BCM.
+ * <p>
+ * Ce point d'accès gère la création des ports entrants et sortants liés à
+ * l'interface {@link DHTManagementCI}.
+ * </p>
+ * 
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
+ */
 public class DHTManagementEndPoint extends BCMEndPoint<DHTManagementCI> {
-	// -------------------------------------------------------------------------
-	// Constants and variables
-	// -------------------------------------------------------------------------
 
 	private static final long serialVersionUID = 1L;
 	protected int executorServiceIndex;
@@ -52,17 +60,10 @@ public class DHTManagementEndPoint extends BCMEndPoint<DHTManagementCI> {
 	 */
 	public DHTManagementEndPoint() {
 		super(DHTManagementCI.class, DHTManagementCI.class);
-
 	}
 
 	/**
-	 * crée, publie et retourne le port entrant sur le composant serveur {@code c}
-	 * avec l'URI du port entrant
-	 *
-	 * @param c              composant qui sera propriétaire du port entrant.
-	 * @param inboundPortURI URI du port entrant à créer.
-	 * @return le port entrant créé destiné à être publié.
-	 * @throws Exception <i>to do</i>.
+	 * @see fr.sorbonne_u.components.endpoints.BCMEndPoint#makeInboundPort(fr.sorbonne_u.components.AbstractComponent, java.lang.String)
 	 */
 	@Override
 	protected AbstractInboundPort makeInboundPort(AbstractComponent c, String inboundPortURI) throws Exception {
@@ -89,17 +90,7 @@ public class DHTManagementEndPoint extends BCMEndPoint<DHTManagementCI> {
 	}
 
 	/**
-	 * crée, publie, connecte et retourne le port sortant du composant client
-	 * {@code c}. on the client side component only, create, publish, connect and
-	 * return the outbound port requiring the component interface {@code CI} on the
-	 * client side component {@code c}.
-	 * 
-	 *
-	 * @param c              composant qui sera propriétaire du port entrant.
-	 * @param inboundPortURI URI du port entrant auquel le port sortant sera
-	 *                       connecté.
-	 * @return le port sortant qui sera connecté et publié.
-	 * @throws Exception <i>to doDHTManagement</i>.
+	 * @see fr.sorbonne_u.components.endpoints.BCMEndPoint#makeOutboundPort(fr.sorbonne_u.components.AbstractComponent, java.lang.String)
 	 */
 	@Override
 	protected DHTManagementCI makeOutboundPort(AbstractComponent c, String inboundPortURI) throws Exception {
