@@ -25,6 +25,23 @@ import fr.sorbonne_u.utils.aclocks.ClocksServer;
 
 /**
  * La CVM.
+ * Même scénario de tests que dans l'étape 3 avec
+ * de nouvelles opérations pour tester les SPLIT
+ * et MERGE
+ * 
+ * <ul>
+ * <li> un client lance un premier map reduce sur toute la table </li>
+ * <li> un autre client déclenche ensuite une série d'insertions dans la table </li>
+ * <li> un client déclenche après une série de récupérations sur la table </li>
+ * <li> deux clients lancent simultanément un map/reduce sur la table </li>
+ * <li> un client passe après pour supprimer des données de la table </li>
+ * <li> un client insère une donnée tandis qu'un autre tente au même moment de lire la donnée insérée </li>
+ * <li> deux clients font des insertions sur la table au même moment </li>
+ * <li> des clients font des insertions pour forcer  le déclenchement d'un split ou d'un
+ * merge afin de vérifier que l'opération se passe bien </li>
+ * 
+ * </ul>
+ * </p> 
  * @author Touré-Ydaou TEOURI
  * @author Awwal FAGBEHOURO
  */
@@ -59,6 +76,9 @@ public class CVM extends AbstractCVM {
 		super();
 	}
 
+	/**
+	 * @see fr.sorbonne_u.components.cvm.AbstractCVM#deploy()
+	 */
 	@Override
 	public void deploy() throws Exception {
 		assert !this.deploymentDone();

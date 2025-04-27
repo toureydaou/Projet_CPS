@@ -2,6 +2,7 @@ package etape3.ports;
 
 import java.io.Serializable;
 
+import etape4.policies.ThreadsPolicy;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
@@ -89,7 +90,7 @@ public class ResultReceptionInboundPort extends AbstractInboundPort implements R
 	 */
 	@Override
 	public void acceptResult(String computationURI, Serializable result) throws Exception {
-		this.getOwner().runTask(executorIndex, owner -> {
+		this.getOwner().runTask(ThreadsPolicy.RESULT_RECEPTION_HANDLER_URI, owner -> {
 			try {
 				((ResultReceptionI) owner).acceptResult(computationURI, result);
 			} catch (Exception e) {

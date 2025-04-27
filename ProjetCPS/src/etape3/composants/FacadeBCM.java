@@ -59,13 +59,9 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 
 	private static final String MAPREDUCE_URI_PREFIX = "MAPREDUCE";
 
-	private static final String RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Content-Access-Pool-Threads";
-
-	private static final String MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Map-Reduce-Pool-Threads";
-
 	private static final int SCHEDULABLE_THREADS = 0;
 
-	private static final int THREADS_NUMBER = 4;
+	private static final int THREADS_NUMBER = 1;
 
 	// Endpoints pour accéder aux services
 	protected AsynchronousCompositeMapContentEndPoint endPointFacadeNoeud;
@@ -99,18 +95,16 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		this.mapReduceResultatReceptionEndPoint = new MapReduceResultReceptionEndPoint();
 		this.resultsContentAccess = new HashMap<String, CompletableFuture<Serializable>>();
 		this.resultsMapReduce = new HashMap<String, CompletableFuture<Serializable>>();
-
-		this.resultatReceptionEndPoint
-				.setExecutorIndex(this.createNewExecutorService(URIGenerator.generateURI(RESULT_RECEPTION_HANDLER_URI),
-						ThreadsPolicy.NUMBER_ACCEPT_RESULT_CONTENT_ACCESS_THREADS, true));
-
-		this.mapReduceResultatReceptionEndPoint.setExecutorIndex(
-				this.createNewExecutorService(URIGenerator.generateURI(MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI),
-						ThreadsPolicy.NUMBER_ACCEPT_RESULT_MAP_REDUCE_THREADS, true));
-
+		
 		this.endPointClientFacade.initialiseServerSide(this);
 		this.resultatReceptionEndPoint.initialiseServerSide(this);
 		this.mapReduceResultatReceptionEndPoint.initialiseServerSide(this);
+		
+		this.createNewExecutorService(ThreadsPolicy.RESULT_RECEPTION_HANDLER_URI,
+				ThreadsPolicy.NUMBER_ACCEPT_RESULT_CONTENT_ACCESS_THREADS, true);
+		
+		this.createNewExecutorService(ThreadsPolicy.MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI,
+				ThreadsPolicy.NUMBER_ACCEPT_RESULT_MAP_REDUCE_THREADS, true);
 
 	}
 

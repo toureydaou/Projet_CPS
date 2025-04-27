@@ -26,6 +26,12 @@ package etape4.policies;
  * @author Awwal FAGBEHOURO
  */
 public class ThreadsPolicy {
+	public static final String RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Content-Access-Pool-Threads";
+	public static final String MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Map-Reduce-Pool-Threads";
+	public static final String CONTENT_ACCESS_HANDLER_URI = "Content-Access-Pool-Threads";
+	public static final String MAP_REDUCE_HANDLER_URI = "Map-Reduce-Pool-Threads";
+	public static final String DHT_MANAGEMENT_HANDLER_URI = "Dht-Management-Pool-Threads";
+	
 	public static final int NUMBER_CONTENT_ACCESS_THREADS = 20;
 	public static final int NUMBER_MAP_REDUCE_THREADS = 20;
 	public static final int NUMBER_DHT_MANAGEMEMENT_THREADS = 20;

@@ -1,6 +1,7 @@
 package etape3.ports;
 
 import etape2.ports.ContentAccessSyncInboundPort;
+import etape4.policies.ThreadsPolicy;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
@@ -100,7 +101,7 @@ public class AsynchronousContentAccessInboundPort extends ContentAccessSyncInbou
 	public <I extends ResultReceptionCI> void get(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
 
-		this.getOwner().runTask(executorIndex, owner -> {
+		this.getOwner().runTask(ThreadsPolicy.CONTENT_ACCESS_HANDLER_URI, owner -> {
 			try {
 				((ContentAccessI) owner).get(computationURI, key, caller);
 			} catch (Exception e) {
@@ -120,7 +121,7 @@ public class AsynchronousContentAccessInboundPort extends ContentAccessSyncInbou
 	@Override
 	public <I extends ResultReceptionCI> void put(String computationURI, ContentKeyI key, ContentDataI value,
 			EndPointI<I> caller) throws Exception {
-		this.getOwner().runTask(executorIndex, owner -> {
+		this.getOwner().runTask(ThreadsPolicy.CONTENT_ACCESS_HANDLER_URI, owner -> {
 			try {
 				((ContentAccessI) owner).put(computationURI, key, value, caller);
 			} catch (Exception e) {
@@ -139,7 +140,7 @@ public class AsynchronousContentAccessInboundPort extends ContentAccessSyncInbou
 	@Override
 	public <I extends ResultReceptionCI> void remove(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
-		this.getOwner().runTask(executorIndex, owner -> {
+		this.getOwner().runTask(ThreadsPolicy.CONTENT_ACCESS_HANDLER_URI, owner -> {
 			try {
 				((ContentAccessI) owner).remove(computationURI, key, caller);
 			} catch (Exception e) {
@@ -155,7 +156,7 @@ public class AsynchronousContentAccessInboundPort extends ContentAccessSyncInbou
 	 */
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
-		this.getOwner().runTask(executorIndex, owner -> {
+		this.getOwner().runTask(ThreadsPolicy.CONTENT_ACCESS_HANDLER_URI, owner -> {
 			try {
 				((ContentAccessI) owner).clearComputation(computationURI);
 			} catch (Exception e) {

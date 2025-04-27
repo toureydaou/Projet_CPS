@@ -36,12 +36,26 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 
+/**
+ * La classe <code>FacadeBCM</code> représente un composant qui envoie 
+ * à la DHT des requêtes d'accès au contenu et des opérations
+ * MapReduce de manière asynchrone. Elle implémente les interfaces
+ * <code>ResultReceptionI</code>, <code>MapReduceResultReceptionI</code>
+ * afin de recevoir les résultats des requêtes. En plus de cela la facade
+ * lance sur les noeuds les opérations SPLIT et MERGE à des moments précis
+ * de son cycle de vie
+ * 
+ * @see ResultReceptionI
+ * @see MapReduceResultReceptionI
+ * @see DHTServicesI
+ * @see AbstractComponent
+ * 
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
+ */
 @OfferedInterfaces(offered = { DHTServicesCI.class, ResultReceptionCI.class, MapReduceResultReceptionCI.class })
 @RequiredInterfaces(required = { ContentAccessCI.class, ParallelMapReduceCI.class, DHTManagementCI.class })
 public class FacadeBCM extends AbstractComponent implements ResultReceptionI, MapReduceResultReceptionI, DHTServicesI {
-
-	private static final String RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Content-Access-Pool-Threads";
-	private static final String MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Map-Reduce-Pool-Threads";
 
 	// URI constants pour l'accès aux services
 	private static final String GET_URI_PREFIX = "GET";
@@ -99,18 +113,15 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		this.resultsMapReduce = new HashMap<String, CompletableFuture<Serializable>>();
 		this.splitMergeLock = new ReentrantReadWriteLock();
 
-		this.resultatReceptionEndPoint
-				.setExecutorIndex(this.createNewExecutorService(URIGenerator.generateURI(RESULT_RECEPTION_HANDLER_URI),
-						ThreadsPolicy.NUMBER_ACCEPT_RESULT_CONTENT_ACCESS_THREADS, true));
-
-		this.mapReduceResultatReceptionEndPoint.setExecutorIndex(
-				this.createNewExecutorService(URIGenerator.generateURI(MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI),
-						ThreadsPolicy.NUMBER_ACCEPT_RESULT_MAP_REDUCE_THREADS, true));
-
 		this.endPointClientFacade.initialiseServerSide(this);
 		this.resultatReceptionEndPoint.initialiseServerSide(this);
 		this.mapReduceResultatReceptionEndPoint.initialiseServerSide(this);
 
+		this.createNewExecutorService(ThreadsPolicy.RESULT_RECEPTION_HANDLER_URI,
+				ThreadsPolicy.NUMBER_ACCEPT_RESULT_CONTENT_ACCESS_THREADS, true);
+
+		this.createNewExecutorService(ThreadsPolicy.MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI,
+				ThreadsPolicy.NUMBER_ACCEPT_RESULT_MAP_REDUCE_THREADS, true);
 	}
 
 	/**
@@ -318,7 +329,6 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	 */
 	public void countNumberOfOperations() {
 		int count = number_write_operation.incrementAndGet();
-		System.out.println("Number op : " + count);
 		if ((count != 0) && (count % LIMIT_NUMBER_WRITE_OPERATIONS) == 0) {
 			LIMIT_REACHED = true;
 		}

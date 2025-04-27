@@ -29,7 +29,6 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
-import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 
 /**
  * La classe <code>AsynchronousNodeBCM</code> représente un composant de nœud
@@ -59,13 +58,9 @@ import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 		MapReduceResultReceptionCI.class })
 public class AsynchronousNodeBCM extends NodeBCM implements ContentAccessI, MapReduceI {
 
-	private static final int SCHEDULABLE_THREADS = 3;
+	private static final int SCHEDULABLE_THREADS = 0;
 
-	private static final int THREADS_NUMBER = 3;
-
-	private static final String CONTENT_ACCESS_HANDLER_URI = "Content-Access-Pool-Threads";
-
-	private static final String MAP_REDUCE_HANDLER_URI = "Content-Access-Pool-Threads";
+	private static final int THREADS_NUMBER = 1;
 
 	protected ConcurrentHashMap<Integer, ContentDataI> content;
 
@@ -91,7 +86,7 @@ public class AsynchronousNodeBCM extends NodeBCM implements ContentAccessI, MapR
 	protected String uri;
 
 	/**
-	 * Instantiates a new asynchronous node BCM.
+	 * Crée un asynchronous node BCM.
 	 *
 	 * @param uri                               the uri
 	 * @param compositeMapEndpointInboundAsync  the composite map endpoint inbound
@@ -111,20 +106,17 @@ public class AsynchronousNodeBCM extends NodeBCM implements ContentAccessI, MapR
 		this.compositeMapContentEndpointOutboundAsync = compositeMapEndpointOutboundAsync;
 		this.hashMapLock = new ReentrantReadWriteLock();
 
-		this.compositeMapContentEndpointInboundAsync.setExecutorServiceIndexContentAccessService(
-				this.createNewExecutorService(URIGenerator.generateURI(CONTENT_ACCESS_HANDLER_URI),
-						ThreadsPolicy.NUMBER_CONTENT_ACCESS_THREADS, true));
-
-		this.compositeMapContentEndpointInboundAsync.setExecutorServiceIndexContentAccessService(
-				this.createNewExecutorService(URIGenerator.generateURI(MAP_REDUCE_HANDLER_URI),
-						ThreadsPolicy.NUMBER_MAP_REDUCE_THREADS, true));
-
 		this.compositeMapContentEndpointInboundAsync.initialiseServerSide(this);
+		
+		this.createNewExecutorService(ThreadsPolicy.CONTENT_ACCESS_HANDLER_URI,
+				ThreadsPolicy.NUMBER_CONTENT_ACCESS_THREADS, true);
+		this.createNewExecutorService(ThreadsPolicy.MAP_REDUCE_HANDLER_URI,
+				ThreadsPolicy.NUMBER_MAP_REDUCE_THREADS, true);
 
 	}
 
 	/**
-	 * Instantiates a new asynchronous node BCM.
+	 * Crée un node BCM.
 	 *
 	 * @param uri        the uri
 	 * @param intervalle the intervalle

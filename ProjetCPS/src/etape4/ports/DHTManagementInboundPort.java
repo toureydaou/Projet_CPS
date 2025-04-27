@@ -1,5 +1,6 @@
 package etape4.ports;
 
+import etape4.policies.ThreadsPolicy;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
@@ -14,27 +15,27 @@ import fr.sorbonne_u.cps.mapreduce.utils.SerializablePair;
 
 //-----------------------------------------------------------------------------
 /**
-* La classe {@code DHTManagementInboundPort} implémente un port
-* entrant pour un composant serveur offrant les services de l'interface
-* {@code DHTManagementCI}.
-* <p>
-* Ce port permet aux clients d'effectuer des opérations de gestion de composants de
-* manière synchrone en envoyant leurs requêtes au travers d'un
-* {@code EndPointI}.
-* </p>
-* 
-* <p>
-* Le propriétaire de ce port est un composant jouant le rôle d'un nœud dans un
-* système de table de hachage distribuée (DHT) intégrant des fonctionnalités de
-* type DHTManagement.
-* </p>
-* 
-* @see DHTManagementCI
-* @see AbstractInboundPort
-* 
-* @author Touré-Ydaou TEOURI
-* @author Awwal FAGBEHOURO
-*/
+ * La classe {@code DHTManagementInboundPort} implémente un port entrant pour un
+ * composant serveur offrant les services de l'interface
+ * {@code DHTManagementCI}.
+ * <p>
+ * Ce port permet aux clients d'effectuer des opérations de gestion de
+ * composants de manière synchrone en envoyant leurs requêtes au travers d'un
+ * {@code EndPointI}.
+ * </p>
+ * 
+ * <p>
+ * Le propriétaire de ce port est un composant jouant le rôle d'un nœud dans un
+ * système de table de hachage distribuée (DHT) intégrant des fonctionnalités de
+ * type DHTManagement.
+ * </p>
+ * 
+ * @see DHTManagementCI
+ * @see AbstractInboundPort
+ * 
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
+ */
 public class DHTManagementInboundPort extends AbstractInboundPort implements DHTManagementCI {
 
 	// -------------------------------------------------------------------------
@@ -81,7 +82,7 @@ public class DHTManagementInboundPort extends AbstractInboundPort implements DHT
 
 		this.executorServiceIndex = executorServiceIndex;
 	}
-	
+
 	// -------------------------------------------------------------------------
 	// Méthodes
 	// -------------------------------------------------------------------------
@@ -91,7 +92,7 @@ public class DHTManagementInboundPort extends AbstractInboundPort implements DHT
 	 */
 	@Override
 	public void initialiseContent(NodeContentI content) throws Exception {
-		this.getOwner().handleRequest(executorServiceIndex, owner -> {
+		this.getOwner().handleRequest(ThreadsPolicy.DHT_MANAGEMENT_HANDLER_URI, owner -> {
 			((DHTManagementI) owner).initialiseContent(content);
 			return null;
 		});
@@ -103,7 +104,8 @@ public class DHTManagementInboundPort extends AbstractInboundPort implements DHT
 	 */
 	@Override
 	public NodeStateI getCurrentState() throws Exception {
-		return this.getOwner().handleRequest(executorServiceIndex, owner -> ((DHTManagementI) owner).getCurrentState());
+		return this.getOwner().handleRequest(ThreadsPolicy.DHT_MANAGEMENT_HANDLER_URI,
+				owner -> ((DHTManagementI) owner).getCurrentState());
 	}
 
 	/**
@@ -111,16 +113,19 @@ public class DHTManagementInboundPort extends AbstractInboundPort implements DHT
 	 */
 	@Override
 	public NodeContentI suppressNode() throws Exception {
-		return this.getOwner().handleRequest(executorServiceIndex, owner -> ((DHTManagementI) owner).suppressNode());
+		return this.getOwner().handleRequest(ThreadsPolicy.DHT_MANAGEMENT_HANDLER_URI,
+				owner -> ((DHTManagementI) owner).suppressNode());
 	}
 
 	/**
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementCI#split(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.LoadPolicyI, fr.sorbonne_u.components.endpoints.EndPointI)
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementCI#split(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.LoadPolicyI,
+	 *      fr.sorbonne_u.components.endpoints.EndPointI)
 	 */
 	@Override
 	public <CI extends ResultReceptionCI> void split(String computationURI, LoadPolicyI loadPolicy,
 			EndPointI<CI> caller) throws Exception {
-		this.getOwner().handleRequest(executorServiceIndex, owner -> {
+		this.getOwner().handleRequest(ThreadsPolicy.DHT_MANAGEMENT_HANDLER_URI, owner -> {
 			((DHTManagementI) owner).split(computationURI, loadPolicy, caller);
 			return null;
 		});
@@ -128,23 +133,26 @@ public class DHTManagementInboundPort extends AbstractInboundPort implements DHT
 	}
 
 	/**
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementCI#merge(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.LoadPolicyI, fr.sorbonne_u.components.endpoints.EndPointI)
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementCI#merge(java.lang.String,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.LoadPolicyI,
+	 *      fr.sorbonne_u.components.endpoints.EndPointI)
 	 */
 	@Override
 	public <CI extends ResultReceptionCI> void merge(String computationURI, LoadPolicyI loadPolicy,
 			EndPointI<CI> caller) throws Exception {
-		this.getOwner().handleRequest(executorServiceIndex, owner -> {
+		this.getOwner().handleRequest(ThreadsPolicy.DHT_MANAGEMENT_HANDLER_URI, owner -> {
 			((DHTManagementI) owner).merge(computationURI, loadPolicy, caller);
 			return null;
 		});
 	}
 
 	/**
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementCI#computeChords(java.lang.String, int)
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.management.DHTManagementCI#computeChords(java.lang.String,
+	 *      int)
 	 */
 	@Override
 	public void computeChords(String computationURI, int numberOfChords) throws Exception {
-		this.getOwner().handleRequest(executorServiceIndex, owner -> {
+		this.getOwner().handleRequest(ThreadsPolicy.DHT_MANAGEMENT_HANDLER_URI, owner -> {
 			((DHTManagementI) owner).computeChords(computationURI, numberOfChords);
 			return null;
 		});
@@ -157,8 +165,9 @@ public class DHTManagementInboundPort extends AbstractInboundPort implements DHT
 	@Override
 	public SerializablePair<ContentNodeCompositeEndPointI<ContentAccessCI, ParallelMapReduceCI, DHTManagementCI>, Integer> getChordInfo(
 			int offset) throws Exception {
-		
-		return this.getOwner().handleRequest(executorServiceIndex, owner -> ((DHTManagementI) owner).getChordInfo(offset));
+
+		return this.getOwner().handleRequest(ThreadsPolicy.DHT_MANAGEMENT_HANDLER_URI,
+				owner -> ((DHTManagementI) owner).getChordInfo(offset));
 	}
 
 }

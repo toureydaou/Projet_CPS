@@ -2,6 +2,7 @@ package etape3.ports;
 
 import java.io.Serializable;
 
+import etape4.policies.ThreadsPolicy;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionCI;
@@ -77,7 +78,7 @@ public class MapReduceResultReceptionInboundPort extends AbstractInboundPort imp
 	 */
 	@Override
 	public void acceptResult(String computationURI, String emitterId, Serializable acc) throws Exception {
-		this.getOwner().runTask(executorIndex, owner -> {
+		this.getOwner().runTask(ThreadsPolicy.MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI, owner -> {
 			try {
 				((MapReduceResultReceptionI) owner).acceptResult(computationURI, emitterId, acc);
 			} catch (Exception e) {

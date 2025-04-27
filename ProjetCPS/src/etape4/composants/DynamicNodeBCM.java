@@ -43,7 +43,6 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 import fr.sorbonne_u.cps.mapreduce.utils.SerializablePair;
-import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 
 /**
  * La classe <code>DynamicNodeBCM</code> représente un composant de nœud
@@ -76,14 +75,6 @@ import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 		MapReduceResultReceptionCI.class })
 public class DynamicNodeBCM extends AsynchronousNodeBCM
 		implements DHTManagementI, ParallelMapReduceI, MapReduceResultReceptionI {
-	
-	private static final String CONTENT_ACCESS_HANDLER_URI = "Content-Access-Pool-Threads";
-	
-	private static final String MAP_REDUCE_HANDLER_URI = "Map-Reduce-Pool-Threads";
-	
-	private static final String DHT_MANAGEMENT_HANDLER_URI = "Dht-Management-Pool-Threads";
-	
-	private static final String MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Map-Reduce-Pool-Threads";
 
 	protected CompositeMapContentManagementEndPoint compositeMapContentManagementEndPointOutbound;
 
@@ -97,7 +88,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 
 	protected String jvmUri;
 
-	private static final String NOUVEAU_NOEUD_URI = "Noeud-créé-apès-un-split";
+	private static final String NOUVEAU_NOEUD_URI = "Noeud-créé-après-un-split-de-";
 
 	private HashMap<String, ArrayList<CompletableFuture<Serializable>>> resultsMapReduce;
 
@@ -132,24 +123,17 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		this.mapReduceLock = new ReentrantReadWriteLock();
 		this.splitLock = new ReentrantReadWriteLock();
 		
-		this.compositeMapContentManagementEndPointInbound.setExecutorServiceIndexContentAccessService(
-				this.createNewExecutorService(URIGenerator.generateURI(CONTENT_ACCESS_HANDLER_URI),
-						ThreadsPolicy.NUMBER_CONTENT_ACCESS_THREADS, true));
-		
-		this.compositeMapContentManagementEndPointInbound.setExecutorServiceIndexMapReduceService(
-				this.createNewExecutorService(URIGenerator.generateURI(MAP_REDUCE_HANDLER_URI),
-						ThreadsPolicy.NUMBER_MAP_REDUCE_THREADS, true));
-		
-		this.compositeMapContentManagementEndPointInbound.setExecutorServiceIndexDHTManagementService(
-				this.createNewExecutorService(URIGenerator.generateURI(DHT_MANAGEMENT_HANDLER_URI),
-						ThreadsPolicy.NUMBER_DHT_MANAGEMEMENT_THREADS, true));
-		
-		this.mapReduceResultReceptionEndPoint.setExecutorIndex(
-				this.createNewExecutorService(URIGenerator.generateURI(MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI),
-						ThreadsPolicy.NUMBER_ACCEPT_RESULT_MAP_REDUCE_THREADS, true));
-		
 		this.mapReduceResultReceptionEndPoint.initialiseServerSide(this);
 		this.compositeMapContentManagementEndPointInbound.initialiseServerSide(this);
+		
+		this.createNewExecutorService(ThreadsPolicy.CONTENT_ACCESS_HANDLER_URI,
+				ThreadsPolicy.NUMBER_CONTENT_ACCESS_THREADS, true);
+		this.createNewExecutorService(ThreadsPolicy.MAP_REDUCE_HANDLER_URI,
+				ThreadsPolicy.NUMBER_MAP_REDUCE_THREADS, true);
+		this.createNewExecutorService(ThreadsPolicy.DHT_MANAGEMENT_HANDLER_URI,
+				ThreadsPolicy.NUMBER_DHT_MANAGEMEMENT_THREADS, true);
+		this.createNewExecutorService(ThreadsPolicy.MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI,
+				ThreadsPolicy.NUMBER_ACCEPT_RESULT_MAP_REDUCE_THREADS, true);
 	}
 
 	/**
@@ -242,7 +226,7 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 				CompositeMapContentManagementEndPoint nouvelEndpointEntreNoeuds = new CompositeMapContentManagementEndPoint();
 
 				String nouveauNoeudURI = this.porttoNewNode.createComponent(DynamicNodeBCM.class.getCanonicalName(),
-						new Object[] { this.jvmUri, NOUVEAU_NOEUD_URI,
+						new Object[] { this.jvmUri, NOUVEAU_NOEUD_URI+this.uri,
 								(CompositeMapContentManagementEndPoint) nouvelEndpointEntreNoeuds.copyWithSharable(),
 								(CompositeMapContentManagementEndPoint) this.compositeMapContentManagementEndPointOutbound
 										.copyWithSharable(),

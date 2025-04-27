@@ -3,6 +3,7 @@ package etape3.ports;
 import java.io.Serializable;
 
 import etape2.ports.MapReduceSyncInboundPort;
+import etape4.policies.ThreadsPolicy;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.components.interfaces.OfferedCI;
@@ -156,7 +157,7 @@ public class AsynchronousMapReduceInboundPort extends MapReduceSyncInboundPort i
 	public <A extends Serializable, R, I extends MapReduceResultReceptionCI> void reduce(String computationURI,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A identityAcc, A currentAcc, EndPointI<I> callerNode)
 			throws Exception {
-		this.getOwner().runTask(executorServiceIndex, owner -> {
+		this.getOwner().runTask(ThreadsPolicy.MAP_REDUCE_HANDLER_URI, owner -> {
 			try {
 				((MapReduceI) owner).reduce(computationURI, reductor, combinator, identityAcc, currentAcc, callerNode);
 			} catch (Exception e) {
@@ -172,7 +173,7 @@ public class AsynchronousMapReduceInboundPort extends MapReduceSyncInboundPort i
 	 */
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
-		this.getOwner().runTask(executorServiceIndex, owner -> {
+		this.getOwner().runTask(ThreadsPolicy.MAP_REDUCE_HANDLER_URI, owner -> {
 			try {
 				((MapReduceI) owner).clearMapReduceComputation(computationURI);
 			} catch (Exception e) {
@@ -192,7 +193,7 @@ public class AsynchronousMapReduceInboundPort extends MapReduceSyncInboundPort i
 	@Override
 	public <R extends Serializable> void map(String computationURI, SelectorI selector, ProcessorI<R> processor)
 			throws Exception {
-		this.getOwner().runTask(executorServiceIndex, owner -> {
+		this.getOwner().runTask(ThreadsPolicy.MAP_REDUCE_HANDLER_URI, owner -> {
 			try {
 				((MapReduceI) owner).map(computationURI, selector, processor);
 			} catch (Exception e) {

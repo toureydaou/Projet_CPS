@@ -24,6 +24,20 @@ import fr.sorbonne_u.utils.aclocks.ClocksServer;
 
 /**
  * La CVM.
+ * 
+ * <p>
+ * Nous suivons ici la suite d'opérations suivantes:
+ * <ul>
+ * <li> un client lance un premier map reduce sur toute la table </li>
+ * <li> un autre client déclenche ensuite une série d'insertions dans la table </li>
+ * <li> un client déclenche après une série de récupérations sur la table </li>
+ * <li> deux clients lancent simultanément un map/reduce sur la table </li>
+ * <li> un client passe après pour supprimer des données de la table </li>
+ * <li> un client insère une donnée tandis qu'un autre tente au même moment de lire la donnée insérée </li>
+ * <li> deux clients font des insertions sur la table au même moment</li>
+ * </ul>
+ * </p>
+ * 
  * @author Touré-Ydaou TEOURI
  * @author Awwal FAGBEHOURO
  */
