@@ -7,7 +7,6 @@ import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionI;
 
-// TODO: Auto-generated Javadoc
 /**
  * La classe <code>ResultReceptionInboundPort</code> implémente un port entrant
  * permettant à un composant serveur de recevoir des résultats d'opérations dans

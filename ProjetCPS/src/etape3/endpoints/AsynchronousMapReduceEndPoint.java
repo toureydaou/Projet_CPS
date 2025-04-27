@@ -41,18 +41,10 @@ public class AsynchronousMapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 	// Constants and variables
 	// -------------------------------------------------------------------------
 
-	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 
-	/** The executor service index. */
 	private int executorServiceIndex;
 
-	/**
-	 * Implementation invariants.
-	 *
-	 * @param instance the instance
-	 * @return true, if successful
-	 */
 	protected static boolean implementationInvariants(AsynchronousMapReduceEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 
@@ -60,12 +52,6 @@ public class AsynchronousMapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 		return ret;
 	}
 
-	/**
-	 * Invariants.
-	 *
-	 * @param instance the instance
-	 * @return true, if successful
-	 */
 	protected static boolean invariants(AsynchronousMapReduceEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 
@@ -152,7 +138,7 @@ public class AsynchronousMapReduceEndPoint extends BCMEndPoint<MapReduceCI> {
 	}
 
 	/**
-	 * Sets the executor index.
+	 * Définis l'executor index.
 	 *
 	 * @param executorIndex the new executor index
 	 */

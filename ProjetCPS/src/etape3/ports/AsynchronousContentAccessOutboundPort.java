@@ -1,8 +1,8 @@
 package etape3.ports;
 
+import etape2.ports.ContentAccessSyncOutboundPort;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
-import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
@@ -31,13 +31,12 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
  * @Author Awwal FAGBEHOURO
  */
 
-public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort implements ContentAccessCI {
+public class AsynchronousContentAccessOutboundPort extends ContentAccessSyncOutboundPort implements ContentAccessCI {
 
 	// -------------------------------------------------------------------------
 	// Constantes et variables
 	// -------------------------------------------------------------------------
 
-	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 
 	// -------------------------------------------------------------------------
@@ -108,50 +107,6 @@ public class AsynchronousContentAccessOutboundPort extends AbstractOutboundPort 
 	public <I extends ResultReceptionCI> void remove(String computationURI, ContentKeyI key, EndPointI<I> caller)
 			throws Exception {
 		((ContentAccessCI) this.getConnector()).remove(computationURI, key, caller);
-
-	}
-
-	/**
-	 * 
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#getSync(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
-	 */
-	@Override
-	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * 
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#putSync(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
-	 */
-	@Override
-	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * 
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#removeSync(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
-	 */
-	@Override
-	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * 
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#clearComputation(java.lang.String)
-	 */
-	@Override
-	public void clearComputation(String computationURI) throws Exception {
-		((ContentAccessCI) this.getConnector()).clearComputation(computationURI);
 
 	}
 

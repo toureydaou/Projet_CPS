@@ -42,18 +42,10 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 	// Constants and variables
 	// -------------------------------------------------------------------------
 
-	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 
-	/** The executor service index. */
 	protected int executorServiceIndex;
 
-	/**
-	 * Implementation invariants.
-	 *
-	 * @param instance the instance
-	 * @return true, if successful
-	 */
 	protected static boolean implementationInvariants(AsynchronousContentAccessEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 
@@ -61,12 +53,6 @@ public class AsynchronousContentAccessEndPoint extends BCMEndPoint<ContentAccess
 		return ret;
 	}
 
-	/**
-	 * Invariants.
-	 *
-	 * @param instance the instance
-	 * @return true, if successful
-	 */
 	protected static boolean invariants(AsynchronousContentAccessEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 

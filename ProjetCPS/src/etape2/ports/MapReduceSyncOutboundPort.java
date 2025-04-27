@@ -71,29 +71,32 @@ public class MapReduceSyncOutboundPort extends AbstractOutboundPort implements M
 	
 	
 
+	/**
+	 * Crée et initialise un port sortant
+	 * 
+	 * @param implementedInterface
+	 * @param owner
+	 * @throws Exception
+	 */
 	public MapReduceSyncOutboundPort(Class<? extends RequiredCI> implementedInterface, ComponentI owner) throws Exception {
 		super(implementedInterface, owner);	
 	}
 	
 	
+	/**
+	 * Crée et initialise un port sortant
+	 * @param uri
+	 * @param implementedInterface
+	 * @param owner
+	 * @throws Exception
+	 */
 	public MapReduceSyncOutboundPort(String uri, Class<? extends RequiredCI> implementedInterface, ComponentI owner) throws Exception {
 		super(uri, implementedInterface, owner);	
 	}
 	
 
 	/**
-	 * Invoque la méthode <code>mapSync</code> du connecteur
-	 * <code>MapReduceSyncConnector</code> pour déclencher un map sur les données de
-	 * la table de hachage.
-	 * 
-	 * @param <R>            type des résultats de la computation map.
-	 * @param computationURI URI de la computation, utilisé pour distinguer les
-	 *                       computations parallèles sur la même DHT.
-	 * @param selector       une fonction booléenne qui sélectionne les entrées de
-	 *                       la DHT à traiter.
-	 * @param processor      une fonction implémentant le traitement à appliquer par
-	 *                       la map.
-	 * @throws Exception <i>à compléter</i>.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI#mapSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI)
 	 */
 	@Override
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
@@ -101,21 +104,9 @@ public class MapReduceSyncOutboundPort extends AbstractOutboundPort implements M
 		((MapReduceSyncCI) this.getConnector()).mapSync(computationURI, selector, processor);
 	}
 
+
 	/**
-	 * Invoque la méthode <code>reduceSync</code> du connecteur
-	 * <code>MapReduceSyncConnector</code> pour déclencher un reduce sur les données
-	 * de la table de hachage.
-	 * 
-	 * @param <R>        type du résultat de l'opération du map.
-	 * @param <A>        type de l'accumulateur de l'opération du reduce.
-	 * 
-	 * @param reductor   fonction {@code A} x {@code R -> A} accumulant un résultat
-	 *                   de la map.
-	 * @param combinator fonction {@code A} x {@code A -> A} combinant deux
-	 *                   accumulateurs.
-	 * @param initialAcc valeur initiale de l'accumulateur.
-	 * @return valeur finale de l'accumulateur après toutes les reduces.
-	 * @throws Exception <i>to do</i>.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI#reduceSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A)
 	 */
 	@Override
 	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
@@ -123,21 +114,9 @@ public class MapReduceSyncOutboundPort extends AbstractOutboundPort implements M
 		return ((MapReduceSyncCI) this.getConnector()).reduceSync(computationURI, reductor, combinator, currentAcc);
 	}
 
+
 	/**
-	 * Invoque la méthode <code>clearMapReduceComputation</code> du connecteur
-	 * <code>MapReduceSyncConnector</code> pour nettoyer toutes les données
-	 * restantes du dernier map reduce effectué.
-	 * 
-	 * @param <R>        type du résultat de l'opération du map.
-	 * @param <A>        type de l'accumulateur de l'opération du reduce.
-	 * 
-	 * @param reductor   fonction {@code A} x {@code R -> A} accumulant un résultat
-	 *                   de la map.
-	 * @param combinator fonction {@code A} x {@code A -> A} combinant deux
-	 *                   accumulateurs.
-	 * @param initialAcc valeur initiale de l'accumulateur.
-	 * @return valeur finale de l'accumulateur après toutes les reduces.
-	 * @throws Exception <i>to do</i>.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI#clearMapReduceComputation(java.lang.String)
 	 */
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {

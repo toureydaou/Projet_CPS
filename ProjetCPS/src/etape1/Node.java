@@ -78,6 +78,9 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 	// -------------------------------------------------------------------------
 			
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI#mapSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
@@ -98,6 +101,9 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI#reduceSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A)
+	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
@@ -120,6 +126,9 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI#clearMapReduceComputation(java.lang.String)
+	 */
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
 		// Condition pour vérifier si le noeud est client d'un serveur préalablement initialisé
@@ -135,6 +144,9 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 		}
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI#getSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
+	 */
 	@Override
 	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
 		// Condition pour vérifier si le noeud est client d'un serveur préalablement initialisé
@@ -156,6 +168,9 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 		}
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI#putSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
+	 */
 	@Override
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
 		// Condition pour vérifier si le noeud est client d'un serveur préalablement initialisé
@@ -178,6 +193,9 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 		}
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI#removeSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
+	 */
 	@Override
 	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
 		// Condition pour vérifier si le noeud est client d'un serveur préalablement initialisé
@@ -200,6 +218,9 @@ public class Node implements ContentAccessSyncI, MapReduceSyncI {
 		}
 	}
 
+	/**
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI#clearComputation(java.lang.String)
+	 */
 	@Override
 	public void clearComputation(String computationURI) throws Exception {
 		if (!connexionSortante.clientSideInitialised()) {

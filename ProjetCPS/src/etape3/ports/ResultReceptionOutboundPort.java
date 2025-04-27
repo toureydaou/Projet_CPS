@@ -6,7 +6,6 @@ import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
 
-// TODO: Auto-generated Javadoc
 /**
  * La classe <code>ResultReceptionOutboundPort</code> implémente un port sortant
  * permettant à un composant client d'envoyer des résultats d'opérations à un
@@ -32,7 +31,6 @@ public class ResultReceptionOutboundPort extends AbstractOutboundPort implements
 	// Constantes et variables
 	// -------------------------------------------------------------------------
 
-	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 
 	// -------------------------------------------------------------------------

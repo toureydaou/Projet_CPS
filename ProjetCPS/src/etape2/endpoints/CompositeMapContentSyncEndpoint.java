@@ -1,7 +1,9 @@
 package etape2.endpoints;
 
 import fr.sorbonne_u.components.endpoints.BCMCompositeEndPoint;
+import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.endpoints.ContentNodeBaseCompositeEndPointI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI;
 
 /**
@@ -14,7 +16,7 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI;
  * @author Awwal FAGBEHOURO
  */
 
-public class CompositeMapContentSyncEndpoint extends BCMCompositeEndPoint {
+public class CompositeMapContentSyncEndpoint extends BCMCompositeEndPoint implements ContentNodeBaseCompositeEndPointI<ContentAccessSyncCI, MapReduceSyncCI>{
 	private static final long serialVersionUID = 1L;
 	/** Nombre de points d'accès dans ce point d'accès composite */
 	protected static final int NUMBER_OF_ENDPOINTS = 2;
@@ -32,20 +34,19 @@ public class CompositeMapContentSyncEndpoint extends BCMCompositeEndPoint {
 	}
 
 	/**
-	 * Accède au point d'accès dédié à l'accès aux contenus.
-	 * 
-	 * @return Le point d'accès pour l'accès aux contenus.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.endpoints.ContentNodeBaseCompositeEndPointI#getContentAccessEndpoint()
 	 */
-	public ContentAccessSyncEndPoint getContentAccessEndPoint() {
+	@Override
+	public EndPointI<ContentAccessSyncCI> getContentAccessEndpoint() {
 		return (ContentAccessSyncEndPoint) this.getEndPoint(ContentAccessSyncCI.class);
 	}
 
 	/**
-	 * Accède au point d'accès dédié aux opérations MapReduce.
-	 * 
-	 * @return Le point d'accès pour les opérations MapReduce.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.endpoints.ContentNodeBaseCompositeEndPointI#getMapReduceEndpoint()
 	 */
-	public MapReduceSyncEndPoint getMapReduceEndPoint() {
+	@Override
+	public EndPointI<MapReduceSyncCI> getMapReduceEndpoint() {
 		return (MapReduceSyncEndPoint) this.getEndPoint(MapReduceSyncCI.class);
 	}
+	
 }

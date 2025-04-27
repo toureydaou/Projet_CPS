@@ -2,10 +2,10 @@ package etape3.ports;
 
 import java.io.Serializable;
 
+import etape2.ports.MapReduceSyncOutboundPort;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.components.interfaces.RequiredCI;
-import fr.sorbonne_u.components.ports.AbstractOutboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionCI;
@@ -13,7 +13,6 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 
-// TODO: Auto-generated Javadoc
 //-----------------------------------------------------------------------------
 /**
  * La classe <code>AsynchronousMapReduceOutboundPort</code> implémente un port
@@ -52,13 +51,12 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
  * @author Awwal FAGBEHOURO
  */
 
-public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort implements MapReduceCI {
+public class AsynchronousMapReduceOutboundPort extends MapReduceSyncOutboundPort implements MapReduceCI {
 
 	// -------------------------------------------------------------------------
 	// Constantes et variables
 	// -------------------------------------------------------------------------
 
-	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 
 	// -------------------------------------------------------------------------
@@ -120,22 +118,7 @@ public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort impl
 	}
 
 	/**
-	 * Reduce.
-	 *
-	 * @param <A>            the generic type
-	 * @param <R>            the generic type
-	 * @param <I>            the generic type
-	 * @param computationURI the computation URI
-	 * @param reductor       the reductor
-	 * @param combinator     the combinator
-	 * @param identityAcc    the identity acc
-	 * @param currentAcc     the current acc
-	 * @param callerNode     the caller node
-	 * @throws Exception the exception
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI#reduce(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A, A,
-	 *      fr.sorbonne_u.components.endpoints.EndPointI)
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI#reduce(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A, A, fr.sorbonne_u.components.endpoints.EndPointI)
 	 */
 	@Override
 	public <A extends Serializable, R, I extends MapReduceResultReceptionCI> void reduce(String computationURI,
@@ -144,47 +127,6 @@ public class AsynchronousMapReduceOutboundPort extends AbstractOutboundPort impl
 		((MapReduceCI) this.getConnector()).reduce(computationURI, reductor, combinator, identityAcc, currentAcc,
 				callerNode);
 
-	}
-
-	/**
-	 * Map sync.
-	 *
-	 * @param <R>            the generic type
-	 * @param computationURI the computation URI
-	 * @param selector       the selector
-	 * @param processor      the processor
-	 * @throws Exception the exception
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI#mapSync(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI)
-	 */
-	@Override
-	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
-			throws Exception {
-		// TODO Auto-generated method stub
-
-	}
-
-	/**
-	 * Reduce sync.
-	 *
-	 * @param <A>            the generic type
-	 * @param <R>            the generic type
-	 * @param computationURI the computation URI
-	 * @param reductor       the reductor
-	 * @param combinator     the combinator
-	 * @param currentAcc     the current acc
-	 * @return the a
-	 * @throws Exception the exception
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI#reduceSync(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A)
-	 */
-	@Override
-	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
-			CombinatorI<A> combinator, A currentAcc) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	/**

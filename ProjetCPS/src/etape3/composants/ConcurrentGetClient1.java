@@ -11,15 +11,17 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
 import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class ConcurrentGetClient1.
+ * La Classe ConcurrentGetClient1.
+ * 
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
  */
 @RequiredInterfaces(required = { DHTServicesCI.class, ClocksServerCI.class })
 public class ConcurrentGetClient1 extends ClientBCM {
 
 	/**
-	 * Instantiates a new concurrent get client 1.
+	 * Instancie un nouveau client
 	 *
 	 * @param uri                  the uri
 	 * @param endpointClientFacade the endpoint client facade
@@ -28,7 +30,6 @@ public class ConcurrentGetClient1 extends ClientBCM {
 		super(uri, endpointClientFacade);
 	}
 
-	/** The Constant STARTING_DELAY. */
 	private static final int STARTING_DELAY = 300;
 
 	/**

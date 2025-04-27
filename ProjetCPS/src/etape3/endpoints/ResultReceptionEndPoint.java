@@ -41,18 +41,11 @@ public class ResultReceptionEndPoint extends BCMEndPoint<ResultReceptionCI> {
 	// Constants and variables
 	// -------------------------------------------------------------------------
 
-	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 
-	/** The executor service index. */
 	protected int executorServiceIndex;
 
-	/**
-	 * Implementation invariants.
-	 *
-	 * @param instance the instance
-	 * @return true, if successful
-	 */
+
 	protected static boolean implementationInvariants(ResultReceptionEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 
@@ -60,12 +53,6 @@ public class ResultReceptionEndPoint extends BCMEndPoint<ResultReceptionCI> {
 		return ret;
 	}
 
-	/**
-	 * Invariants.
-	 *
-	 * @param instance the instance
-	 * @return true, if successful
-	 */
 	protected static boolean invariants(ResultReceptionEndPoint instance) {
 		assert instance != null : new PreconditionException("instance != null");
 

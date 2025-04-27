@@ -13,10 +13,12 @@ import fr.sorbonne_u.components.exceptions.ComponentShutdownException;
 import fr.sorbonne_u.components.exceptions.ComponentStartException;
 import fr.sorbonne_u.components.exceptions.ConnectionException;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
@@ -44,7 +46,7 @@ import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 
 @OfferedInterfaces(offered = { ContentAccessSyncCI.class, MapReduceSyncCI.class })
 @RequiredInterfaces(required = { ContentAccessSyncCI.class, MapReduceSyncCI.class })
-public class NodeBCM extends AbstractComponent {
+public class NodeBCM extends AbstractComponent implements MapReduceSyncI, ContentAccessSyncI{
 
 	// Stocke les données associées aux clés de la DHT
 	protected HashMap<ContentKeyI, ContentDataI> content;
@@ -86,19 +88,14 @@ public class NodeBCM extends AbstractComponent {
 		this.cmceOutbound = cmceOutbound;
 		cmceInbound.initialiseServerSide(this);
 	}
-
+	
+	protected NodeBCM(int nbreThreads, int nbreThreadsSchedulables) throws ConnectionException {
+		super(nbreThreads, nbreThreadsSchedulables);
+	}
 	/**
-	 * Applique la fonction de traitement {@code processor} sur les entrées de la
-	 * DHT sélectionnées par {@code selector}, et stocke les résultats en mémoire.
-	 * 
-	 * @param computationURI Identifiant unique de la computation MapReduce en
-	 *                       cours.
-	 * @param selector       Fonction qui filtre les données d'entrée avant
-	 *                       traitement.
-	 * @param processor      Fonction qui transforme les données sélectionnées.
-	 * @throws Exception .
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI#mapSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI)
 	 */
-
+	@Override
 	@SuppressWarnings("unchecked")
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
 			throws Exception {
@@ -108,7 +105,7 @@ public class NodeBCM extends AbstractComponent {
 			uriPassMap.add(computationURI);
 			memory.put(computationURI,
 					(Stream<ContentDataI>) content.values().stream().filter(selector).map(processor));
-			this.cmceOutbound.getMapReduceEndPoint().getClientSideReference().mapSync(computationURI, selector,
+			this.cmceOutbound.getMapReduceEndpoint().getClientSideReference().mapSync(computationURI, selector,
 					processor);
 		} else {
 			return;
@@ -117,24 +114,9 @@ public class NodeBCM extends AbstractComponent {
 	}
 
 	/**
-	 * Réduit les résultats d'une computation MapReduce en utilisant les fonctions
-	 * {@code reductor} et {@code combinator}.
-	 * 
-	 * @param <A>            Le type de l'accumulateur utilisé pour la réduction.
-	 * 
-	 * @param <R>            Le type des résultats de la computation map qui vont
-	 *                       être réduits.
-	 * @param computationURI URI de la computation, utilisé pour distinguer les
-	 *                       différents traitements parallèles effectués sur la DHT.
-	 * @param reductor       Fonction qui applique une opération de réduction entre
-	 *                       un accumulateur courant et un résultat de la map.
-	 * @param combinator     Fonction qui combine deux valeurs d'accumulateur pour
-	 *                       obtenir un nouvel accumulateur.
-	 * @param currentAcc     La valeur courante de l'accumulateur.
-	 * @return Le nouvel accumulateur calculé après la réduction synchrone.
-	 * @throws Exception
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI#reduceSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A)
 	 */
-
+	@Override
 	@SuppressWarnings("unchecked")
 	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
 			CombinatorI<A> combinator, A currentAcc) throws Exception {
@@ -144,7 +126,7 @@ public class NodeBCM extends AbstractComponent {
 			uriPassMap.remove(computationURI);
 			return combinator.apply(
 					memory.get(computationURI).reduce(currentAcc, (u, d) -> reductor.apply(u, (R) d), combinator),
-					this.cmceOutbound.getMapReduceEndPoint().getClientSideReference().reduceSync(computationURI,
+					this.cmceOutbound.getMapReduceEndpoint().getClientSideReference().reduceSync(computationURI,
 							reductor, combinator, currentAcc));
 		} else {
 			return currentAcc;
@@ -153,41 +135,23 @@ public class NodeBCM extends AbstractComponent {
 	}
 
 	/**
-	 * Supprime les données liées à une computation MapReduce, identifiée par son
-	 * URI {@code computationURI}. Cette méthode efface les résultats précédemment
-	 * stockés dans la mémoire locale pour l'URI spécifié et envoie une demande pour
-	 * nettoyer également les données associées sur les autres noeuds via le port de
-	 * sortie.
-	 * 
-	 * @param computationURI L'URI de la computation MapReduce dont les données
-	 *                       doivent être supprimées.
-	 * @throws Exception
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI#clearMapReduceComputation(java.lang.String)
 	 */
-
+	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {
 		System.out.println("Nettoyage des opérations du map reduce sur le noeud " + this.intervalle.first() + " - "
 				+ this.intervalle.last() + ", identifiant de la requete : " + computationURI);
 		if (memory.containsKey(computationURI)) {
 			memory.remove(computationURI);
-			this.cmceOutbound.getMapReduceEndPoint().getClientSideReference().clearMapReduceComputation(computationURI);
+			this.cmceOutbound.getMapReduceEndpoint().getClientSideReference().clearMapReduceComputation(computationURI);
 		}
 
 	}
-
+	
 	/**
-	 * Récupère les données associées à une clé spécifiée {@code key} dans le cadre
-	 * d'une computation identifiée par l'URI {@code computationURI}. Cette méthode
-	 * vérifie si la computation a déjà été traitée, et si c'est le cas, elle
-	 * renvoie les données locales. Sinon, elle délègue la requête à un autre noeud
-	 * via le port de sortie.
-	 * 
-	 * @param computationURI L'URI de la computation pour laquelle les données sont
-	 *                       demandées.
-	 * @param key            La clé associée aux données à récupérer.
-	 * @return Les données associées à la clé {@code key}, ou {@code null} si la
-	 *         computation a déjà été traitée localement.
-	 * @throws Exception
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI#getSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
 	 */
+	@Override
 	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
 		System.out.println("Reception de la requête 'GET' sur le noeud " + this.intervalle.first() + " - "
 				+ this.intervalle.last() + ", identifiant de la requete : " + computationURI);
@@ -199,27 +163,14 @@ public class NodeBCM extends AbstractComponent {
 			if (intervalle.in(cle)) {
 				return content.get(key);
 			}
-			return this.cmceOutbound.getContentAccessEndPoint().getClientSideReference().getSync(computationURI, key);
+			return this.cmceOutbound.getContentAccessEndpoint().getClientSideReference().getSync(computationURI, key);
 		}
 	}
 
 	/**
-	 * Insère ou met à jour les données associées à une clé spécifiée {@code key}
-	 * pour une computation identifiée par l'URI {@code computationURI}. Si la clé
-	 * est dans l'intervalle du noeud, les données sont stockées localement. Sinon,
-	 * la requête est envoyée à un autre nœud via le port de sortie.
-	 * 
-	 * @param computationURI L'URI de la computation pour laquelle les données
-	 *                       doivent être insérées ou mises à jour.
-	 * @param key            La clé associée aux données à insérer ou mettre à jour.
-	 * @param value          Les nouvelles données à insérer ou à utiliser pour
-	 *                       mettre à jour les anciennes données associées à la clé.
-	 * @return Les anciennes données associées à la clé {@code key} avant la mise à
-	 *         jour, ou {@code null} si la computation a déjà été traitée
-	 *         localement.
-	 * @throws Exception
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI#putSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
 	 */
-
+	@Override
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
 		System.out.println("Reception de la requête 'PUT' sur le noeud " + this.intervalle.first() + " - "
 				+ this.intervalle.last() + ", identifiant de la requete : " + computationURI);
@@ -233,27 +184,16 @@ public class NodeBCM extends AbstractComponent {
 				content.put(key, value);
 				return valuePrec;
 			}
-			return this.cmceOutbound.getContentAccessEndPoint().getClientSideReference().putSync(computationURI, key,
+			return this.cmceOutbound.getContentAccessEndpoint().getClientSideReference().putSync(computationURI, key,
 					value);
 
 		}
 	}
 
 	/**
-	 * Supprime les données associées à une clé spécifiée {@code key} pour une
-	 * computation identifiée par {@code computationURI}. Si la clé est dans
-	 * l'intervalle du noeud, les données sont supprimées localement. Sinon, la
-	 * requête est envoyée à un autre noeud via le port de sortie.
-	 * 
-	 * @param computationURI L'URI de la computation pour laquelle les données
-	 *                       doivent être supprimées.
-	 * @param key            La clé des données à supprimer.
-	 * @return Les anciennes données associées à la clé {@code key} avant la
-	 *         suppression, ou {@code null} si la computation a déjà été traitée
-	 *         localement.
-	 * @throws Exception
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI#removeSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
 	 */
-
+	@Override
 	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
 		System.out.println("Reception de la requête 'REMOVE' sur le noeud " + this.intervalle.first() + " - "
 				+ this.intervalle.last() + ", identifiant de la requete : " + computationURI);
@@ -266,42 +206,28 @@ public class NodeBCM extends AbstractComponent {
 				ContentDataI valuePrec = content.remove(key);
 				return valuePrec;
 			}
-			return this.cmceOutbound.getContentAccessEndPoint().getClientSideReference().removeSync(computationURI,
+			return this.cmceOutbound.getContentAccessEndpoint().getClientSideReference().removeSync(computationURI,
 					key);
 		}
 
 	}
 
 	/**
-	 * Efface les données liées à une computation spécifique identifiée par
-	 * {@code computationURI}.
-	 * 
-	 * <p>
-	 * Si le URI de la computation est présent dans la liste {@code uriPassCont}, il
-	 * est retiré de cette liste. La méthode appelle ensuite le serveur distant pour
-	 * nettoyer les données associées à cette computation.
-	 * </p>
-	 * 
-	 * @param computationURI L'URI de la computation dont les données doivent être
-	 *                       effacées.
-	 * @throws Exception
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI#clearComputation(java.lang.String)
 	 */
-
+	@Override
 	public void clearComputation(String computationURI) throws Exception {
 		System.out.println("Nettoyage sur le noeud " + this.intervalle.first() + " - " + this.intervalle.last()
 				+ ", identifiant de la requete : " + computationURI);
 		if (uriPassCont.contains(computationURI)) {
 			uriPassCont.remove(computationURI);
-			this.cmceOutbound.getContentAccessEndPoint().getClientSideReference().clearComputation(computationURI);
+			this.cmceOutbound.getContentAccessEndpoint().getClientSideReference().clearComputation(computationURI);
 		}
 	}
 
 
 	/**
-	 * Démarre le composant ClientBCM.
-	 * 
-	 * @throws ComponentStartException Si une erreur se produit lors du démarrage du
-	 *                                 composant.
+	 * @see fr.sorbonne_u.components.AbstractComponent#start()
 	 */
 	@Override
 	public void start() throws ComponentStartException {
@@ -316,10 +242,9 @@ public class NodeBCM extends AbstractComponent {
 		}
 	}
 
+
 	/**
-	 * Finalise et arrête le composant ClientBCM.
-	 * 
-	 * @throws Exception Si une erreur se produit lors de l'arrêt du composant.
+	 * @see fr.sorbonne_u.components.AbstractComponent#finalise()
 	 */
 	@Override
 	public void finalise() throws Exception {
@@ -329,10 +254,9 @@ public class NodeBCM extends AbstractComponent {
 		super.finalise();
 	}
 
+	
 	/**
-	 * Effectue un arrêt propre du composant ClientBCM.
-	 * 
-	 * @throws ComponentShutdownException Si une erreur se produit lors de l'arrêt.
+	 * @see fr.sorbonne_u.components.AbstractComponent#shutdown()
 	 */
 	@Override
 	public void shutdown() throws ComponentShutdownException {
@@ -344,11 +268,9 @@ public class NodeBCM extends AbstractComponent {
 		super.shutdown();
 	}
 
+
 	/**
-	 * Force un arrêt immédiat du composant ClientBCM.
-	 * 
-	 * @throws ComponentShutdownException Si une erreur se produit lors de l'arrêt
-	 *                                    immédiat.
+	 * @see fr.sorbonne_u.components.AbstractComponent#shutdownNow()
 	 */
 	@Override
 	public void shutdownNow() throws ComponentShutdownException {
@@ -357,6 +279,42 @@ public class NodeBCM extends AbstractComponent {
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e);
 		}
+		super.shutdownNow();
+	}
+	
+	/**
+	 * Start origin.
+	 *
+	 * @throws ComponentStartException the component start exception
+	 */
+	public void startOrigin() throws ComponentStartException {
+		super.start();
+	}
+	
+	/**
+	 * Finalise origin.
+	 *
+	 * @throws Exception the exception
+	 */
+	public void finaliseOrigin() throws Exception {
+		super.finalise();
+	}
+	
+	/**
+	 * Shutdown origin.
+	 *
+	 * @throws ComponentShutdownException the component shutdown exception
+	 */
+	public void shutdownOrigin() throws ComponentShutdownException {
+		super.shutdown();
+	}
+	
+	/**
+	 * Shutdown now origin.
+	 *
+	 * @throws ComponentShutdownException the component shutdown exception
+	 */
+	public void shutdownNowOrigin() throws ComponentShutdownException {
 		super.shutdownNow();
 	}
 

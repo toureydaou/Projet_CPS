@@ -1,15 +1,14 @@
 package etape3.ports;
 
+import etape2.ports.ContentAccessSyncInboundPort;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
-import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
 
-// TODO: Auto-generated Javadoc
 //-----------------------------------------------------------------------------
 /**
  * La classe {@code AsynchronousContentAccessInboundPort} implémente un port
@@ -41,16 +40,14 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionCI;
  * @author Touré-Ydaou TEOURI
  * @author Awwal FAGBEHOURO
  */
-public class AsynchronousContentAccessInboundPort extends AbstractInboundPort implements ContentAccessCI {
+public class AsynchronousContentAccessInboundPort extends ContentAccessSyncInboundPort implements ContentAccessCI {
 
 	// -------------------------------------------------------------------------
 	// Constantes et variables
 	// -------------------------------------------------------------------------
 
-	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 
-	/** The executor index. */
 	protected final int executorIndex;
 
 	// -------------------------------------------------------------------------
@@ -150,40 +147,6 @@ public class AsynchronousContentAccessInboundPort extends AbstractInboundPort im
 			}
 		});
 
-	}
-
-	/**
-	 * 
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#getSync(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
-	 */
-	@Override
-	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
-
-		return null;
-	}
-
-	/**
-	 * 
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#putSync(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
-	 */
-	@Override
-	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
-
-		return null;
-	}
-
-	/**
-	 * 
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#removeSync(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
-	 */
-	@Override
-	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
-
-		return null;
 	}
 
 	/**

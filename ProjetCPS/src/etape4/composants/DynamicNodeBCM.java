@@ -11,9 +11,9 @@ import java.util.stream.Stream;
 
 import etape3.composants.AsynchronousNodeBCM;
 import etape3.endpoints.MapReduceResultReceptionEndPoint;
-import etape3.utils.ThreadsPolicy;
 import etape4.endpoints.CompositeMapContentManagementEndPoint;
 import etape4.policies.IgnoreChordsPolicy;
+import etape4.policies.ThreadsPolicy;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;
@@ -45,6 +45,31 @@ import fr.sorbonne_u.cps.mapreduce.utils.IntInterval;
 import fr.sorbonne_u.cps.mapreduce.utils.SerializablePair;
 import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 
+/**
+ * La classe <code>DynamicNodeBCM</code> représente un composant de nœud
+ * dans un système distribué qui gère l'accès au contenu et les opérations
+ * MapReduce de manière asynchrone. Elle implémente les interfaces
+ * <code>ContentAccessI</code> et <code>ParallelMapReduceI</code>. 
+ * Ce composant implémente également la gestion du noeud via l'interface
+ * <code>DHTManagementI</code>.
+ * 
+ * <p>
+ * Elle gère quatre types principaux d'opérations :
+ * <ul>
+ * <li>Accès au contenu (GET, PUT, REMOVE) pour stocker et récupérer des données
+ * depuis la DHT.</li>
+ * <li>Opérations MapReduce (MAP, REDUCE) pour traiter des données en utilisant
+ * le paradigme MapReduce.</li>
+ * <li>Nettoyage des calculs pour effacer les données précédemment
+ * stockées.</li>
+ * <li> Opérations SPLIT, MERGE et computeChords pour calculer les cordes du noeud
+ * </li>
+ * </ul>
+ * </p>
+ * 
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
+ */
 @RequiredInterfaces(required = { DHTManagementCI.class, ParallelMapReduceCI.class, ContentAccessCI.class,
 		ResultReceptionCI.class, MapReduceResultReceptionCI.class, DynamicComponentCreationCI.class })
 @OfferedInterfaces(offered = { DHTManagementCI.class, ParallelMapReduceCI.class, ContentAccessCI.class,
@@ -84,6 +109,16 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 
 	int indice;
 
+	/**
+	 * Crée le noeud dynamique
+	 * 
+	 * @param jvmUri
+	 * @param uri
+	 * @param compositeMapContentManagementEndPointInbound
+	 * @param compositeMapContentManagementEndPointOutbound
+	 * @param intervalle
+	 * @throws ConnectionException
+	 */
 	protected DynamicNodeBCM(String jvmUri, String uri,
 			CompositeMapContentManagementEndPoint compositeMapContentManagementEndPointInbound,
 			CompositeMapContentManagementEndPoint compositeMapContentManagementEndPointOutbound, IntInterval intervalle)
@@ -117,6 +152,9 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 		this.compositeMapContentManagementEndPointInbound.initialiseServerSide(this);
 	}
 
+	/**
+	 * Classe interne qui permet de transmettre le contenu du noeud à un autre
+	 */
 	protected class NodeContent implements NodeContentI {
 
 		private static final long serialVersionUID = 1L;
@@ -135,11 +173,12 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 			this.intervalle = intervalle;
 			this.nodeUri = nodeUri;
 			this.compositeMapContentManagementEndPointOutbound = compositeMapContentManagementEndPointOutbound;
-
 		}
-
 	}
 
+	/**
+	 * Classe interne qui permet de vérifier l'état d'un noeud afin de connaitre sa charge actuelle 
+	 */
 	public class NodeState implements NodeStateI {
 
 		private static final long serialVersionUID = 1L;
@@ -393,16 +432,6 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 					next_endpoint.cleanUpClientSide();
 				}
 			}
-		} else {
-			// Normalement on ne peut pas revenir à un noeud qui a déjà été visité
-			if (!caller.clientSideInitialised()) {
-				caller.initialiseClientSide(this);
-			}
-			System.out.println("Envoi du résultat du 'GET' sur la facade depuis le noeud " + this.uri);
-			// la valeur de hachage de la clé se situe en dehors de l'intervalle de clés de
-			// la DHT
-			caller.getClientSideReference().acceptResult(computationURI, null);
-			caller.cleanUpClientSide();
 		}
 
 	}
@@ -464,17 +493,8 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 
 				}
 			}
-		} else {
-			// Normalement on ne peut pas revenir à un noeud qui a déjà été visité
-			if (!caller.clientSideInitialised()) {
-				caller.initialiseClientSide(this);
-			}
-			System.out.println("Envoi du résultat du 'GET' sur la facade depuis le noeud " + this.uri);
-			// la valeur de hachage de la clé se situe en dehors de l'intervalle de clés de
-			// la DHT
-			caller.getClientSideReference().acceptResult(computationURI, null);
-			caller.cleanUpClientSide();
 		}
+		
 	}
 
 	/**
@@ -534,16 +554,6 @@ public class DynamicNodeBCM extends AsynchronousNodeBCM
 
 				}
 			}
-		} else {
-			// Normalement on ne peut pas revenir à un noeud qui a déjà été visité
-			if (!caller.clientSideInitialised()) {
-				caller.initialiseClientSide(this);
-			}
-			System.out.println("Envoi du résultat du 'REMOVE' sur la facade depuis le noeud " + this.uri);
-			// la valeur de hachage de la clé se situe en dehors de l'intervalle de clés de
-			// la DHT
-			caller.getClientSideReference().acceptResult(computationURI, null);
-			caller.cleanUpClientSide();
 		}
 	}
 

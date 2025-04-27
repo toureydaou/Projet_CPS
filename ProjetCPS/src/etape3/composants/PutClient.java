@@ -12,15 +12,17 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
 import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class PutClient.
+ * 
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
  */
 @RequiredInterfaces(required = { DHTServicesCI.class, ClocksServerCI.class })
 public class PutClient extends ClientBCM {
 
 	/**
-	 * Instantiates a new put client.
+	 * Crée un put client.
 	 *
 	 * @param uri                  the uri
 	 * @param endpointClientFacade the endpoint client facade
@@ -29,7 +31,6 @@ public class PutClient extends ClientBCM {
 		super(uri, endpointClientFacade);
 	}
 
-	/** The Constant STARTING_DELAY. */
 	private static final int STARTING_DELAY = 60;
 
 	// --------------------------------------------------------

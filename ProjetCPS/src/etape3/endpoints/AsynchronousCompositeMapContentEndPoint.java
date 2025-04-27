@@ -35,16 +35,13 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
 public class AsynchronousCompositeMapContentEndPoint extends BCMCompositeEndPoint
 		implements ContentNodeBaseCompositeEndPointI<ContentAccessCI, MapReduceCI> {
 
-	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 
 	/** Nombre de points d'accès dans ce point d'accès composite. */
 	protected static final int NUMBER_OF_ENDPOINTS = 2;
 
-	/** The content access end point. */
 	private AsynchronousContentAccessEndPoint contentAccessEndPoint;
 
-	/** The map reduce endpoint. */
 	private AsynchronousMapReduceEndPoint mapReduceEndpoint;
 
 	/**
@@ -60,7 +57,7 @@ public class AsynchronousCompositeMapContentEndPoint extends BCMCompositeEndPoin
 	}
 
 	/**
-	 * Sets the executor service index content access service.
+	 * Définit l'index du service d'exécution pour le service ContentAcesss
 	 *
 	 * @param executorServiceIndexContentAccessService the new executor service
 	 *                                                 index content access service

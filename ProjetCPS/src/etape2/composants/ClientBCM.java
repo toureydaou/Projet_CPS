@@ -99,13 +99,9 @@ public class ClientBCM extends AbstractComponent {
 		return this.dsep.getClientSideReference().mapReduce(selector, processor, reductor, combinator, initialAcc);
 	}
 
-	
-	
-	 /**
-     * Méthode qui démarre le composant client.
-     * 
-     * @throws ComponentStartException Si une erreur se produit lors du démarrage du composant.
-     */
+	/**
+	 * @see fr.sorbonne_u.components.AbstractComponent#start()
+	 */
 	@Override
 	public synchronized void start() throws ComponentStartException {
 		this.logMessage("starting client component.");
@@ -119,12 +115,9 @@ public class ClientBCM extends AbstractComponent {
 		}
 	}
 
-	  /**
-     * Méthode d'exécution du composant client.
-     * Elle exécute une tâche qui effectue des opérations sur le DHT de manière synchronisée.
-     * 
-     * @throws Exception Si une erreur se produit lors de l'exécution.
-     */
+	/**
+	 * @see fr.sorbonne_u.components.AbstractComponent#execute()
+	 */
 	@Override
 	public void execute() throws Exception {
 		this.logMessage("executing client component.");
@@ -143,11 +136,9 @@ public class ClientBCM extends AbstractComponent {
 		});
 	}
 
-	 /**
-     * Méthode pour finaliser le composant client et effectuer le nettoyage.
-     * 
-     * @throws Exception Si une erreur se produit lors de la finalisation.
-     */
+	/**
+	 * @see fr.sorbonne_u.components.AbstractComponent#finalise()
+	 */
 	@Override
 	public synchronized void finalise() throws Exception {
 		this.logMessage("stopping client component.");

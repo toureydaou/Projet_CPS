@@ -49,7 +49,7 @@ import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 
 @OfferedInterfaces(offered = { DHTServicesCI.class })
 @RequiredInterfaces(required = { ContentAccessSyncCI.class, MapReduceSyncCI.class })
-public class FacadeBCM extends AbstractComponent {
+public class FacadeBCM extends AbstractComponent implements DHTServicesI{
 
 	// URI constants pour l'accès aux services
 	private static final String GET_URI = "GET";
@@ -81,98 +81,72 @@ public class FacadeBCM extends AbstractComponent {
 		dsep.initialiseServerSide(this);
 	}
 
+	
 	/**
-	 * Récupère les données associées à une clé via le service DHT.
-	 * 
-	 * @param key La clé des données à récupérer.
-	 * @return Les données associées à la clé.
-	 * @throws Exception Si une erreur se produit lors de l'exécution.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#get(fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
 	 */
-
+	@Override
 	public ContentDataI get(ContentKeyI key) throws Exception {
 
 		String request_uri = URIGenerator.generateURI(GET_URI);
 		System.out.println("Reception de la requête 'GET' sur la facade, identifiant de la requete : " + request_uri);
-		ContentDataI result = this.cmce.getContentAccessEndPoint().getClientSideReference().getSync(request_uri, key);
-		this.cmce.getContentAccessEndPoint().getClientSideReference().clearComputation(request_uri);
+		ContentDataI result = this.cmce.getContentAccessEndpoint().getClientSideReference().getSync(request_uri, key);
+		this.cmce.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
 		System.out.println(
 				"Renvoi de la réponse de la requête 'GET' au client,  identifiant de la requete : " + request_uri);
 		return result;
 	}
 
 	/**
-	 * Ajoute ou met à jour les données associées à une clé dans le service DHT.
-	 * 
-	 * @param key   La clé des données à ajouter ou mettre à jour.
-	 * @param value Les données à ajouter ou mettre à jour.
-	 * @return Les données précédemment associées à la clé, ou null si aucune donnée
-	 *         n'existait.
-	 * @throws Exception Si une erreur se produit lors de l'exécution.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#put(fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
 	 */
+	@Override
 	public ContentDataI put(ContentKeyI key, ContentDataI value) throws Exception {
 		String request_uri = URIGenerator.generateURI(PUT_URI);
 		System.out.println("Reception de la requête 'PUT' sur la facade identifiant requete : " + request_uri);
-		ContentDataI result = this.cmce.getContentAccessEndPoint().getClientSideReference().putSync(request_uri, key,
+		ContentDataI result = this.cmce.getContentAccessEndpoint().getClientSideReference().putSync(request_uri, key,
 				value);
-		this.cmce.getContentAccessEndPoint().getClientSideReference().clearComputation(request_uri);
+		this.cmce.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
 		System.out.println(
 				"Renvoi de la réponse de la requête 'PUT' au client,  identifiant de la requete : " + request_uri);
 		return result;
 	}
 
 	/**
-	 * Supprime les données associées à une clé dans le service DHT.
-	 * 
-	 * @param key La clé des données à supprimer.
-	 * @return Les données supprimées, ou null si aucune donnée n'existait.
-	 * @throws Exception Si une erreur se produit lors de l'exécution.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#remove(fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
 	 */
-
+	@Override
 	public ContentDataI remove(ContentKeyI key) throws Exception {
 		String request_uri = URIGenerator.generateURI(REMOVE_URI);
 		System.out.println("Reception de la requête 'REMOVE' sur la facade identifiant requete : " + request_uri);
-		ContentDataI result = this.cmce.getContentAccessEndPoint().getClientSideReference().removeSync(request_uri,
+		ContentDataI result = this.cmce.getContentAccessEndpoint().getClientSideReference().removeSync(request_uri,
 				key);
-		this.cmce.getContentAccessEndPoint().getClientSideReference().clearComputation(request_uri);
+		this.cmce.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
 		System.out.println(
 				"Renvoi de la réponse de la requête 'REMOVE' au client,  identifiant de la requete : " + request_uri);
 		return result;
 	}
 
 	/**
-	 * Effectue une opération MapReduce en deux phases (map et reduce) sur les
-	 * données du service DHT, puis renvoie le résultat combiné.
-	 * 
-	 * @param selector   Sélecteur des éléments à traiter.
-	 * @param processor  Fonction de traitement pour les éléments.
-	 * @param reductor   Fonction de réduction pour combiner les résultats.
-	 * @param combinator Fonction pour combiner les résultats finaux.
-	 * @param initialAcc Valeur initiale de l'accumulateur pour la réduction.
-	 * @param <R>        Type des résultats intermédiaires de la phase map.
-	 * @param <A>        Type du résultat final après la phase reduce.
-	 * @return Le résultat de l'opération MapReduce.
-	 * @throws Exception Si une erreur se produit lors de l'exécution.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#mapReduce(fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A)
 	 */
-
+	@Override
 	public <R extends Serializable, A extends Serializable> A mapReduce(SelectorI selector, ProcessorI<R> processor,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A initialAcc) throws Exception {
 
 		String uriTete = URIGenerator.generateURI(MAPREDUCE_URI);
 		System.out.println("Reception de la requête 'MAP REDUCE' sur la facade identifiant requete : " + uriTete);
-		this.cmce.getMapReduceEndPoint().getClientSideReference().mapSync(uriTete, selector, processor);
-		A result = this.cmce.getMapReduceEndPoint().getClientSideReference().reduceSync(uriTete, reductor, combinator,
+		this.cmce.getMapReduceEndpoint().getClientSideReference().mapSync(uriTete, selector, processor);
+		A result = this.cmce.getMapReduceEndpoint().getClientSideReference().reduceSync(uriTete, reductor, combinator,
 				initialAcc);
-		this.cmce.getMapReduceEndPoint().getClientSideReference().clearMapReduceComputation(uriTete);
+		this.cmce.getMapReduceEndpoint().getClientSideReference().clearMapReduceComputation(uriTete);
 		System.out.println(
 				"Renvoi de la réponse de la requête 'MAP REDUCE' au client,  identifiant de la requete : " + uriTete);
 		return result;
 	}
 
 	/**
-	 * Démarre le composant FacadeBCM.
-	 * 
-	 * @throws ComponentStartException Si une erreur se produit lors du démarrage du
-	 *                                 composant.
+	 * @see fr.sorbonne_u.components.AbstractComponent#start()
 	 */
 	@Override
 	public synchronized void start() throws ComponentStartException {
@@ -189,9 +163,7 @@ public class FacadeBCM extends AbstractComponent {
 	}
 
 	/**
-	 * Finalise et arrête le composant FacadeBCM.
-	 * 
-	 * @throws Exception Si une erreur se produit lors de l'arrêt du composant.
+	 * @see fr.sorbonne_u.components.AbstractComponent#finalise()
 	 */
 	@Override
 	public synchronized void finalise() throws Exception {
@@ -202,9 +174,7 @@ public class FacadeBCM extends AbstractComponent {
 	}
 
 	/**
-	 * Effectue un arrêt propre du composant FacadeBCM.
-	 * 
-	 * @throws ComponentShutdownException Si une erreur se produit lors de l'arrêt.
+	 * @see fr.sorbonne_u.components.AbstractComponent#shutdown()
 	 */
 	@Override
 	public synchronized void shutdown() throws ComponentShutdownException {
@@ -217,10 +187,7 @@ public class FacadeBCM extends AbstractComponent {
 	}
 
 	/**
-	 * Force un arrêt immédiat du composant FacadeBCM.
-	 * 
-	 * @throws ComponentShutdownException Si une erreur se produit lors de l'arrêt
-	 *                                    immédiat.
+	 * @see fr.sorbonne_u.components.AbstractComponent#shutdownNow()
 	 */
 	@Override
 	public synchronized void shutdownNow() throws ComponentShutdownException {

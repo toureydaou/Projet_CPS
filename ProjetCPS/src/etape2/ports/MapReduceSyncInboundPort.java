@@ -72,30 +72,32 @@ public class MapReduceSyncInboundPort extends AbstractInboundPort implements Map
 	
 	
 
+	/**
+	 * Crée et initialise un port entrant
+	 * @param implementedInterface
+	 * @param owner
+	 * @throws Exception
+	 */
 	public MapReduceSyncInboundPort(Class<? extends OfferedCI> implementedInterface, ComponentI owner) throws Exception {
 		super(implementedInterface, owner);	
 	}
 	
 	
+	/**
+	 * Crée et initialise un port entrant
+	 * @param uri
+	 * @param implementedInterface
+	 * @param owner
+	 * @throws Exception
+	 */
 	public MapReduceSyncInboundPort(String uri, Class<? extends OfferedCI> implementedInterface, ComponentI owner) throws Exception {
 		super(uri, implementedInterface, owner);	
 	}
 	
 	
-	
-	
 
 	/**
-	 * Invoque la méthode <code>mapSync</code> du serveur.
-	 * 
-	 * @param <R>            type des résultats de la computation map.
-	 * @param computationURI URI de la computation, utilisé pour distinguer les
-	 *                       computations parallèles sur la même DHT.
-	 * @param selector       une fonction booléenne qui sélectionne les entrées de
-	 *                       la DHT à traiter.
-	 * @param processor      une fonction implémentant le traitement à appliquer par
-	 *                       la map.
-	 * @throws Exception <i>à compléter</i>.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI#mapSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI)
 	 */
 	@Override
 	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
@@ -106,20 +108,9 @@ public class MapReduceSyncInboundPort extends AbstractInboundPort implements Map
 		});
 	}
 
+
 	/**
-	 * Invoque la méthode <code>reduceSync</code> du serveur.
-	 * 
-	 * @param <R>            type of the results in the map computation.
-	 * @param <A>            type of the accumulator in the reduction computation.
-	 * @param computationURI URI of the computation, used to distinguish parallel
-	 *                       maps over the same DHT.
-	 * @param reductor       function {@code A} x {@code R -> A} accumulating one
-	 *                       map result.
-	 * @param combinator     function {@code A} x {@code A -> A} combining two
-	 *                       accumulators.
-	 * @param currentAcc     the initial accumulator value.
-	 * @return the final accumulator after all reductions.
-	 * @throws Exception <i>to do</i>.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI#reduceSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A)
 	 */
 	@Override
 	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
@@ -128,11 +119,9 @@ public class MapReduceSyncInboundPort extends AbstractInboundPort implements Map
 				.handleRequest(owner -> ((NodeBCM) owner).reduceSync(computationURI, reductor, combinator, currentAcc));
 	}
 
+	
 	/**
-	 * Invoque la méthode <code>clearMapReduceComputation</code> du serveur.
-	 * 
-	 * @param computationURI URI of the computation.
-	 * @throws Exception <i>to do</i>.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI#clearMapReduceComputation(java.lang.String)
 	 */
 	@Override
 	public void clearMapReduceComputation(String computationURI) throws Exception {

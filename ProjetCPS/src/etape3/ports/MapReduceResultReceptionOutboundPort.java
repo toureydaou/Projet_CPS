@@ -33,7 +33,6 @@ public class MapReduceResultReceptionOutboundPort extends AbstractOutboundPort i
 	// Constantes et variables
 	// -------------------------------------------------------------------------
 
-	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 
 	// -------------------------------------------------------------------------

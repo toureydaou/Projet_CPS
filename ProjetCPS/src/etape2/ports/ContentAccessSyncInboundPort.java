@@ -66,45 +66,40 @@ public class ContentAccessSyncInboundPort extends AbstractInboundPort implements
 		assert uri != null && (owner instanceof NodeBCM);
 	}
 	
-	
-	
-	
+	/**
+	 * Crée et initialise un port entrant
+	 * 
+	 * @param implementedInterface
+	 * @param owner
+	 * @throws Exception
+	 */
 	public ContentAccessSyncInboundPort(Class<? extends OfferedCI> implementedInterface, ComponentI owner) throws Exception {
 		super(implementedInterface, owner);	
 	}
 	
-	
+	/**
+	 * Crée et initialise un port entrant
+	 * 
+	 * @param uri
+	 * @param implementedInterface
+	 * @param owner
+	 * @throws Exception
+	 */
 	public ContentAccessSyncInboundPort(String uri, Class<? extends OfferedCI> implementedInterface, ComponentI owner) throws Exception {
 		super(uri, implementedInterface, owner);	
 	}
 	
-	
 
 	/**
-	 * Permet d'appeler le service <code>getSync</code> du composant pour récupérer
-	 * une donnée dans la table de hachage.
-	 * 
-	 * @param compoutationURI URI de la requete.
-	 * @param key             clée de la donnée à récupérer.
-	 * @return valeur associée à {@code key} ou {@code null} si la clée est absente.
-	 * @throws Exception <i>to do</i>.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#getSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
 	 */
 	@Override
 	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
-
 		return this.getOwner().handleRequest(owner -> ((NodeBCM) owner).getSync(computationURI, key));
 	}
 
 	/**
-	 * Permet d'appeler le service <code>putSync</code> du composant pour insérer
-	 * une donnée dans la table de hachage.
-	 * 
-	 * @param compoutationURI URI de la requete.
-	 * @param key             clée de la donnée à insérer.
-	 * @param value           valeur de la donnée à insérer.
-	 * @return valeur associée à {@code key} avant l'insersion ou {@code null} si la
-	 *         clée est absente.
-	 * @throws Exception <i>to do</i>.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#putSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
 	 */
 	@Override
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
@@ -112,13 +107,7 @@ public class ContentAccessSyncInboundPort extends AbstractInboundPort implements
 	}
 
 	/**
-	 * Permet d'appeler le service <code>removeSync</code> du composant pour
-	 * supprimer une donnée dans la table de hachage.
-	 * 
-	 * @param compoutationURI URI de la requete.
-	 * @param key             clée de la donnée à supprimer.
-	 * @return valeur associée à {@code key} avant suppression.
-	 * @throws Exception <i>to do</i>.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#removeSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
 	 */
 	@Override
 	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
@@ -126,11 +115,7 @@ public class ContentAccessSyncInboundPort extends AbstractInboundPort implements
 	}
 
 	/**
-	 * Permet d'appeler le service <code>clearComputation</code> du composant pour
-	 * nettoyer les données résiliantes sur le serveur.
-	 * 
-	 * @param compoutationURI URI de la requete.
-	 * @throws Exception <i>to do</i>.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#clearComputation(java.lang.String)
 	 */
 	@Override
 	public void clearComputation(String computationURI) throws Exception {

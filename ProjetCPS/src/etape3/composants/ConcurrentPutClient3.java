@@ -12,18 +12,19 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
 import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class ConcurrentPutClient3.
+ * La Classe ConcurrentPutClient3.
+ * 
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
  */
 @RequiredInterfaces(required = { DHTServicesCI.class, ClocksServerCI.class })
 public class ConcurrentPutClient3 extends ClientBCM {
 
-	/** The Constant STARTING_DELAY. */
 	private static final int STARTING_DELAY = 360;
 
 	/**
-	 * Instantiates a new concurrent put client 3.
+	 * Crée un concurrent put client 3.
 	 *
 	 * @param uri                  the uri
 	 * @param endpointClientFacade the endpoint client facade

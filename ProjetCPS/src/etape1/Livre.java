@@ -59,6 +59,9 @@ public class Livre implements ContentDataI {
 		return null;
 	}
 
+	/**
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
 		return "Livre[" + nomLivre + ", " + nbPages + "]";

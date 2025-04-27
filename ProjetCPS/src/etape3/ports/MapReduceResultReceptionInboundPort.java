@@ -26,10 +26,8 @@ public class MapReduceResultReceptionInboundPort extends AbstractInboundPort imp
 	// Constantes et variables
 	// -------------------------------------------------------------------------
 
-	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1L;
 
-	/** The executor index. */
 	protected final int executorIndex;
 
 	// -------------------------------------------------------------------------

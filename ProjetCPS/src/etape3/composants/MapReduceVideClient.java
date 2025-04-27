@@ -13,15 +13,17 @@ import fr.sorbonne_u.components.annotations.RequiredInterfaces;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
 import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class MapReduceVideClient.
+ * La Class MapReduceVideClient.
+ *  
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
  */
 @RequiredInterfaces(required = { DHTServicesCI.class, ClocksServerCI.class })
 public class MapReduceVideClient extends ClientBCM {
 
 	/**
-	 * Instantiates a new map reduce vide client.
+	 * Crée un map reduce vide client.
 	 *
 	 * @param uri                  the uri
 	 * @param endpointClientFacade the endpoint client facade

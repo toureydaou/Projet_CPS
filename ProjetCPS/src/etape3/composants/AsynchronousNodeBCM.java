@@ -7,9 +7,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Stream;
 
+import etape2.composants.NodeBCM;
 import etape3.endpoints.AsynchronousCompositeMapContentEndPoint;
-import etape3.utils.ThreadsPolicy;
-import fr.sorbonne_u.components.AbstractComponent;
+import etape4.policies.ThreadsPolicy;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;
 import fr.sorbonne_u.components.endpoints.EndPointI;
@@ -57,52 +57,37 @@ import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 @OfferedInterfaces(offered = { MapReduceCI.class, ContentAccessCI.class })
 @RequiredInterfaces(required = { MapReduceCI.class, ContentAccessCI.class, ResultReceptionCI.class,
 		MapReduceResultReceptionCI.class })
-public class AsynchronousNodeBCM extends AbstractComponent implements ContentAccessI, MapReduceI {
+public class AsynchronousNodeBCM extends NodeBCM implements ContentAccessI, MapReduceI {
 
-	/** The Constant SCHEDULABLE_THREADS. */
 	private static final int SCHEDULABLE_THREADS = 3;
 
-	/** The Constant THREADS_NUMBER. */
 	private static final int THREADS_NUMBER = 3;
 
-	/** The Constant CONTENT_ACCESS_HANDLER_URI. */
 	private static final String CONTENT_ACCESS_HANDLER_URI = "Content-Access-Pool-Threads";
 
-	/** The Constant MAP_REDUCE_HANDLER_URI. */
 	private static final String MAP_REDUCE_HANDLER_URI = "Content-Access-Pool-Threads";
 
-	/** The content. */
-	// Stocke les données associées aux clés de la DHT
 	protected ConcurrentHashMap<Integer, ContentDataI> content;
 
-	/** The intervalle. */
 	protected IntInterval intervalle;
 
-	/** The liste uri content operations. */
 	// Listes des URI des computations MapReduce et de stockage déjà traitées
 	protected CopyOnWriteArrayList<String> listeUriContentOperations = new CopyOnWriteArrayList<>();
 
-	/** The liste uri map operations. */
 	protected CopyOnWriteArrayList<String> listeUriMapOperations = new CopyOnWriteArrayList<>();
 
-	/** The liste uri reduce operations. */
 	protected CopyOnWriteArrayList<String> listeUriReduceOperations = new CopyOnWriteArrayList<>();
 
 	// Mémoire temporaire pour stocker les résultats intermédiaires des computations
-	/** The memory. */
 	// MapReduce
 	protected ConcurrentHashMap<String, CompletableFuture<Stream<ContentDataI>>> memory = new ConcurrentHashMap<>();
 
-	/** The composite map content endpoint outbound async. */
 	protected AsynchronousCompositeMapContentEndPoint compositeMapContentEndpointOutboundAsync;
 
-	/** The composite map content endpoint inbound async. */
 	protected AsynchronousCompositeMapContentEndPoint compositeMapContentEndpointInboundAsync;
 
-	/** The hash map lock. */
 	protected final ReentrantReadWriteLock hashMapLock;
 
-	/** The uri. */
 	protected String uri;
 
 	/**
@@ -379,15 +364,12 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	}
 
 	/**
-	 * Démarre le composant ClientBCM.
-	 * 
-	 * @throws ComponentStartException Si une erreur se produit lors du démarrage du
-	 *                                 composant.
+	 * @see etape2.composants.NodeBCM#start()
 	 */
 	@Override
 	public void start() throws ComponentStartException {
 		this.logMessage("starting node component.");
-		super.start();
+		super.startOrigin();
 		try {
 			if (!this.compositeMapContentEndpointOutboundAsync.clientSideInitialised()) {
 				this.compositeMapContentEndpointOutboundAsync.initialiseClientSide(this);
@@ -403,7 +385,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	 * @throws ComponentStartException the component start exception
 	 */
 	public void startOrigin() throws ComponentStartException {
-		super.start();
+		super.startOrigin();
 	}
 
 	/**
@@ -413,7 +395,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	public void finalise() throws Exception {
 		this.logMessage("stopping node component.");
 		this.compositeMapContentEndpointOutboundAsync.cleanUpClientSide();
-		super.finalise();
+		super.finaliseOrigin();
 	}
 
 	/**
@@ -422,7 +404,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	 * @throws Exception the exception
 	 */
 	public void finaliseOrigin() throws Exception {
-		super.finalise();
+		super.finaliseOrigin();
 	}
 
 	/**
@@ -435,7 +417,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e);
 		}
-		super.shutdown();
+		super.shutdownOrigin();
 	}
 
 	/**
@@ -444,7 +426,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	 * @throws ComponentShutdownException the component shutdown exception
 	 */
 	public void shutdownOrigin() throws ComponentShutdownException {
-		super.shutdown();
+		super.shutdownOrigin();
 	}
 
 	/**
@@ -457,7 +439,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 		} catch (Exception e) {
 			throw new ComponentShutdownException(e);
 		}
-		super.shutdownNow();
+		super.shutdownNowOrigin();
 	}
 
 	/**
@@ -466,62 +448,7 @@ public class AsynchronousNodeBCM extends AbstractComponent implements ContentAcc
 	 * @throws ComponentShutdownException the component shutdown exception
 	 */
 	public void shutdownNowOrigin() throws ComponentShutdownException {
-		super.shutdownNow();
-	}
-
-	/**
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI#getSync(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
-	 */
-	@Override
-	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI#putSync(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
-	 */
-	@Override
-	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncI#removeSync(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
-	 */
-	@Override
-	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI#mapSync(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI)
-	 */
-	@Override
-	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
-			throws Exception {
-		// TODO Auto-generated method stub
-
-	}
-
-	/**
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncI#reduceSync(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A)
-	 */
-	@Override
-	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
-			CombinatorI<A> combinator, A currentAcc) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		super.shutdownNowOrigin();
 	}
 
 }

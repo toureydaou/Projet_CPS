@@ -17,13 +17,9 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
 
 public class ContentAccessSyncConnector extends AbstractConnector implements ContentAccessSyncCI {
 
+	
 	/**
-	 * Invoque la méthode <code>getSync</code> du port entrant du serveur.
-	 * 
-	 * @param computationURI L'URI de la computation
-	 * @param key            La clé pour accéder aux données
-	 * @return Le contenu associé à la clé donnée
-	 * @throws Exception Si une erreur survient
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#getSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
 	 */
 	@Override
 	public ContentDataI getSync(String computationURI, ContentKeyI key) throws Exception {
@@ -31,37 +27,25 @@ public class ContentAccessSyncConnector extends AbstractConnector implements Con
 	}
 
 	/**
-	 * Invoque la méthode <code>putSync</code> du port entrant du serveur.
-	 * 
-	 * @param computationURI L'URI de la computation
-	 * @param key            La clé pour insérer les données
-	 * @param value          La valeur à insérer
-	 * @return Le contenu précédemment associé à la clé donnée
-	 * @throws Exception Si une erreur survient
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#putSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
 	 */
 	@Override
 	public ContentDataI putSync(String computationURI, ContentKeyI key, ContentDataI value) throws Exception {
 		return ((ContentAccessSyncCI) this.offering).putSync(computationURI, key, value);
 	}
 
+	
 	/**
-	 * Invoque la méthode <code>removeSync</code> du port entrant du serveur.
-	 * 
-	 * @param computationURI L'URI de la computation
-	 * @param key            La clé pour supprimer les données
-	 * @return Le contenu précédemment associé à la clé donnée
-	 * @throws Exception Si une erreur survient
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#removeSync(java.lang.String, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
 	 */
 	@Override
 	public ContentDataI removeSync(String computationURI, ContentKeyI key) throws Exception {
 		return ((ContentAccessSyncCI) this.offering).removeSync(computationURI, key);
 	}
 
+	
 	/**
-	 * Invoque la méthode <code>clearComputation</code> du port entrant du serveur.
-	 * 
-	 * @param computationURI L'URI de la computation à effacer
-	 * @throws Exception Si une erreur survient
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentAccessSyncCI#clearComputation(java.lang.String)
 	 */
 	@Override
 	public void clearComputation(String computationURI) throws Exception {

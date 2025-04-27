@@ -2,10 +2,10 @@ package etape3.ports;
 
 import java.io.Serializable;
 
+import etape2.ports.MapReduceSyncInboundPort;
 import fr.sorbonne_u.components.ComponentI;
 import fr.sorbonne_u.components.endpoints.EndPointI;
 import fr.sorbonne_u.components.interfaces.OfferedCI;
-import fr.sorbonne_u.components.ports.AbstractInboundPort;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceI;
@@ -14,7 +14,6 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 
-// TODO: Auto-generated Javadoc
 //-----------------------------------------------------------------------------
 /**
  * La classe <code>AsynchronousMapReduceInboundPort</code> implémente un port
@@ -53,8 +52,8 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
  * {@code executorServiceIndex}.</li>
  * </ul>
  *
- * @author Touré-Ydaou
- * @author Awwal
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
  * 
  * @see fr.sorbonne_u.components.ports.AbstractInboundPort;
  * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceCI
@@ -62,7 +61,7 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
  */
 //-----------------------------------------------------------------------------
 
-public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implements MapReduceCI {
+public class AsynchronousMapReduceInboundPort extends MapReduceSyncInboundPort implements MapReduceCI {
 
 	// -------------------------------------------------------------------------
 	// Constantes et variables
@@ -165,31 +164,6 @@ public class AsynchronousMapReduceInboundPort extends AbstractInboundPort implem
 			}
 		});
 
-	}
-
-	/**
-	 * 
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI#mapSync(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI)
-	 */
-	@Override
-	public <R extends Serializable> void mapSync(String computationURI, SelectorI selector, ProcessorI<R> processor)
-			throws Exception {
-
-	}
-
-	/**
-	 * 
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceSyncCI#reduceSync(java.lang.String,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI,
-	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A)
-	 */
-	@Override
-	public <A extends Serializable, R> A reduceSync(String computationURI, ReductorI<A, R> reductor,
-			CombinatorI<A> combinator, A currentAcc) throws Exception {
-
-		return null;
 	}
 
 	/**

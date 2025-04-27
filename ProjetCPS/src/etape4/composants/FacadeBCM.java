@@ -9,10 +9,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import etape2.endpoints.DHTServicesEndPoint;
 import etape3.endpoints.MapReduceResultReceptionEndPoint;
 import etape3.endpoints.ResultReceptionEndPoint;
-import etape3.utils.ThreadsPolicy;
 import etape4.endpoints.CompositeMapContentManagementEndPoint;
 import etape4.policies.IgnoreChordsPolicy;
 import etape4.policies.LoadPolicy;
+import etape4.policies.ThreadsPolicy;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;
@@ -39,7 +39,7 @@ import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 @OfferedInterfaces(offered = { DHTServicesCI.class, ResultReceptionCI.class, MapReduceResultReceptionCI.class })
 @RequiredInterfaces(required = { ContentAccessCI.class, ParallelMapReduceCI.class, DHTManagementCI.class })
 public class FacadeBCM extends AbstractComponent implements ResultReceptionI, MapReduceResultReceptionI, DHTServicesI {
-	
+
 	private static final String RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Content-Access-Pool-Threads";
 	private static final String MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Map-Reduce-Pool-Threads";
 
@@ -51,20 +51,21 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	private static final String COMPUTE_CHORDS_URI_PREFIX = "COMPUTE-CHORDS";
 	private static final String SPLIT_URI_PREFIX = "SPLIT";
 	private static final String MERGE_URI_PREFIX = "MERGE";
-	
+
 	private static final int NUMBER_OF_CHORDS = 4;
 
 	private static final int SCHEDULABLE_THREADS = 2;
 	private static final int THREADS_NUMBER = 2;
 
 	private static final int START_POLICY = 0;
-	
-	//Limite à partir de laquelle on peut considérer un split ou un merge dans toute la table
+
+	// Limite à partir de laquelle on peut considérer un split ou un merge dans
+	// toute la table
 	private static final int LIMIT_NUMBER_WRITE_OPERATIONS = 10;
 
 	private boolean LIMIT_REACHED = false;
-	
-	//Nombre d'opérations PUT et REMOVE sur la table
+
+	// Nombre d'opérations PUT et REMOVE sur la table
 	private AtomicInteger number_write_operation = new AtomicInteger(0);
 
 	protected CompositeMapContentManagementEndPoint endPointFacadeNoeud;
@@ -74,10 +75,19 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 
 	private HashMap<String, CompletableFuture<Serializable>> resultsContentAccess;
 	private HashMap<String, CompletableFuture<Serializable>> resultsMapReduce;
-	
-	//Synchronisation pour éviter une exécution parallèle des opérations split/merge avec d'autres opérations
+
+	// Synchronisation pour éviter une exécution parallèle des opérations
+	// split/merge avec d'autres opérations
 	protected final ReentrantReadWriteLock splitMergeLock;
 
+	/**
+	 * Instancie la facade
+	 * 
+	 * @param uri
+	 * @param endPointFacadeNoeud
+	 * @param endPointClientFacade
+	 * @throws ConnectionException
+	 */
 	protected FacadeBCM(String uri, CompositeMapContentManagementEndPoint endPointFacadeNoeud,
 			DHTServicesEndPoint endPointClientFacade) throws ConnectionException {
 		super(uri, THREADS_NUMBER, SCHEDULABLE_THREADS);
@@ -88,9 +98,9 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		this.resultsContentAccess = new HashMap<String, CompletableFuture<Serializable>>();
 		this.resultsMapReduce = new HashMap<String, CompletableFuture<Serializable>>();
 		this.splitMergeLock = new ReentrantReadWriteLock();
-		
-		this.resultatReceptionEndPoint.setExecutorIndex(
-				this.createNewExecutorService(URIGenerator.generateURI(RESULT_RECEPTION_HANDLER_URI),
+
+		this.resultatReceptionEndPoint
+				.setExecutorIndex(this.createNewExecutorService(URIGenerator.generateURI(RESULT_RECEPTION_HANDLER_URI),
 						ThreadsPolicy.NUMBER_ACCEPT_RESULT_CONTENT_ACCESS_THREADS, true));
 
 		this.mapReduceResultatReceptionEndPoint.setExecutorIndex(
@@ -112,15 +122,16 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		ContentDataI value;
 		String request_uri = URIGenerator.generateURI(GET_URI_PREFIX);
 		try {
-			System.out.println("Reception de la requête 'GET' sur la facade, identifiant de la requete : " + request_uri);
+			System.out
+					.println("Reception de la requête 'GET' sur la facade, identifiant de la requete : " + request_uri);
 			CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
 			this.resultsContentAccess.put(request_uri, f);
 			this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().get(request_uri, key,
 					resultatReceptionEndPoint);
 			value = (ContentDataI) this.resultsContentAccess.get(request_uri).get();
 			this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
-		
-		}finally{
+
+		} finally {
 			this.resultsContentAccess.remove(request_uri);
 			this.splitMergeLock.readLock().unlock();
 		}
@@ -128,7 +139,8 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	}
 
 	/**
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#put(fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#put(fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
 	 */
 	@Override
 	public ContentDataI put(ContentKeyI key, ContentDataI value) throws Exception {
@@ -145,9 +157,8 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 					resultatReceptionEndPoint);
 			oldValue = (ContentDataI) this.resultsContentAccess.get(request_uri).get();
 			this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
-			
 
-		}finally{
+		} finally {
 			this.resultsContentAccess.remove(request_uri);
 			this.splitMergeLock.readLock().unlock();
 		}
@@ -166,7 +177,7 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		String request_uri = URIGenerator.generateURI(REMOVE_URI_PREFIX);
 		try {
 			this.countNumberOfOperations();
-			
+
 			System.out.println("Reception de la requête 'REMOVE' sur la facade identifiant requete : " + request_uri);
 			CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
 			this.resultsContentAccess.put(request_uri, f);
@@ -174,9 +185,8 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 					resultatReceptionEndPoint);
 			oldValue = (ContentDataI) this.resultsContentAccess.get(request_uri).get();
 			this.endPointFacadeNoeud.getContentAccessEndpoint().getClientSideReference().clearComputation(request_uri);
-			
 
-		}finally{
+		} finally {
 			this.resultsContentAccess.remove(request_uri);
 			this.splitMergeLock.readLock().unlock();
 		}
@@ -184,7 +194,10 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	}
 
 	/**
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#mapReduce(fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A)
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#mapReduce(fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI,
+	 *      fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A)
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
@@ -195,21 +208,23 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		A result;
 		String request_uri = URIGenerator.generateURI(MAPREDUCE_URI_PREFIX);
 		try {
-			
-			System.out.println("Reception de la requête 'MAP REDUCE' sur la facade identifiant requete : " + request_uri);
+
+			System.out
+					.println("Reception de la requête 'MAP REDUCE' sur la facade identifiant requete : " + request_uri);
 			CompletableFuture<Serializable> reduceResult = new CompletableFuture<Serializable>();
 			resultsMapReduce.put(request_uri, reduceResult);
 
 			this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().parallelMap(request_uri, selector,
 					processor, new IgnoreChordsPolicy(START_POLICY));
-			this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().parallelReduce(request_uri, reductor,
-					combinator, initialAcc, initialAcc, new IgnoreChordsPolicy(START_POLICY),
+			this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().parallelReduce(request_uri,
+					reductor, combinator, initialAcc, initialAcc, new IgnoreChordsPolicy(START_POLICY),
 					this.mapReduceResultatReceptionEndPoint);
 			result = (A) resultsMapReduce.get(request_uri).get();
 
-			this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference().clearMapReduceComputation(request_uri);
-			
-		}finally{
+			this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference()
+					.clearMapReduceComputation(request_uri);
+
+		} finally {
 			this.resultsMapReduce.remove(request_uri);
 			this.splitMergeLock.readLock().unlock();
 		}
@@ -222,11 +237,12 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 
 	public void clearMapReduceComputation(String computationURI) throws Exception {
 		this.endPointFacadeNoeud.getMapReduceEndpoint().getClientSideReference()
-		.clearMapReduceComputation(computationURI);
+				.clearMapReduceComputation(computationURI);
 	}
 
 	/**
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionI#acceptResult(java.lang.String, java.io.Serializable)
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ResultReceptionI#acceptResult(java.lang.String,
+	 *      java.io.Serializable)
 	 */
 	@Override
 	public void acceptResult(String computationURI, Serializable result) throws Exception {
@@ -235,16 +251,18 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	}
 
 	/**
-	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionI#acceptResult(java.lang.String, java.lang.String, java.io.Serializable)
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.MapReduceResultReceptionI#acceptResult(java.lang.String,
+	 *      java.lang.String, java.io.Serializable)
 	 */
 	@Override
 	public void acceptResult(String computationURI, String emitterId, Serializable acc) {
 
 		this.resultsMapReduce.get(computationURI).complete(acc);
 	}
-	
+
 	/**
 	 * Méthode qui lance un split sur tous les noeuds de l'anneau DHT
+	 * 
 	 * @throws Exception
 	 */
 	public void split() throws Exception {
@@ -252,26 +270,26 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		String split_uri = URIGenerator.generateURI(SPLIT_URI_PREFIX);
 		try {
 			CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
-			
+
 			this.resultsContentAccess.put(split_uri, f);
-			this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference().split(split_uri, new LoadPolicy(),
-					this.resultatReceptionEndPoint);
+			this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference().split(split_uri,
+					new LoadPolicy(), this.resultatReceptionEndPoint);
 
 			this.resultsContentAccess.get(split_uri).get();
 			System.out.println("Fin split");
-			
+
 			this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference()
-			.computeChords(URIGenerator.generateURI(COMPUTE_CHORDS_URI_PREFIX), NUMBER_OF_CHORDS);
-		}finally {
+					.computeChords(URIGenerator.generateURI(COMPUTE_CHORDS_URI_PREFIX), NUMBER_OF_CHORDS);
+		} finally {
 			this.resultsContentAccess.remove(split_uri);
 			this.splitMergeLock.writeLock().unlock();
 		}
-
 
 	}
 
 	/**
 	 * Méthode qui lance un merge sur tous les noeuds de l'anneau DHT
+	 * 
 	 * @throws Exception
 	 */
 	public void merge() throws Exception {
@@ -279,15 +297,15 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		String merge_uri = URIGenerator.generateURI(MERGE_URI_PREFIX);
 		try {
 			CompletableFuture<Serializable> f = new CompletableFuture<Serializable>();
-			
+
 			this.resultsContentAccess.put(merge_uri, f);
-			this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference().merge(merge_uri, new LoadPolicy(),
-					this.resultatReceptionEndPoint);
+			this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference().merge(merge_uri,
+					new LoadPolicy(), this.resultatReceptionEndPoint);
 			this.resultsContentAccess.get(merge_uri).get();
-			
+
 			this.endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference()
-			.computeChords(URIGenerator.generateURI(COMPUTE_CHORDS_URI_PREFIX), NUMBER_OF_CHORDS);
-		}finally {
+					.computeChords(URIGenerator.generateURI(COMPUTE_CHORDS_URI_PREFIX), NUMBER_OF_CHORDS);
+		} finally {
 			this.resultsContentAccess.remove(merge_uri);
 			this.splitMergeLock.writeLock().unlock();
 		}
@@ -295,7 +313,8 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 	}
 
 	/**
-	 * Méthode qui compte le nombre d'opérations PUT et REMOVE que la facade a transmis à la DHT
+	 * Méthode qui compte le nombre d'opérations PUT et REMOVE que la facade a
+	 * transmis à la DHT
 	 */
 	public void countNumberOfOperations() {
 		int count = number_write_operation.incrementAndGet();
@@ -303,17 +322,6 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		if ((count != 0) && (count % LIMIT_NUMBER_WRITE_OPERATIONS) == 0) {
 			LIMIT_REACHED = true;
 		}
-	}
-
-	private synchronized boolean operationsInProgress() {
-		System.out.println("Resutat : " + this.resultsContentAccess.size());
-		if (this.resultsContentAccess.keySet().size() > 0 ) {
-			String valeur = this.resultsContentAccess.keySet().iterator().next();
-		    System.out.println(valeur);
-		}
-		
-		System.out.println("Map reduce : " + this.resultsMapReduce.size());
-		return !this.resultsContentAccess.isEmpty() || !this.resultsMapReduce.isEmpty();
 	}
 
 	/**
@@ -333,9 +341,11 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 		}
 	}
 
-	/** La facade lancera chaque seconde une vérification sur le nombre de requêtes 
-	 *  traitées et celles en cours afin de savaoir si elle peut lancer des opérations split
-	 *  et merge sur la DHT.
+	/**
+	 * La facade lancera chaque seconde une vérification sur le nombre de requêtes
+	 * traitées et celles en cours afin de savaoir si elle peut lancer des
+	 * opérations split et merge sur la DHT.
+	 * 
 	 * @see fr.sorbonne_u.components.AbstractComponent#execute()
 	 */
 	@Override
@@ -347,22 +357,17 @@ public class FacadeBCM extends AbstractComponent implements ResultReceptionI, Ma
 			public void run() {
 				try {
 					((FacadeBCM) this.taskOwner).endPointFacadeNoeud.getDHTManagementEndpoint().getClientSideReference()
-					.computeChords(COMPUTE_CHORDS_URI_PREFIX, NUMBER_OF_CHORDS);
+							.computeChords(COMPUTE_CHORDS_URI_PREFIX, NUMBER_OF_CHORDS);
 
 					while (true) {
 						Thread.sleep(1000); // pause de 1 seconde
 
 						if (LIMIT_REACHED) {
-							if (true) {
-								System.out.println(">> Déclenchement Split/Merge après " + LIMIT_NUMBER_WRITE_OPERATIONS
-										+ " opérations");
-								((FacadeBCM) this.getTaskOwner()).split();
-								((FacadeBCM) this.getTaskOwner()).merge();
-								LIMIT_REACHED = false; // seulement après split/merge
-							} else {
-								System.out.println("Des opérations sont en cours, report du Split/Merge...");
-								// On laisse LIMIT_REACHED à true pour réessayer lors de la prochaine itération
-							}
+							System.out.println(">> Déclenchement Split/Merge après " + LIMIT_NUMBER_WRITE_OPERATIONS
+									+ " opérations");
+							((FacadeBCM) this.getTaskOwner()).split();
+							((FacadeBCM) this.getTaskOwner()).merge();
+							LIMIT_REACHED = false; // seulement après split/merge
 						}
 					}
 

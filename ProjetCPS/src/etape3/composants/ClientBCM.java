@@ -13,6 +13,7 @@ import fr.sorbonne_u.components.exceptions.ConnectionException;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesCI;
+import fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
@@ -23,7 +24,6 @@ import fr.sorbonne_u.utils.aclocks.ClocksServerCI;
 import fr.sorbonne_u.utils.aclocks.ClocksServerConnector;
 import fr.sorbonne_u.utils.aclocks.ClocksServerOutboundPort;
 
-// TODO: Auto-generated Javadoc
 /**
  * ClientBCM est un composant client qui interagit avec le service DHT pour
  * effectuer des opérations de type MapReduce, ainsi que des opérations CRUD sur
@@ -34,21 +34,16 @@ import fr.sorbonne_u.utils.aclocks.ClocksServerOutboundPort;
  */
 
 @RequiredInterfaces(required = { DHTServicesCI.class, ClocksServerCI.class })
-public class ClientBCM extends AbstractComponent {
+public class ClientBCM extends AbstractComponent implements DHTServicesI{
 
-	/** The end point client facade. */
 	protected DHTServicesEndPoint endPointClientFacade; // Point d'accès aux services DHT
 
-	/** The dht clock. */
 	protected AcceleratedClock dhtClock; // Référence à l'horloge
 
-	/** The Constant SCHEDULABLE_THREADS. */
 	private static final int SCHEDULABLE_THREADS = 1;
 
-	/** The Constant THREADS_NUMBER. */
 	private static final int THREADS_NUMBER = 0;
 
-	/** The p. */
 	ClocksServerOutboundPort p;
 
 	/**
@@ -64,7 +59,7 @@ public class ClientBCM extends AbstractComponent {
 	}
 
 	/**
-	 * Connect to clock server.
+	 * La connexion au serveur horloge.
 	 *
 	 * @throws Exception the exception
 	 */
@@ -85,56 +80,37 @@ public class ClientBCM extends AbstractComponent {
 	}
 
 	/**
-	 * Récupère une donnée à partir de la clé fournie.
-	 * 
-	 * @param key Clé de la donnée à récupérer.
-	 * @return La donnée correspondante à la clé.
-	 * @throws Exception Si une erreur se produit lors de la récupération.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#get(fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
 	 */
+	@Override
 	public ContentDataI get(ContentKeyI key) throws Exception {
 		System.out.println("Envoi de la requête 'GET' sur la facade");
 		return this.endPointClientFacade.getClientSideReference().get(key);
 	}
 
 	/**
-	 * Ajoute ou met à jour une donnée associée à une clé dans le DHT.
-	 * 
-	 * @param key   La clé associée à la donnée.
-	 * @param value La donnée à stocker.
-	 * @return La donnée précédente associée à la clé (ou null si c'est un nouvel
-	 *         élément).
-	 * @throws Exception Si une erreur se produit lors de l'ajout.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#put(fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
 	 */
+	@Override
 	public ContentDataI put(ContentKeyI key, ContentDataI value) throws Exception {
 		System.out.println("Envoi de la requête 'PUT' sur la facade");
 		return this.endPointClientFacade.getClientSideReference().put(key, value);
 	}
 
+	
 	/**
-	 * Supprime une donnée associée à une clé dans le DHT.
-	 * 
-	 * @param key La clé associée à la donnée à supprimer.
-	 * @return La donnée supprimée.
-	 * @throws Exception Si une erreur se produit lors de la suppression.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#remove(fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
 	 */
+	@Override
 	public ContentDataI remove(ContentKeyI key) throws Exception {
 		System.out.println("Envoi de la requête 'REMOVE' sur la facade");
 		return this.endPointClientFacade.getClientSideReference().remove(key);
 	}
 
 	/**
-	 * Effectue une opération MapReduce sur les données stockées dans le DHT.
-	 *
-	 * @param <R>        the generic type
-	 * @param <A>        the generic type
-	 * @param selector   Un sélecteur pour filtrer les données.
-	 * @param processor  Un processeur pour transformer les données.
-	 * @param reductor   Un réducteur pour agréger les résultats.
-	 * @param combinator Un combinator pour combiner les résultats intermédiaires.
-	 * @param initialAcc L'accumulateur initial.
-	 * @return Le résultat final de l'opération MapReduce.
-	 * @throws Exception Si une erreur se produit lors de l'exécution.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#mapReduce(fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A)
 	 */
+	@Override
 	public <R extends Serializable, A extends Serializable> A mapReduce(SelectorI selector, ProcessorI<R> processor,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A initialAcc) throws Exception {
 		System.out.println("Envoi de la requête 'MAP REDUCE' sur la facade");
@@ -196,9 +172,6 @@ public class ClientBCM extends AbstractComponent {
 	}
 
 	/**
-	 * 
-	 *
-	 * @throws Exception the exception
 	 * @see fr.sorbonne_u.components.AbstractComponent#finalise()
 	 */
 	@Override

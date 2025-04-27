@@ -44,12 +44,8 @@ public class Client implements DHTServicesI {
 	}
 	
 	/**
-     * Récupère une donnée à partir de la clé donnée dans la table.
-     * 
-     * @param key la clé associée à la donnée recherchée.
-     * @return la donnée correspondante si elle existe, sinon {@code null}.
-     * @throws Exception en cas d'erreur lors de l'opération.
-     */
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#get(fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
+	 */
 	@Override
 	public ContentDataI get(ContentKeyI key) throws Exception {
 		// Condition pour vérifier si le serveur est initialisé au préalable
@@ -61,13 +57,8 @@ public class Client implements DHTServicesI {
 	}
 	
 	/**
-     * Insère une paire clé-valeur dans le table.
-     * 
-     * @param key la clé associée à la donnée.
-     * @param value la donnée à insérer.
-     * @return la valeur précédemment associée à cette clé, ou {@code null} si elle n'existait pas.
-     * @throws Exception en cas d'erreur lors de l'opération.
-     */
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#put(fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
+	 */
 	@Override
 	public ContentDataI put(ContentKeyI key, ContentDataI value) throws Exception {
 		// Condition pour vérifier si le serveur est initialisé au préalable
@@ -81,12 +72,8 @@ public class Client implements DHTServicesI {
 	}
 	
 	/**
-     * Supprime une donnée du DHT à partir de sa clé.
-     * 
-     * @param key la clé de la donnée à supprimer.
-     * @return la donnée supprimée, ou {@code null} si elle n'existait pas.
-     * @throws Exception en cas d'erreur lors de l'opération.
-     */
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#remove(fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
+	 */
 	@Override
 	public ContentDataI remove(ContentKeyI key) throws Exception {
 		// Condition pour vérifier si le serveur est initialisé au préalable
@@ -98,18 +85,8 @@ public class Client implements DHTServicesI {
 	}
 	
 	/**
-     * Effectue une opération de type MapReduce sur les données de la table
-     * 
-     * @param <R> le type des résultats intermédiaires produits par le processeur.
-     * @param <A> le type de l'accumulateur utilisé par le réducteur et le combinateur.
-     * @param selector le sélecteur utilisé pour choisir les données à traiter.
-     * @param processor le processeur appliqué aux données sélectionnées.
-     * @param reductor le réducteur utilisé pour agréger les résultats intermédiaires.
-     * @param combinator le combinateur utilisé pour fusionner les résultats des réducteurs.
-     * @param initialAcc la valeur initiale de l'accumulateur.
-     * @return le résultat final de l'opération MapReduce.
-     * @throws Exception en cas d'erreur lors de l'opération.
-     */
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#mapReduce(fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A)
+	 */
 	@Override
 	public <R extends Serializable, A extends Serializable> A mapReduce(SelectorI selector, ProcessorI<R> processor,
 			ReductorI<A, R> reductor, CombinatorI<A> combinator, A initialAcc) throws Exception {

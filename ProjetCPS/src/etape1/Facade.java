@@ -70,11 +70,7 @@ public class Facade implements DHTServicesI {
 	}
 
 	/**
-	 * Récupère une donnée associée à une clé donnée dans la DHT.
-	 * 
-	 * @param key La clé associée aux données à récupérer.
-	 * @return Les données associées à la clé.
-	 * @throws Exception Si une erreur survient lors de la récupération.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#get(fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
 	 */
 	@Override
 	public ContentDataI get(ContentKeyI key) throws Exception {
@@ -89,12 +85,7 @@ public class Facade implements DHTServicesI {
 	}
 
 	/**
-	 * Insère une donnée associée à une clé dans la DHT.
-	 * 
-	 * @param key   La clé sous laquelle la donnée sera stockée.
-	 * @param value La donnée à stocker.
-	 * @return La donnée stockée.
-	 * @throws Exception Si une erreur survient lors de l'insertion.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#put(fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentDataI)
 	 */
 	@Override
 	public ContentDataI put(ContentKeyI key, ContentDataI value) throws Exception {
@@ -110,11 +101,7 @@ public class Facade implements DHTServicesI {
 	}
 
 	/**
-	 * Supprime une donnée associée à une clé de la DHT.
-	 * 
-	 * @param key La clé de la donnée à supprimer.
-	 * @return La donnée supprimée.
-	 * @throws Exception Si une erreur survient lors de la suppression.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#remove(fr.sorbonne_u.cps.dht_mapreduce.interfaces.content.ContentKeyI)
 	 */
 	@Override
 	public ContentDataI remove(ContentKeyI key) throws Exception {
@@ -129,17 +116,7 @@ public class Facade implements DHTServicesI {
 	}
 
 	/**
-	 * Exécute une opération MapReduce sur les données stockées dans les noeuds.
-	 * 
-	 * @param <R>        Le type des résultats intermédiaires.
-	 * @param <A>        Le type du résultat final.
-	 * @param selector   Le sélecteur utilisé pour filtrer les données.
-	 * @param processor  Le processeur appliqué aux données sélectionnées.
-	 * @param reductor   Le réducteur qui combine les résultats intermédiaires.
-	 * @param combinator Le combinateur qui fusionne les résultats réduits.
-	 * @param initialAcc L'accumulateur initial pour la réduction.
-	 * @return Le résultat final après l'exécution du MapReduce.
-	 * @throws Exception Si une erreur survient lors de l'exécution du MapReduce.
+	 * @see fr.sorbonne_u.cps.dht_mapreduce.interfaces.frontend.DHTServicesI#mapReduce(fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ProcessorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI, fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.CombinatorI, A)
 	 */
 	@Override
 	public <R extends Serializable, A extends Serializable> A mapReduce(SelectorI selector, ProcessorI<R> processor,

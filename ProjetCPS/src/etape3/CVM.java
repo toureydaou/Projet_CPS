@@ -23,69 +23,52 @@ import fr.sorbonne_u.utils.aclocks.ClocksServer;
 
 
 /**
- * The Class CVM.
+ * La CVM.
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
  */
 public class CVM extends AbstractCVM {
 
-	/** The Constant TEST_CLOCK_URI. */
 	public static final String TEST_CLOCK_URI = "test-clock";
 
-	/** The Constant START_INSTANT. */
 	public static final Instant START_INSTANT = Instant.now();
 
-	/** The Constant START_DELAY. */
 	protected static final long START_DELAY = 3000L;
 
-	/** The Constant ACCELERATION_FACTOR. */
 	public static final double ACCELERATION_FACTOR = 60.0;
 
-	/** The Constant FACADE_COMPONENT_URI. */
 	protected static final String FACADE_COMPONENT_URI = "facade-URI";
 
-	/** The Constant MAP_REDUCE_VIDE_CLIENT_COMPONENT_URI. */
 	protected static final String MAP_REDUCE_VIDE_CLIENT_COMPONENT_URI = "map-reduce-vide-client-URI";
 
-	/** The Constant GET_1_CLIENT_COMPONENT_URI. */
 	protected static final String GET_1_CLIENT_COMPONENT_URI = "get-1-client-URI";
 
-	/** The Constant GET_2_CLIENT_COMPONENT_URI. */
 	protected static final String GET_2_CLIENT_COMPONENT_URI = "get-2-client-URI";
 
-	/** The Constant CONCURRENT_GET_1_CLIENT_COMPONENT_URI. */
 	protected static final String CONCURRENT_GET_1_CLIENT_COMPONENT_URI = "concurrent-get-1-client-URI";
 
-	/** The Constant CONCURRENT_PUT_1_CLIENT_COMPONENT_URI. */
 	protected static final String CONCURRENT_PUT_1_CLIENT_COMPONENT_URI = "concurrent-put-1-client-URI";
 
-	/** The Constant CONCURRENT_PUT_2_CLIENT_COMPONENT_URI. */
 	protected static final String CONCURRENT_PUT_2_CLIENT_COMPONENT_URI = "concurrent-put-2-client-URI";
 
-	/** The Constant CONCURRENT_PUT_3_CLIENT_COMPONENT_URI. */
 	protected static final String CONCURRENT_PUT_3_CLIENT_COMPONENT_URI = "concurrent-put-3-client-URI";
 
-	/** The Constant PUT_CLIENT_COMPONENT_URI. */
 	protected static final String PUT_CLIENT_COMPONENT_URI = "put-client-URI";
 
-	/** The Constant REMOVE_CLIENT_COMPONENT_URI. */
 	protected static final String REMOVE_CLIENT_COMPONENT_URI = "remove-client-URI";
 
-	/** The Constant MAP_REDUCE_1_CLIENT_COMPONENT_URI. */
 	protected static final String MAP_REDUCE_1_CLIENT_COMPONENT_URI = "map-reduce-1-client-URI";
 
-	/** The Constant MAP_REDUCE_2_CLIENT_COMPONENT_URI. */
 	protected static final String MAP_REDUCE_2_CLIENT_COMPONENT_URI = "map-reduce-2-client-URI";
 
-	/** The Constant FIRST_NODE_COMPONENT_URI. */
 	protected static final String FIRST_NODE_COMPONENT_URI = "first-node--URI";
 
-	/** The Constant SECOND_NODE_COMPONENT_URI. */
 	protected static final String SECOND_NODE_COMPONENT_URI = "second-node-URI";
 
-	/** The Constant THIRD_CLIENT_COMPONENT_URI. */
 	protected static final String THIRD_CLIENT_COMPONENT_URI = "third-node-URI";
 
 	/**
-	 * Instantiates a new cvm.
+	 * Crée la CVM
 	 *
 	 * @throws Exception the exception
 	 */
@@ -217,7 +200,7 @@ public class CVM extends AbstractCVM {
 	}
 
 	/**
-	 * The main method.
+	 * La méthode main
 	 *
 	 * @param args the arguments
 	 */

@@ -38,12 +38,10 @@ public class EntierKey implements ContentKeyI {
 		super();
 		this.cle = cle;
 	}
-
+   
 	/**
-     * Retourne la valeur de la clé.
-     * 
-     * @return La valeur entière de la clé.
-     */
+	 * @see java.lang.Object#hashCode()
+	 */
 	@Override
 	public int hashCode() {
 		return cle;

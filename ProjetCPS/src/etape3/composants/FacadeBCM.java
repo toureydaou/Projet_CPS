@@ -8,7 +8,7 @@ import etape2.endpoints.DHTServicesEndPoint;
 import etape3.endpoints.AsynchronousCompositeMapContentEndPoint;
 import etape3.endpoints.MapReduceResultReceptionEndPoint;
 import etape3.endpoints.ResultReceptionEndPoint;
-import etape3.utils.ThreadsPolicy;
+import etape4.policies.ThreadsPolicy;
 import fr.sorbonne_u.components.AbstractComponent;
 import fr.sorbonne_u.components.annotations.OfferedInterfaces;
 import fr.sorbonne_u.components.annotations.RequiredInterfaces;
@@ -31,56 +31,53 @@ import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.ReductorI;
 import fr.sorbonne_u.cps.dht_mapreduce.interfaces.mapreduce.SelectorI;
 import fr.sorbonne_u.cps.mapreduce.utils.URIGenerator;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class FacadeBCM.
+ * La classe <code>FacadeBCM</code> représente un composant qui envoie 
+ * à la DHT des requêtes d'accès au contenu et des opérations
+ * MapReduce de manière asynchrone. Elle implémente les interfaces
+ * <code>ResultReceptionI</code>, <code>MapReduceResultReceptionI</code>
+ * afin de recevoir les résultats des requêtes
+ * 
+ * @see ResultReceptionI
+ * @see MapReduceResultReceptionI
+ * @see DHTServicesI
+ * @see AbstractComponent
+ * 
+ * @author Touré-Ydaou TEOURI
+ * @author Awwal FAGBEHOURO
  */
 @OfferedInterfaces(offered = { DHTServicesCI.class, ResultReceptionCI.class, MapReduceResultReceptionCI.class })
 @RequiredInterfaces(required = { ContentAccessCI.class, MapReduceCI.class })
 public class FacadeBCM extends AbstractComponent implements ResultReceptionI, MapReduceResultReceptionI, DHTServicesI {
 
-	/** The Constant GET_URI_PREFIX. */
 	// URI constants pour l'accès aux services
 	private static final String GET_URI_PREFIX = "GET";
 
-	/** The Constant PUT_URI_PREFIX. */
 	private static final String PUT_URI_PREFIX = "PUT";
 
-	/** The Constant REMOVE_URI_PREFIX. */
 	private static final String REMOVE_URI_PREFIX = "REMOVE";
 
-	/** The Constant MAPREDUCE_URI_PREFIX. */
 	private static final String MAPREDUCE_URI_PREFIX = "MAPREDUCE";
 
-	/** The Constant RESULT_RECEPTION_HANDLER_URI. */
 	private static final String RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Content-Access-Pool-Threads";
 
-	/** The Constant MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI. */
 	private static final String MAP_REDUCE_RESULT_RECEPTION_HANDLER_URI = "Result-Reception-Map-Reduce-Pool-Threads";
 
-	/** The Constant SCHEDULABLE_THREADS. */
 	private static final int SCHEDULABLE_THREADS = 0;
 
-	/** The Constant THREADS_NUMBER. */
 	private static final int THREADS_NUMBER = 4;
 
-	/** The end point facade noeud. */
 	// Endpoints pour accéder aux services
 	protected AsynchronousCompositeMapContentEndPoint endPointFacadeNoeud;
 
-	/** The end point client facade. */
 	protected DHTServicesEndPoint endPointClientFacade;
 
-	/** The resultat reception end point. */
 	protected ResultReceptionEndPoint resultatReceptionEndPoint;
 
-	/** The map reduce resultat reception end point. */
 	protected MapReduceResultReceptionEndPoint mapReduceResultatReceptionEndPoint;
 
-	/** The results content access. */
 	private HashMap<String, CompletableFuture<Serializable>> resultsContentAccess;
 
-	/** The results map reduce. */
 	private HashMap<String, CompletableFuture<Serializable>> resultsMapReduce;
 
 	/**
